@@ -1,0 +1,8 @@
+@misc{KekeAIPy,
+  author = {Dockhorn, Alexander},
+  title = {Keke AI Py},
+  year = {2024},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/ADockhorn/Keke-AI-PY}},
+}
