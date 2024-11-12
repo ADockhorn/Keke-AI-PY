@@ -1,4 +1,4 @@
-from Keke_PY.baba import GameState, Direction, imgHash, advance_game_state, parse_map, make_level
+from Keke_PY.baba import GameState, Direction, imgHash, advance_game_state, parse_map, make_level, check_win
 from pygame.locals import *
 import pygame
 
@@ -75,7 +75,7 @@ def play_game(initial_game_state: GameState):
                 if action is not None:
                     result = advance_game_state(action, game_state)
                     game_state = result
-                    running = not game_state.lazy_evaluation_properties["win"]
+                    running = not check_win(game_state)
                     pass
 
         update_display(screen, game_state)
@@ -84,5 +84,6 @@ def play_game(initial_game_state: GameState):
 if __name__ == '__main__':
     from simulation import load_level_set
     level_set = load_level_set("json_levels/demo_LEVELS.json")
-    demo_level_1 = level_set["levels"][0]
+    demo_level_1 = level_set["levels"][9]
+    print(demo_level_1["id"])
     play_level(demo_level_1["ascii"])

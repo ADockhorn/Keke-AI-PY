@@ -14,7 +14,7 @@ var currentGamestate = simjs.getGamestate();
 // NEXT ITERATION STEP FOR SOLVING
 function iterSolve(init_state){
 	// PERFORM ITERATIVE CALCULATIONS HERE //
-
+	
 	if(counter < 1)
 	{
 

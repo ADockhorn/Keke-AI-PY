@@ -4,7 +4,7 @@ from DFS import DFS
 
 
 if __name__ == "__main__":
-    level_set = load_level_set("../../json_levels/demo_LEVELS.json")
+    level_set = load_level_set("../../Keke_JS/json_levels/demo_LEVELS.json")
     demo_level_1 = level_set["levels"][0]
     map = parse_map(demo_level_1["ascii"])
     game_state = make_level(map)

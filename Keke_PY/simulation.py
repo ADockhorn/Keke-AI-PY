@@ -25,9 +25,9 @@ if __name__ == "__main__":
     import random
     import time
 
-    level_set = load_level_set("../json_levels/demo_LEVELS.json")
+    level_set = load_level_set("json_levels/demo_LEVELS.json")
 
-    demo_level_1 = level_set["levels"][0]
+    demo_level_1 = level_set["levels"][2]
     game_map = parse_map(demo_level_1["ascii"])
     print(map_to_string(game_map))
 
