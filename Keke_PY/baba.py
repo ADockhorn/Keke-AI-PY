@@ -986,9 +986,10 @@ def destroy_objs(dead, game_state: GameState):
     for p, o in dead:
         # Remove reference of the player and the murder object
         phys.remove(p)
-        phys.remove(o)
         sort_phys[p.name].remove(p)
-        sort_phys[o.name].remove(o)
+        if o != p:
+            phys.remove(o)
+            sort_phys[o.name].remove(o)
 
         # Clear the space
         bm[o.y][o.x] = ' '
