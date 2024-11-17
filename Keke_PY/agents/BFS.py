@@ -10,7 +10,13 @@ class BFS(AIInterface):
     Breadth-First Search implementation.
     """
 
-    def search(self, initial_state: GameState, max_forward_model_calls: int = 50) -> Tuple[Union[List[str], None], int]:
+    def search(self, initial_state: GameState, max_forward_model_calls: int = 50, max_depth: int = 50) -> Tuple[Union[List[str], None], int]:
+        """
+        :param initial_state: The initial state of the game.
+        :param max_forward_model_calls: Maximum number of node expansions to avoid infinite loops.
+        :param max_depth: Maximum depth for algorithms like DFS.
+        :return: List of actions that lead to a solution (if found, else None), and the number of node expansions.
+        """
         queue = deque([(initial_state, [])])  # (current state, action history)
         visited = set()
 
@@ -30,10 +36,11 @@ class BFS(AIInterface):
             visited.add(state_str)
 
             # Get all possible actions and apply them
-            for action in [Direction.Up, Direction.Down, Direction.Left, Direction.Right, Direction.Wait]:
-                next_state = advance_game_state(action, current_state.copy())
-                if str(next_state) not in visited:
-                    queue.append((next_state, actions + [action.name]))
+            if len(actions) < max_depth:
+                for action in [Direction.Up, Direction.Down, Direction.Left, Direction.Right, Direction.Wait]:
+                    next_state = advance_game_state(action, current_state.copy())
+                    if str(next_state) not in visited:
+                        queue.append((next_state, actions + [action.name]))
 
         return None, max_forward_model_calls  # Return empty if no solution is found
 
