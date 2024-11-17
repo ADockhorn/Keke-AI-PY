@@ -226,9 +226,8 @@ def advance_game_state(action: Direction, state: GameState):
 
     move_auto_movers(moved_objects, state)
 
-    for moved_object in moved_objects:
-        if is_word(moved_object):
-            interpret_rules(state)
+    if any(map(is_word, moved_objects)) or any(map(is_key_word, moved_objects)):
+        interpret_rules(state)
 
     state.lazy_evaluation_properties = dict()
     check_win(state)
@@ -897,8 +896,9 @@ def set_overlaps(game_state: GameState):
     for p in phys:
         if not p.is_movable and not p.is_stopped:
             overlaps.append(p)
-            bm[p.y][p.x] = p
-            om[p.y][p.x] = ' '
+            if om[p.y][p.x] == p:
+                om[p.y][p.x] = ' '
+                bm[p.y][p.x] = p
         else:
             unoverlaps.append(p)
             om[p.y][p.x] = p
