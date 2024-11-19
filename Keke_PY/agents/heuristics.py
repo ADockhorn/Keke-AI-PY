@@ -251,7 +251,10 @@ def distanceToKillables(state: GameState) -> float:
  * @return {number} The weight multiplied with the amount of unique rules.
  */"""
 def maximizeDifferentRules(state: GameState) -> float:
-    pass #TODO: shal this function actualy use a global variable?
+    #TODO: shal this function actualy use a global variable?
+    #       I assumed, 'allrules' should be empty every time, in the following code
+    # TODO: Is this code the intended behavior?
+    return len(set(state.rules))
 
 
 
@@ -289,7 +292,7 @@ def avgDistance(group1: List[GameObj], group2: List[GameObj]) -> Union[float, No
  * @return {number} The distance from Object a to Object b.
  */"""
 def dist(a: GameObj, b: GameObj) -> float:
-    pass #TODO: Code and documentation do not match!?!?!?!
+    #TODO: Code and documentation do not match!?!?!?!
     return abs(a.x - b.x) + abs(a.y - b.y)
 
 
@@ -335,7 +338,7 @@ def parseRoomForConnectivityFeature(state: GameState) -> List[List[str]]:
  * @return {object[]} All objects, that are currently hot.
  */"""
 def findHotMelt(state: GameState) -> List[GameObj]:
-    pass # TODO: clarify functionality of js code (shouldn't line 826 be about temp2, if not, shouldn't the function always return []?)
+    # TODO: clarify functionality of js code (shouldn't line 826 be about temp2, if not, shouldn't the function always return []?)
 
     hots: List[str] = []
     for rule in state.rules:
@@ -388,7 +391,7 @@ def mark_all_connected(map: List[List[str]], x: int, y: int, size_x: int, size_y
     mark_all_connected(map, x, y + 1, size_x, size_y)
 
 
-
+# TODO: the naming 'maximize'/'minimize' is inconsistent with the -/+ factor!!!
 
 heuristics: List[Callable[[GameState], float]] = [
 
