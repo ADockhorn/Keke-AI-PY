@@ -4,6 +4,8 @@ from typing import List, Callable, Union
 from Keke_PY.baba import GameState, parse_map, double_map_to_string, GameObj, Direction, GameObjectType
 
 important_SuffixWords = ["win", "push", "you"]
+
+# BIG TODO: change Objects to Enums or alike
 allPrefixes = ["lava", "skull", "love", "goop", "flag", "rock", "wall", "floor", "grass", "baba", "keke"]
 allSuffixes = ["stop", "sink", "push", "you", "kill", "hot", "move", "melt", "you", "win"]
 
@@ -87,9 +89,9 @@ def outOfPlan(state: GameState) -> float:
  * @return {boolean} Whether the IS-word is stuck and useless.
  */"""
 def isIsStuck(state: GameState, x: int, y: int) -> bool:
-    # TODO: Suggestion: Instead of counting an 'IS' as usable, if it is connected to a *-fix,
+    # TODO: Instead of counting an 'IS' as usable, if it is connected to a *-fix,
     #       we could count the direction of the *-fix as unblocked
-    # TODO: Suggestion: Is there a reason, we itterate throu all words for this?
+    # TODO: Is there a reason, we itterate throu all words for this?
     #       Can't we just check the corresponding positions?
     for word in state.words:
         if word.name in allPrefixes:
@@ -130,16 +132,14 @@ def isIsStuck(state: GameState, x: int, y: int) -> bool:
  */"""
 def suffixIsStuck(state: GameState, x: int, y: int) -> bool:
     # Check, if a suffix might be usable by a connected 'IS':
-    # TODO: Suggestion: Is there a reason, we itterate throu all words for this?
+    # TODO: Is there a reason, we itterate throu all words for this?
     #       Can't we just check the corresponding positions?
     for is_connector in state.is_connectors:
-        # TODO: first condition in original code (ll. 236) should never be true
-        #   (I omitted it, since I think it's an accidental copy)
         if is_connector.x == x - 1 and is_connector.y == y:
-            # TODO: Suggestion: Couldn't we return, whether the 'IS' is stuck?
+            # TODO: Couldn't we return, whether the 'IS' is stuck?
             return False
         if is_connector.x == x and is_connector.y == y - 1:
-            # TODO: Suggestion: Couldn't we return, whether the 'IS' is stuck?
+            # TODO: Couldn't we return, whether the 'IS' is stuck?
             return False
     # If a suffix is stuck in the upper left corner, it can't be connected into a rule
     return (
@@ -167,9 +167,14 @@ def isDirectionBlocked(state: GameState, x: int, y: int, direction: Direction) -
             #       Shouldn't we check that first?!?!
             return False
         obj_map_obj: Union[GameObj, str] = state.obj_map[y][x]
+        if obj_map_obj is not GameObj:
+            if obj_map_obj == ' ':
+                return False
+            else:
+                return True # TODO: Could this be something else?
         if obj_map_obj.is_stopped:
             return True
-        # TODO: Does '.type === "word"'(js) include '.object_type == Keyword'?????
+        # TODO: Does '.type === "word"'(js) include '.object_type == Keyword'????? - Yes
         if obj_map_obj.object_type not in [GameObjectType.Word, GameObjectType.Keyword]:
             return False
 
@@ -226,7 +231,7 @@ def minimizeSinkables(state: GameState) -> float:
 def minimizeStopables(state: GameState) -> float:
     count: int = 0
     for obj in state.phys:
-        if obj.is_stoped:
+        if obj.is_stopped:
             count += 1
     return count
 
@@ -254,6 +259,7 @@ def maximizeDifferentRules(state: GameState) -> float:
     #TODO: shal this function actualy use a global variable?
     #       I assumed, 'allrules' should be empty every time, in the following code
     # TODO: Is this code the intended behavior?
+    #       - No: compare to parent node!!!
     return len(set(state.rules))
 
 
@@ -292,7 +298,7 @@ def avgDistance(group1: List[GameObj], group2: List[GameObj]) -> Union[float, No
  * @return {number} The distance from Object a to Object b.
  */"""
 def dist(a: GameObj, b: GameObj) -> float:
-    #TODO: Code and documentation do not match!?!?!?!
+    #TODO: Change documentation to manhatan dist
     return abs(a.x - b.x) + abs(a.y - b.y)
 
 
@@ -338,7 +344,6 @@ def parseRoomForConnectivityFeature(state: GameState) -> List[List[str]]:
  * @return {object[]} All objects, that are currently hot.
  */"""
 def findHotMelt(state: GameState) -> List[GameObj]:
-    # TODO: clarify functionality of js code (shouldn't line 826 be about temp2, if not, shouldn't the function always return []?)
 
     hots: List[str] = []
     for rule in state.rules:
@@ -392,6 +397,7 @@ def mark_all_connected(map: List[List[str]], x: int, y: int, size_x: int, size_y
 
 
 # TODO: the naming 'maximize'/'minimize' is inconsistent with the -/+ factor!!!
+#       -> rename: don't assume min-/maximization
 
 heuristics: List[Callable[[GameState], float]] = [
 
@@ -407,10 +413,10 @@ heuristics: List[Callable[[GameState], float]] = [
     minimizeStopables,
     distanceToKillables,
 
-    #TODO: distanceHeuristic
+    #TODO: distanceHeuristic TODO: split into multiple
     maximizeDifferentRules,
 
-    #TODO: minimizeDistanceToIsIfOnlyOneWinExists
+    #TODO: minimizeDistanceToIsIfOnlyOneWinExists (wird evtl. später weggelassen)
     #TODO: goalPath
 
 ]

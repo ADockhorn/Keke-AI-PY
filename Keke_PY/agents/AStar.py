@@ -1,5 +1,7 @@
 import heapq
 from typing import Callable, List
+
+from Keke_PY.agents.heuristics import weightedHeuristicSum, heuristics
 from Keke_PY.baba import GameState, Direction, check_win, advance_game_state
 from ai_interface import AIInterface
 from tqdm import trange
@@ -82,6 +84,13 @@ def simple_heuristic(game_state: GameState) -> float:
     # Calculate Manhattan distance from each player to the closest winnable object
     return min([min(abs(player.x - winnable.x) + abs(player.y - winnable.y) for winnable in game_state.winnables) for player in game_state.players])
 
+
+def test_heuristics(game_state: GameState) -> float:
+    return weightedHeuristicSum(
+        game_state,
+        [0 for _ in range(len(heuristics))],
+        -1
+    )
 
 if __name__ == '__main__':
     from Keke_PY.simulation import load_level_set, parse_map, map_to_string, make_level

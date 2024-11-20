@@ -219,6 +219,8 @@ class GameState:
 
 
 def advance_game_state(action: Direction, state: GameState):
+
+    # TODO: Copy and give reference to child
     moved_objects = []
 
     if action != "space":

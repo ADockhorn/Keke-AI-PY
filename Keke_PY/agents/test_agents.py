@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from Keke_PY.agents.AStar import AStar, simple_heuristic
+from Keke_PY.agents.AStar import AStar, simple_heuristic, test_heuristics
 from Keke_PY.simulation import load_level_set, parse_map, make_level
 from BFS import BFS
 from DFS import DFS
@@ -29,3 +29,7 @@ if __name__ == "__main__":
     a_star_agent = AStar(simple_heuristic)
     solution_a_star = a_star_agent.search(game_state, max_forward_model_calls, max_depth)
     print(f"A* Solution: {solution_a_star}")
+
+    heuristics_test_agent = AStar(test_heuristics)
+    solution_heuristics_test = heuristics_test_agent.search(game_state, max_forward_model_calls, max_depth)
+    print(f"Heuristic Test Solution: {solution_heuristics_test}")
