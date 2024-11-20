@@ -75,6 +75,10 @@ def play_game(initial_game_state: GameState):
                 if action is not None:
                     result = advance_game_state(action, game_state)
                     game_state = result
+                    for back in game_state.back_map:
+                        print(back)
+                    for obj in game_state.obj_map:
+                        print(obj)
                     running = not game_state.lazy_evaluation_properties["win"]
                     pass
 

@@ -89,35 +89,27 @@ def outOfPlan(state: GameState) -> float:
  * @return {boolean} Whether the IS-word is stuck and useless.
  */"""
 def isIsStuck(state: GameState, x: int, y: int) -> bool:
-    # TODO: Instead of counting an 'IS' as usable, if it is connected to a *-fix,
-    #       we could count the direction of the *-fix as unblocked
-    # TODO: Is there a reason, we itterate throu all words for this?
-    #       Can't we just check the corresponding positions?
-    for word in state.words:
-        if word.name in allPrefixes:
-            if word.x == x - 1 and word.y == y:
-                return False
-            if word.x == x and word.y == y - 1:
-                return False
-        if word.name in allSuffixes:
-            if word.x == x + 1 and word.y == y:
-                return False
-            if word.x == x and word.y == y + 1:
-                return False
+    # a 'IS' is counted as not stuck, if it is free in one axis (= not stuck in a corner)
+    # if one direction is blocked by a word, that could create a rule with the 'IS',
+    #       the direction is counted as free, since the 'IS' can still be used,
+    #       if the opposite direction is free.
 
-    
-    blockedDirs = [
-        isDirectionBlocked(state, x, y, Direction.Left),
-        isDirectionBlocked(state, x, y, Direction.Up),
-        isDirectionBlocked(state, x, y, Direction.Right),
-        isDirectionBlocked(state, x, y, Direction.Down),
-    ]
-
-    for i in range(4):
-        if blockedDirs[i] and blockedDirs[(i + 1) % 4]:
+    def is_direction_free(direction: Direction) -> bool:
+        dx, dy = direction.dx(), direction.dy()
+        fix = None
+        if dx + dy == -1:
+            fix = allPrefixes
+        if dx + dy == 1:
+            fix = allSuffixes
+        if state.back_map[y + dy][x + dx].name in fix:
             return True
-    return False
+        return isDirectionBlocked(state, x, y, direction)
 
+    if is_direction_free(Direction.Right) and is_direction_free(Direction.Left):
+        return False
+    if is_direction_free(Direction.Up) and is_direction_free(Direction.Down):
+        return False
+    return True
 
 
 
@@ -149,12 +141,7 @@ def suffixIsStuck(state: GameState, x: int, y: int) -> bool:
 
 def isDirectionBlocked(state: GameState, x: int, y: int, direction: Direction) -> bool:
     # TODO: document this function
-    dx, dy = {
-        Direction.Up: [0, -1],
-        Direction.Left: [-1, 0],
-        Direction.Down: [0, 1],
-        Direction.Right: [1, 0],
-    }[direction]
+    dx, dy = direction.dx(), direction.dy()
 
     while True:
         x += dx

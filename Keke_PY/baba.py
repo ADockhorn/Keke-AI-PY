@@ -107,6 +107,21 @@ class Direction(Enum):
         else:
             return Direction.Undefined
 
+    def dx(self) -> int:
+        if self == Direction.Left:
+            return -1
+        if self == Direction.Right:
+            return 1
+        else:
+            return 0
+    def dy(self) -> int:
+        if self == Direction.Up:
+            return -1
+        if self == Direction.Down:
+            return 1
+        else:
+            return 0
+
 
 class GameObjectType(Enum):
     Physical = 1
