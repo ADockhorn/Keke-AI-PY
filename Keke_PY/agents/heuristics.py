@@ -299,19 +299,19 @@ def distanceToKillables(state: GameState) -> float:
 def distance_to_winnables(state: GameState) -> float:
     avg = avgDistance(state.players, state.winnables)
     if avg is None:
-        return 100.0 # TODO@ask: What if there is no distance??
+        return len(state.back_map) + len(state.back_map[0]) # TODO@ask: What if there is no distance??
     return avg
 #distanceHeuristic 2: players to words (TODO@ask: js-comment says to only include certain words?!?!?)
 def distance_to_words(state: GameState) -> float:
     avg = avgDistance(state.players, state.words)
     if avg is None:
-        return 100.0 # TODO@ask: What if there is no distance??
+        return len(state.back_map) + len(state.back_map[0]) # TODO@ask: What if there is no distance??
     return avg
 #distanceHeuristic 1: players to winnables
 def distance_to_pushables(state: GameState) -> float:
     avg = avgDistance(state.players, state.pushables)
     if avg is None:
-        return 100.0 # TODO@ask: What if there is no distance??
+        return len(state.back_map) + len(state.back_map[0]) # TODO@ask: What if there is no distance??
     return avg
 
 """/**
