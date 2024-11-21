@@ -362,6 +362,29 @@ def minimizeDistanceToIsIfOnlyOneWinExists(state: GameState) -> float:
     return distance_to_win
 
 
+"""/**
+ * Checks if there is a path from any player object to any winning object.
+ *
+ * @param {object} state The current gamestate.
+ * @param {number} weight The weight of this heuristic being multiplied.
+ * @return {number} The weight multiplied with -1 if there is a path to goal. Otherwise returns 0.
+ */"""
+def goalPath(state: GameState) -> float:
+    reachable_map: List[List[str]] = parseRoomForConnectivityFeature(state)
+    marks, tests = state.winnables, state.players
+    if len(state.players) < len(state.winnables):
+        marks, tests = state.players, state.winnables
+    for mark in marks:
+        mark_all_connected(
+            reachable_map,
+            mark.x, mark.y,
+            len(reachable_map), len(reachable_map[0])
+        )
+    for test in tests:
+        if reachable_map[test.y][test.x] == '1':
+            return 1.0
+    return 0.0
+
 
 
 """/**
@@ -519,7 +542,7 @@ heuristics: List[Callable[[GameState], float]] = [
     maximizeDifferentRules,
 
     minimizeDistanceToIsIfOnlyOneWinExists, # TODO: this heuristic will be creatable. delete?
-    #TODO: goalPath
+    goalPath
 
 ]
 
