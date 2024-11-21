@@ -328,6 +328,39 @@ def maximizeDifferentRules(state: GameState) -> float:
     #       - No: compare to parent node!!!
     return len(set(state.rules))
 
+"""/**
+ * ONLY is used on levels when there is only one WIN-word on the map. 
+ * Calculates the average distance of the player objects to the only win-word,
+ * and multiplies it with a weight. Is supposed to incentives the agent to move close
+ * to this word.
+ *
+ * @param {object} state The current gamestate.
+ * @param {number} weight The weight of this heuristic being multiplied.
+ * @return {number} The weight multiplied with the average distance to the only win-word.
+ */"""
+def minimizeDistanceToIsIfOnlyOneWinExists(state: GameState) -> float:
+    # TODO@ask: js-implementation uses 'WIN'-Objects from the beginning
+    #           this very wierd?!? I assumed, this is unintentional, and recalculated it every time
+    single_win: Optional[GameObj] = None
+    for word in state.words:
+        if word.name == "win":
+            if single_win is None:
+                single_win = word
+            else:
+                single_win = None
+                break
+    distance_to_win: Optional[float] = None
+    if single_win is not None:
+        # TODO@ask: js-comment and paper talke about distance of players and 'WIN'
+        #           while function-name and implementation use 'IS' and 'WIN'
+        #       What shal I use? (in the code below, I assumed the paper is right)
+        distance_to_win = avgDistance(state.players, [single_win])
+    if distance_to_win is None:
+        # TODO@ask: is the following default ok?
+        #           should the return be different, if there is no player vs. not (exactly) one 'WIN'?
+        return len(state.back_map) + len(state.back_map[0])
+    return distance_to_win
+
 
 
 
@@ -485,7 +518,7 @@ heuristics: List[Callable[[GameState], float]] = [
 
     maximizeDifferentRules,
 
-    #TODO: minimizeDistanceToIsIfOnlyOneWinExists (wird evtl. später weggelassen)
+    minimizeDistanceToIsIfOnlyOneWinExists, # TODO: this heuristic will be creatable. delete?
     #TODO: goalPath
 
 ]
