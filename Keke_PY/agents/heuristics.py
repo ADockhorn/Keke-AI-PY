@@ -1,5 +1,5 @@
 import math
-from typing import List, Callable, Union
+from typing import List, Callable, Union, Optional
 
 from Keke_PY.baba import GameState, parse_map, double_map_to_string, GameObj, Direction, GameObjectType
 
@@ -163,7 +163,8 @@ def is_free_or_usable(state: GameState, x: int, y: int, usable_names: List[str])
     if is_field_empty(state, x, y):
         return True
     connected_field = state.back_map[y][x]
-    return connected_field is GameObj and connected_field.name in usable_names
+    return connected_field.__class__ == GameObj and connected_field.name in usable_names
+
 def is_field_empty(state: GameState, x: int, y: int) -> bool:
     # TODO: document this function
     return (
@@ -185,27 +186,30 @@ def is_direction_blocked(state: GameState, x: int, y: int, direction: Direction)
     # TODO: document this function
     dx, dy = direction.dx(), direction.dy()
 
+    def is_blocking(obj: Union[GameObj, str]) -> Optional[bool]:
+        if obj.__class__ == GameObj:
+            if obj.is_stopped:
+                return True
+            if obj.object_type in [GameObjectType.Word, GameObjectType.Keyword]:
+                return None
+            return False # TODO@ask: The object might be pushable?!?!? -> None
+        else:
+            if obj == '_':
+                return True
+            if obj == ' ':
+                return False
+            assert False, f"the value '{obj}' is unknown to this code" # There should be no other string values
+
     while True:
         x += dx
         y += dy
-        back_map_obj: Union[GameObj, str] = state.back_map[y][x]
-        if back_map_obj == '_':
+        is_back_map_blocked: Optional[bool] = is_blocking(state.back_map[y][x])
+        if is_back_map_blocked:
             return True
-        if back_map_obj == ' ':
-            # TODO: What if there is a stoped object in the obj_map?!?!
-            #       Shouldn't we check that first?!?!
-            return False
-        obj_map_obj: Union[GameObj, str] = state.obj_map[y][x]
-        if obj_map_obj is not GameObj:
-            if obj_map_obj == ' ':
-                return False
-            else:
-                return True # TODO: Could this be something else?
-        if obj_map_obj.is_stopped:
-            return True
-        # TODO: Does '.type === "word"'(js) include '.object_type == Keyword'????? - Yes
-        if obj_map_obj.object_type not in [GameObjectType.Word, GameObjectType.Keyword]:
-            return False
+        is_obj_map_blocked: Optional[bool] = is_blocking(state.back_map[y][x])
+        if is_obj_map_blocked is not None:
+            return is_obj_map_blocked
+
 
 
 """/**

@@ -88,5 +88,5 @@ def play_game(initial_game_state: GameState):
 if __name__ == '__main__':
     from simulation import load_level_set
     level_set = load_level_set("json_levels/demo_LEVELS.json")
-    demo_level_1 = level_set["levels"][0]
+    demo_level_1 = level_set["levels"][int(input("Level Nr.:"))]
     play_level(demo_level_1["ascii"])
