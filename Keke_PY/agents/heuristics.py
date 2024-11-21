@@ -99,27 +99,21 @@ def isIsStuck(state: GameState, x: int, y: int) -> bool:
     #       _wib    i: 'IS'
     #       _____   b: boulder
     #    New Suggestion (the code below):
-    #       checks whether the 'IS' can be directly moved or directly completable (independently)
-    #       direct moving means without shifting any blocking object sideways out of the way
-    #       direct completing means by only adding rule parts
-    #       (checking indirect movability/completibility would be to resource intensive)
+    #       checks whether the word can be instantly moved or instantly completed (independently)
+    #       instant moving means by one push / without shifting any blocking object sideways out of the way
+    #       instant completing means by only adding rule parts on empty fields
+    #       (checking not instant movability/completibility would be to resource intensive)
     #           (compared to the js implementation, this only additionally checks,
     #               whether the incomplete side of a rule is free)
-    def is_free_or_usable(direction: Direction, usable_names: List[str]) -> bool:
-        dx, dy = direction.dx(), direction.dy()
-        if is_field_empty(state, x + dx, y + dy):
-            return True
-        connected_field = state.back_map[y + dy][x + dx]
-        return connected_field is GameObj and connected_field.name in usable_names
 
     if (
-        is_free_or_usable(Direction.Up, allPrefixes) and
-        is_free_or_usable(Direction.Down, allSuffixes)
+        is_free_or_usable(state, x, y - 1, allPrefixes) and
+        is_free_or_usable(state, x, y + 1, allSuffixes)
     ):
         return False
     if (
-        is_free_or_usable(Direction.Left, allPrefixes) and
-        is_free_or_usable(Direction.Right, allSuffixes)
+        is_free_or_usable(state, x - 1, y, allPrefixes) and
+        is_free_or_usable(state, x + 1, y, allSuffixes)
     ):
         return False
 
@@ -137,23 +131,41 @@ def isIsStuck(state: GameState, x: int, y: int) -> bool:
  * @return {boolean} Whether the Suffix is stuck and useless.
  */"""
 def suffixIsStuck(state: GameState, x: int, y: int) -> bool:
-    # Check, if a suffix might be usable by a connected 'IS':
-    # TODO: Is there a reason, we itterate throu all words for this?
-    #       Can't we just check the corresponding positions?
-    for is_connector in state.is_connectors:
-        if is_connector.x == x - 1 and is_connector.y == y:
-            # TODO: Couldn't we return, whether the 'IS' is stuck?
-            return False
-        if is_connector.x == x and is_connector.y == y - 1:
-            # TODO: Couldn't we return, whether the 'IS' is stuck?
-            return False
-    # If a suffix is stuck in the upper left corner, it can't be connected into a rule
-    return (
-            is_direction_blocked(state, x, y, Direction.Left) and
-            is_direction_blocked(state, x, y, Direction.Up)
-    )
+    # TODO@ask: New Suggestion (the code below):
+    #       checks whether the word can be instantly moved or instantly completed (independently)
+    #       instant moving means by one push / without shifting any blocking object sideways out of the way
+    #       instant completing means by only adding rule parts on empty fields
+    #       (checking not instant movability/completibility would be to resource intensive)
+    #           (compared to the js implementation, this should cover more cases of stuckness:
+    #               . . x .       . can be anything; _ is stopped in some way;
+    #               . . . .       x is anything but a prefix; the y is anything but 'IS';
+    #               . y s _       the suffix s is now considered stuck, since it can't be instantly moved or completed;
+    #               . . b .       the boulder b (or x) might be moved to free s, but this (and the previous) implementation
+    #               . . _ .            do not consider these (not instant) movements / completions;
+    #           )
 
+    if (
+        is_free_or_usable(state, x - 2, y, allPrefixes) and
+        is_free_or_usable(state, x - 1, y, 'is')
+    ):
+        return False
+    if (
+        is_free_or_usable(state, x, y - 2, allPrefixes) and
+        is_free_or_usable(state, x, y - 1, 'is')
+    ):
+        return False
+
+    return not is_movable_in_any_axis(state, x, y)
+
+
+def is_free_or_usable(state: GameState, x: int, y: int, usable_names: List[str]) -> bool:
+    #TODO: document this function
+    if is_field_empty(state, x, y):
+        return True
+    connected_field = state.back_map[y][x]
+    return connected_field is GameObj and connected_field.name in usable_names
 def is_field_empty(state: GameState, x: int, y: int) -> bool:
+    # TODO: document this function
     return (
         state.back_map[y][x] == ' ' and
         state.obj_map[y][x] == ' '
