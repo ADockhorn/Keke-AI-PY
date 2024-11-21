@@ -281,6 +281,39 @@ def distanceToKillables(state: GameState) -> float:
     return avgDistance(state.players, state.killers) or 0.0
 
 
+
+# distanceHeuristics: TODO: document distance_to_*-functions
+"""/**
+ * Calculates the average distance between the player objects and the following three groups:
+ * 1. winnable objects.
+ * 2. words that are not permanently locked at a position from the start.
+ * 3. pushable objects.
+ * And then adds theese distances up and returns them multiplied by a weight.
+ * The 3 categories have different weights too.
+ *
+ * @param {object} state The current gamestate.
+ * @param {number} weight The weight of this heuristic being multiplied.
+ * @return {number} Average distances multiplied by a weight.
+ */"""
+#distanceHeuristic 1: players to winnables
+def distance_to_winnables(state: GameState) -> float:
+    avg = avgDistance(state.players, state.winnables)
+    if avg is None:
+        return 100.0 # TODO@ask: What if there is no distance??
+    return avg
+#distanceHeuristic 2: players to words (TODO@ask: js-comment says to only include certain words?!?!?)
+def distance_to_words(state: GameState) -> float:
+    avg = avgDistance(state.players, state.words)
+    if avg is None:
+        return 100.0 # TODO@ask: What if there is no distance??
+    return avg
+#distanceHeuristic 1: players to winnables
+def distance_to_pushables(state: GameState) -> float:
+    avg = avgDistance(state.players, state.pushables)
+    if avg is None:
+        return 100.0 # TODO@ask: What if there is no distance??
+    return avg
+
 """/**
  * Tracks the amount of unique rules that where created during a level.
  *
@@ -289,7 +322,7 @@ def distanceToKillables(state: GameState) -> float:
  * @return {number} The weight multiplied with the amount of unique rules.
  */"""
 def maximizeDifferentRules(state: GameState) -> float:
-    #TODO: shal this function actualy use a global variable?
+    #TODO: shal this function actualy use a global variable? - No: store parent
     #       I assumed, 'allrules' should be empty every time, in the following code
     # TODO: Is this code the intended behavior?
     #       - No: compare to parent node!!!
@@ -446,7 +479,10 @@ heuristics: List[Callable[[GameState], float]] = [
     minimizeStopables,
     distanceToKillables,
 
-    #TODO: distanceHeuristic TODO: split into multiple
+    distance_to_winnables,
+    distance_to_words,
+    distance_to_pushables,
+
     maximizeDifferentRules,
 
     #TODO: minimizeDistanceToIsIfOnlyOneWinExists (wird evtl. später weggelassen)
