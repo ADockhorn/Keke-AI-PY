@@ -163,7 +163,11 @@ def is_free_or_usable(state: GameState, x: int, y: int, usable_names: List[str])
     if is_field_empty(state, x, y):
         return True
     connected_field = state.back_map[y][x]
-    return connected_field.__class__ == GameObj and connected_field.name in usable_names
+    return (
+        connected_field.__class__ == GameObj and
+        connected_field.object_type in [GameObjectType.Word, GameObjectType.Keyword] and
+        connected_field.name in usable_names
+    )
 
 def is_field_empty(state: GameState, x: int, y: int) -> bool:
     # TODO: document this function
