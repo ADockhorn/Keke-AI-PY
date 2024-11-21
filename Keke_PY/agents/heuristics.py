@@ -18,7 +18,11 @@ allSuffixes = ["stop", "sink", "push", "you", "kill", "hot", "move", "melt", "yo
  * @return {number} The weight multiplied with the negative number of goals.
  */"""
 def nbrOfGoals(state: GameState) -> float:
-    return -math.log(len(state.winnables), math.e)
+    # TODO: description doesn't include the logarithm:
+    if len(state.winnables) != 0:
+        return -math.log(len(state.winnables), math.e)
+    else:
+        return math.inf # TODO!: is this intended behavior? (the js code works like this)
 
 """/**
  * Returns negative number of players on current map multiplied by a weight.
@@ -89,8 +93,8 @@ def outOfPlan(state: GameState) -> float:
  * @return {boolean} Whether the IS-word is stuck and useless.
  */"""
 def isIsStuck(state: GameState, x: int, y: int) -> bool:
-    # a 'IS' is counted as not stuck, if it is free in one axis (= not stuck in a corner)
-    # if one direction is blocked by a word, that could create a rule with the 'IS',
+    # An 'IS' is counted as not stuck, if it is free in one axis (= not stuck in a corner)
+    # If one direction is blocked by a word, that could create a rule with the 'IS',
     #       the direction is counted as free, since the 'IS' can still be used,
     #       if the opposite direction is free.
 
@@ -101,7 +105,8 @@ def isIsStuck(state: GameState, x: int, y: int) -> bool:
             fix = allPrefixes
         if dx + dy == 1:
             fix = allSuffixes
-        if state.back_map[y + dy][x + dx].name in fix:
+        connected_field = state.back_map[y + dy][x + dx]
+        if connected_field is GameObj and connected_field.name in fix:
             return True
         return isDirectionBlocked(state, x, y, direction)
 
