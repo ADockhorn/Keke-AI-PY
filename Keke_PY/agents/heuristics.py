@@ -146,12 +146,12 @@ def suffixIsStuck(state: GameState, x: int, y: int) -> bool:
 
     if (
         is_free_or_usable(state, x - 2, y, allPrefixes) and
-        is_free_or_usable(state, x - 1, y, 'is')
+        is_free_or_usable(state, x - 1, y, ['is'])
     ):
         return False
     if (
         is_free_or_usable(state, x, y - 2, allPrefixes) and
-        is_free_or_usable(state, x, y - 1, 'is')
+        is_free_or_usable(state, x, y - 1, ['is'])
     ):
         return False
 
