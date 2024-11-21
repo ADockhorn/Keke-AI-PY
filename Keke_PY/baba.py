@@ -914,6 +914,7 @@ def set_overlaps(game_state: GameState):
         if not p.is_movable and not p.is_stopped:
             overlaps.append(p)
             if om[p.y][p.x] == p:
+                # TODO@ask: maybe just switch om and ob
                 om[p.y][p.x] = ' '
                 bm[p.y][p.x] = p
         else:
