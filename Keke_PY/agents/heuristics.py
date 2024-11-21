@@ -18,11 +18,11 @@ allSuffixes = ["stop", "sink", "push", "you", "kill", "hot", "move", "melt", "yo
  * @return {number} The weight multiplied with the negative number of goals.
  */"""
 def nbrOfGoals(state: GameState) -> float:
-    # TODO: description doesn't include the logarithm:
+    # TODO@ask: description doesn't include the logarithm:
     if len(state.winnables) != 0:
         return -math.log(len(state.winnables), math.e)
     else:
-        return math.inf # TODO!: is this intended behavior? (the js code works like this)
+        return math.inf # TODO@ask!: is this intended behavior? (the js code works like this)
 
 """/**
  * Returns negative number of players on current map multiplied by a weight.
@@ -67,19 +67,16 @@ def outOfPlan(state: GameState) -> float:
         if word.name in important_SuffixWords:
             checking_these_words.append(word)
 
-    def isInRule(word: GameObj) -> bool:
-        for used_word in state.rule_objs:
-            if used_word.x == word.x and used_word.y == word.y:
-                return True
-        return False
-
     counter: int = 0
     for word in checking_these_words:
-        if not isInRule(word) and suffixIsStuck(state, word.x, word.y):
+        # checking, if the suffix is in a rule is not needed, since suffixIsStuck() does that implicitly
+        if suffixIsStuck(state, word.x, word.y):
             counter += 1
     for word in state.is_connectors:
-        if not isInRule(word) and isIsStuck(state, word.x, word.y):
+        # checking, if the 'IS' is in a rule is not needed, since isIsStuck() does that implicitly
+        if isIsStuck(state, word.x, word.y):
             counter += 1
+    # TODO@ask: wouldn't is be nice to also check for stuck pre-fixes? Or are they less valuable?
     return counter
 
 
@@ -97,24 +94,36 @@ def isIsStuck(state: GameState, x: int, y: int) -> bool:
     # If one direction is blocked by a word, that could create a rule with the 'IS',
     #       the direction is counted as free, since the 'IS' can still be used,
     #       if the opposite direction is free.
-
-    def is_direction_free(direction: Direction) -> bool:
+    # TODO@ask: above definition would have considered the following as free:
+    #       _____   w: prefix
+    #       _wib    i: 'IS'
+    #       _____   b: boulder
+    #    New Suggestion (the code below):
+    #       checks whether the 'IS' can be directly moved or directly completable (independently)
+    #       direct moving means without shifting any blocking object sideways out of the way
+    #       direct completing means by only adding rule parts
+    #       (checking indirect movability/completibility would be to resource intensive)
+    #           (compared to the js implementation, this only additionally checks,
+    #               whether the incomplete side of a rule is free)
+    def is_free_or_usable(direction: Direction, usable_names: List[str]) -> bool:
         dx, dy = direction.dx(), direction.dy()
-        fix = None
-        if dx + dy == -1:
-            fix = allPrefixes
-        if dx + dy == 1:
-            fix = allSuffixes
-        connected_field = state.back_map[y + dy][x + dx]
-        if connected_field is GameObj and connected_field.name in fix:
+        if is_field_empty(state, x + dx, y + dy):
             return True
-        return isDirectionBlocked(state, x, y, direction)
+        connected_field = state.back_map[y + dy][x + dx]
+        return connected_field is GameObj and connected_field.name in usable_names
 
-    if is_direction_free(Direction.Right) and is_direction_free(Direction.Left):
+    if (
+        is_free_or_usable(Direction.Up, allPrefixes) and
+        is_free_or_usable(Direction.Down, allSuffixes)
+    ):
         return False
-    if is_direction_free(Direction.Up) and is_direction_free(Direction.Down):
+    if (
+        is_free_or_usable(Direction.Left, allPrefixes) and
+        is_free_or_usable(Direction.Right, allSuffixes)
+    ):
         return False
-    return True
+
+    return not is_movable_in_any_axis(state, x, y)
 
 
 
@@ -140,11 +149,27 @@ def suffixIsStuck(state: GameState, x: int, y: int) -> bool:
             return False
     # If a suffix is stuck in the upper left corner, it can't be connected into a rule
     return (
-        isDirectionBlocked(state, x, y, Direction.Left) and
-        isDirectionBlocked(state, x, y, Direction.Up)
+            is_direction_blocked(state, x, y, Direction.Left) and
+            is_direction_blocked(state, x, y, Direction.Up)
     )
 
-def isDirectionBlocked(state: GameState, x: int, y: int, direction: Direction) -> bool:
+def is_field_empty(state: GameState, x: int, y: int) -> bool:
+    return (
+        state.back_map[y][x] == ' ' and
+        state.obj_map[y][x] == ' '
+    )
+
+def is_movable_in_any_axis(state: GameState, x: int, y: int) -> bool:
+    # TODO: document this function
+    return not (
+        is_direction_blocked(state, x, y, Direction.Up) or
+        is_direction_blocked(state, x, y, Direction.Down)
+    ) or not (
+        is_direction_blocked(state, x, y, Direction.Left) or
+        is_direction_blocked(state, x, y, Direction.Right)
+    )
+
+def is_direction_blocked(state: GameState, x: int, y: int, direction: Direction) -> bool:
     # TODO: document this function
     dx, dy = direction.dx(), direction.dy()
 
