@@ -48,7 +48,7 @@ class AStar(AIInterface):
                 return actions, i
 
             # Serialize the state to check for duplicates
-            state_str = str(current_state)
+            state_str = current_state.unique_str()
             if state_str in visited:
                 continue
             visited.add(state_str)
@@ -56,7 +56,7 @@ class AStar(AIInterface):
             # Expand the node: explore all possible actions
             for action in [Direction.Up, Direction.Down, Direction.Left, Direction.Right, Direction.Wait]:
                 next_state = advance_game_state(action, current_state.copy())
-                if str(next_state) not in visited:
+                if next_state.unique_str() not in visited:
                     # g(next) is the cost so far plus 1 (since each move costs 1)
                     new_g = g + 1
                     # f(next) = g(next) + h(next)

@@ -232,6 +232,37 @@ class GameState:
     def __str__(self):
         return double_map_to_string(self.obj_map, self.back_map)
 
+    # TODO@ask: I can never guarantee, this string is unique, without ALWAYS checking EVERYTHING in here. :(
+    # TODO@ask: For this to work, "TODO@ask: maybe just switch om and ob" (ll. 927) needs to be fixed.
+    # TODO@ask: For this to work, "move_obj_merge" might be changed to either be the same as "move_obj", or delete the Game-Object entirely.
+    def unique_str(self) -> str:
+
+        def unique_obj_str(obj: Union[GameObj, str]) -> str:
+            if obj.__class__ == str:
+                return obj
+            if obj.__class__ == GameObj:
+                return name_to_character[obj.name + (
+                    "_word" if is_word(obj) or is_key_word(obj)
+                    else "_obj"
+                )] + str(obj.dir.value)
+
+        def unique_position_str(i: int, j: int) -> str:
+            back = self.back_map[i][j]
+            obj = self.obj_map[i][j]
+            if back == " " and obj == " ":
+                return "."
+            else:
+                return unique_obj_str(back) + unique_obj_str(obj)
+
+        return ''.join([
+            '\n' if j == -1
+                else unique_position_str(i, j)
+        for i in range(len(self.obj_map))
+            for j in range(-1, len(self.obj_map[0]))
+        ])
+
+
+
 
 def advance_game_state(action: Direction, state: GameState):
 
@@ -523,7 +554,7 @@ def double_map_to_string(object_map: List[List[Union[str, GameObj]]], background
             elif game_object == " " and background == " ":
                 map_string += "."
             elif game_object == " ":
-                map_string += name_to_character[background.name + ("_word" if is_word(background) or is_key_word(game_object) else "_obj")]
+                map_string += name_to_character[background.name + ("_word" if is_word(background) or is_key_word(background) else "_obj")] # TODO@ask: check this line change
             else:
                 map_string += name_to_character[game_object.name + ("_word" if is_word(game_object) or is_key_word(game_object) else "_obj")]
         map_string += "\n"

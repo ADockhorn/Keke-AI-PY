@@ -31,7 +31,7 @@ class DFS(AIInterface):
                 return actions, i
 
             # Mark this state as visited
-            state_str = str(current_state)  # Serialize the state to check for duplicates
+            state_str = current_state.unique_str()  # Serialize the state to check for duplicates
             if state_str in visited:
                 continue
             visited.add(state_str)
@@ -40,7 +40,7 @@ class DFS(AIInterface):
             if len(actions) < max_depth:
                 for action in [Direction.Up, Direction.Down, Direction.Left, Direction.Right, Direction.Wait]:
                     next_state = advance_game_state(action, current_state.copy())
-                    if str(next_state) not in visited:
+                    if next_state.unique_str() not in visited:
                         stack.append((next_state, actions + [action.name]))
 
         return [], max_forward_model_calls  # Return empty if no solution is found
