@@ -326,11 +326,11 @@ def distance_to_pushables(state: GameState) -> float:
  * @return {number} The weight multiplied with the amount of unique rules.
  */"""
 def maximizeDifferentRules(state: GameState) -> float:
-    #TODO: shal this function actualy use a global variable? - No: store parent
-    #       I assumed, 'allrules' should be empty every time, in the following code
-    # TODO: Is this code the intended behavior?
-    #       - No: compare to parent node!!!
-    return len(set(state.rules))
+    # TODO@ask: is this the intended implementation?
+    #           it feels kinda odd, since it depends on more than the current state.
+    #           the same state might now be valued differently :(
+    #       I have no clue on how to implement this heuristic, without the above effect :(
+    return len(state.all_seen_rules)
 
 """/**
  * ONLY is used on levels when there is only one WIN-word on the map. 

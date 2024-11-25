@@ -188,6 +188,8 @@ class GameState:
     is_connectors: List
     sort_phys: Dict
     rules: List
+    # TODO@ask: having this here isn't sound with respect to the idea of equivalent states :(
+    all_seen_rules: set
     rule_objs: List
     players: List
     auto_movers: List
@@ -212,6 +214,7 @@ class GameState:
         self.is_connectors = []
         self.sort_phys = {}
         self.rules = []
+        self.all_seen_rules = set()
         self.rule_objs = []
         self.players = []
         self.auto_movers = []
@@ -267,6 +270,7 @@ class GameState:
 def advance_game_state(action: Direction, state: GameState):
 
     # TODO: Copy and give reference to child
+    #  TODO@ask: The above TODO should not be done, if states should be able to be independent of how they are reached.
     moved_objects = []
 
     if action != "space":
@@ -743,6 +747,9 @@ def interpret_rules(game_state: GameState):
     # Reset the objects
     reset_all(game_state)
 
+    # add all new rules to all_seen_rules
+    game_state.all_seen_rules |= set(game_state.rules)
+
 
 # Check if array contains string with a substring
 def has(arr: List, ss: str):
@@ -999,6 +1006,7 @@ def killed(players, killers):
             if overlapped(player, killer):
                 dead.append([player, killer])
                 # Todo, I assume we can break here
+                # TODO@ask: is there a meaning to the comment above?
     return dead
 
 
