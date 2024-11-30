@@ -1,6 +1,8 @@
 from collections import deque
+from itertools import cycle
+
 from tqdm import trange
-from ai_interface import AIInterface
+from ai_interface import AIInterface, trange_or_infinite_loop
 from Keke_PY.baba import GameState, check_win, Direction
 from Keke_PY.simulation import advance_game_state
 from typing import List, Tuple, Union
@@ -11,7 +13,7 @@ class DFS(AIInterface):
     Depth-First Search implementation.
     """
 
-    def search(self, initial_state: GameState, max_forward_model_calls: int = 50, max_depth: int = 50) -> Tuple[Union[List[str], None], int]:
+    def search(self, initial_state: GameState, max_forward_model_calls: Union[int, None] = 50, max_depth: Union[int, None] = 50) -> Tuple[Union[List[str], None], int]:
         """
         :param initial_state: The initial state of the game.
         :param max_forward_model_calls: Maximum number of node expansions to avoid infinite loops.
@@ -21,7 +23,8 @@ class DFS(AIInterface):
         stack = [(initial_state, [])]  # (current state, action history)
         visited = set()
 
-        for i in trange(max_forward_model_calls):
+
+        for i in trange_or_infinite_loop(max_forward_model_calls):
             if not stack:
                 break
             current_state, actions = stack.pop()

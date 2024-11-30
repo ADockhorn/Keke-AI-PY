@@ -1,9 +1,10 @@
 import heapq
-from typing import Callable, List
+from itertools import cycle
+from typing import Callable, List, Iterable
 
 from Keke_PY.agents.heuristics import weightedHeuristicSum, heuristics
 from Keke_PY.baba import GameState, Direction, check_win, advance_game_state
-from ai_interface import AIInterface
+from ai_interface import AIInterface, trange_or_infinite_loop
 from tqdm import trange
 from typing import List, Tuple, Union
 
@@ -21,7 +22,7 @@ class AStar(AIInterface):
         """
         self.heuristic = heuristic
 
-    def search(self, initial_state: GameState, max_forward_model_calls: int = 50, max_depth: int = 50) -> Tuple[Union[List[str], None], int]:
+    def search(self, initial_state: GameState, max_forward_model_calls: Union[int, None] = 50, max_depth: Union[int, None] = 50) -> Tuple[Union[List[str], None], int]:
         """
         Perform the A* search algorithm.
 
@@ -37,8 +38,7 @@ class AStar(AIInterface):
         heapq.heappush(pq, (self.heuristic(initial_state), 0, index, initial_state, []))
 
         visited = set()
-
-        for i in trange(max_forward_model_calls):
+        for i in trange_or_infinite_loop(max_forward_model_calls):
             if not pq:
                 break
             f, g, _, current_state, actions = heapq.heappop(pq)
@@ -86,6 +86,10 @@ def simple_heuristic(game_state: GameState) -> float:
 
 
 def test_heuristics(game_state: GameState) -> float:
+    if len(game_state.players) == 0:
+        return float('inf')
+    if not game_state.winnables:
+        return float('inf')  # No winnable objects
     return weightedHeuristicSum(
         game_state,
         [0 for _ in range(len(heuristics))],

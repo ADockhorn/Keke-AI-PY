@@ -1,5 +1,7 @@
 from collections import deque
-from ai_interface import AIInterface
+from itertools import cycle
+
+from ai_interface import AIInterface, trange_or_infinite_loop
 from Keke_PY.baba import GameState, Direction, check_win, advance_game_state
 from typing import List, Tuple, Union
 from tqdm import trange
@@ -10,7 +12,7 @@ class BFS(AIInterface):
     Breadth-First Search implementation.
     """
 
-    def search(self, initial_state: GameState, max_forward_model_calls: int = 50, max_depth: int = 50) -> Tuple[Union[List[str], None], int]:
+    def search(self, initial_state: GameState, max_forward_model_calls: Union[int, None] = 50, max_depth: Union[int, None] = 50) -> Tuple[Union[List[str], None], int]:
         """
         :param initial_state: The initial state of the game.
         :param max_forward_model_calls: Maximum number of node expansions to avoid infinite loops.
@@ -20,7 +22,7 @@ class BFS(AIInterface):
         queue = deque([(initial_state, [])])  # (current state, action history)
         visited = set()
 
-        for i in trange(max_forward_model_calls):
+        for i in trange_or_infinite_loop(max_forward_model_calls):
             if not queue:
                 break
             current_state, actions = queue.popleft()

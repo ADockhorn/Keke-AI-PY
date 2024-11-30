@@ -1,3 +1,8 @@
+import time
+from typing import Tuple, Union, Iterable
+
+from PIL.ImageOps import solarize
+
 from Keke_PY.baba import GameState, Direction, imgHash, advance_game_state, parse_map, make_level
 from pygame.locals import *
 import pygame
@@ -38,13 +43,13 @@ def update_display(screen, game_state: GameState):
     pygame.display.flip()  # Update the display
 
 
-def play_level(ascii_map):
+def play_level(ascii_map, action_source: Iterable[Direction]) -> bool:
     game_map = parse_map(ascii_map)
     game_state = make_level(game_map)
-    play_game(game_state)
+    return play_game(game_state, action_source)
 
 
-def play_game(initial_game_state: GameState):
+def play_game(initial_game_state: GameState, action_source: Iterable[Direction]) -> bool:
     # human agent
     width, height = len(initial_game_state.orig_map[0]) * TILE_SIZE, len(initial_game_state.orig_map) * TILE_SIZE
     screen = pygame.display.set_mode((width, height))
@@ -52,47 +57,94 @@ def play_game(initial_game_state: GameState):
 
     # Main loop
     game_state = initial_game_state
-    running = True
-    while running:
+    update_display(screen, game_state)
+    for action in action_source:
+        game_state = advance_game_state(action, game_state)
+        update_display(screen, game_state)
+
+        # TODO: remove these lines:
+        if False:
+            for back in game_state.back_map:
+                print(back)
+            for obj in game_state.obj_map:
+                print(obj)
+            print(game_state.unique_str())
+
+
+
+        if game_state.lazy_evaluation_properties["win"]:
+            break
+
+
+    if "win" in game_state.lazy_evaluation_properties and game_state.lazy_evaluation_properties["win"]:
+        print("<<<SOLVED>>>")
+        return True
+    else:
+        print("!!!NOT SOLVED!!!")
+        return False
+
+
+def inputs_from_keyboard() -> Iterable[Direction]:
+    while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN:
-                action = None
+                return
+            if event.type == pygame.KEYDOWN:
                 if event.key == K_w or event.key == K_UP:
-                    action = Direction.Up
+                    yield Direction.Up
                 elif event.key == K_a or event.key == K_LEFT:
-                    action = Direction.Left
+                    yield Direction.Left
                 elif event.key == K_s or event.key == K_DOWN:
-                    action = Direction.Down
+                    yield Direction.Down
                 elif event.key == K_d or event.key == K_RIGHT:
-                    action = Direction.Right
+                    yield Direction.Right
                 elif event.key == K_SPACE:
-                    action = Direction.Wait
-                else:
-                    continue
+                    yield Direction.Wait
 
-                if action is not None:
-                    result = advance_game_state(action, game_state)
-                    game_state = result
+def yield_solution_delayed(solution: str, delay: float = 0.0) -> Iterable[Direction]:
+    start_time = time.time()
+    index = 1
+    iterator = iter(solution)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return
+        if time.time() > start_time + delay * index:
+            index += 1
+            try:
+                char = next(iterator)
+            except StopIteration:
+                return
+            if char in "Uu":
+                yield Direction.Up
+            elif char in "Ll":
+                yield Direction.Left
+            elif char in "Dd":
+                yield Direction.Down
+            elif char in "Rr":
+                yield Direction.Right
+            elif char in "Ww_ ":
+                yield Direction.Wait
+            else:
+                return
 
-                    # TODO: remove these lines:
-                    for back in game_state.back_map:
-                        print(back)
-                    for obj in game_state.obj_map:
-                        print(obj)
-                    print(game_state.unique_str())
 
-
-
-                    running = not game_state.lazy_evaluation_properties["win"]
-                    pass
-
-        update_display(screen, game_state)
+test_levels: Tuple[str, Union[range, int, None]] = "./json_levels/full_biy_LEVELS.json", None
 
 
 if __name__ == '__main__':
     from simulation import load_level_set
-    level_set = load_level_set("json_levels/demo_LEVELS.json")
-    demo_level_1 = level_set["levels"][int(input("Level Nr.:"))]
-    play_level(demo_level_1["ascii"])
+    level_set = load_level_set(test_levels[0])
+    if test_levels[1] is None:
+        test_levels = test_levels[0], range(len(level_set["levels"]))
+    if test_levels[1].__class__ == int:
+        test_levels = test_levels[0], range(test_levels[1], test_levels[1] + 1)
+    for i in test_levels[1]:
+        print(f"Currently playing Level Nr.: {i}")
+        demo_level_1 = level_set["levels"][i]
+        print(demo_level_1["solution"])
+
+
+        if not play_level(demo_level_1["ascii"], yield_solution_delayed(demo_level_1["solution"])):
+            while not play_level(demo_level_1["ascii"], inputs_from_keyboard()):
+                play_level(demo_level_1["ascii"], yield_solution_delayed(demo_level_1["solution"], 1.0))

@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Iterable
+
+from tqdm import trange
+
 from Keke_PY.baba import GameState
 
 
@@ -9,7 +12,7 @@ class AIInterface(ABC):
     """
 
     @abstractmethod
-    def search(self, initial_state: GameState, max_forward_model_calls: int = 50, max_depth: int = 50) -> Tuple[Union[List[str], None], int]:
+    def search(self, initial_state: GameState, max_forward_model_calls: Union[int, None] = 50, max_depth: Union[int, None] = 50) -> Tuple[Union[List[str], None], int]:
         """
         Method to perform search.
         :param initial_state: The initial state of the game.
@@ -18,3 +21,13 @@ class AIInterface(ABC):
         :return: List of actions that lead to a solution (if found, else None), and the number of node expansions.
         """
         pass
+
+
+def trange_or_infinite_loop(end: Union[int, None]) -> Iterable:
+
+    if end.__class__ == int:
+        return trange(end)
+
+    while True:
+        for i in trange(1000000):
+            yield i
