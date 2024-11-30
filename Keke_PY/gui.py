@@ -1,5 +1,6 @@
 import time
-from typing import Tuple, Union, Iterable
+from itertools import chain
+from typing import Tuple, Union, Iterable, List
 
 from PIL.ImageOps import solarize
 
@@ -123,28 +124,55 @@ def yield_solution_delayed(solution: str, delay: float = 0.0) -> Iterable[Direct
                 yield Direction.Down
             elif char in "Rr":
                 yield Direction.Right
-            elif char in "Ww_ ":
+            elif char in "Ss":
                 yield Direction.Wait
             else:
                 return
 
 
-test_levels: Tuple[str, Union[range, int, None]] = "./json_levels/full_biy_LEVELS.json", None
+test_levels: List[Tuple[str, Union[range, int, None, Iterable[int]]]] = [
+    (
+        "./json_levels/demo_LEVELS.json",
+        0 # [i for i in range(14) if i not in []]
+    ), (
+        "./json_levels/full_biy_LEVELS.json",
+        0 # [i for i in range(184) if i not in [9, 19, 23, 27, 32, 63, 70, 183]] # 183?!?
+    ), (
+        "./json_levels/search_biy_LEVELS.json",
+        0 # [i for i in range(62) if i not in [20, 24, 61]]
+    ), (
+        "./json_levels/test_LEVELS.json",
+        0 # [i for i in range(0, 134) if i not in [4, 13, 17, 18, 22, 46, 51, 133]]
+    ), (
+        "./json_levels/train_LEVELS.json",
+        0 # [i for i in range(50) if i not in []]
+    ), (
+        "./json_levels/user_milk_biy_LEVELS.json",
+        0 # [i for i in range(17) if i not in [5]]
+    )
+]
 
 
 if __name__ == '__main__':
     from simulation import load_level_set
-    level_set = load_level_set(test_levels[0])
-    if test_levels[1] is None:
-        test_levels = test_levels[0], range(len(level_set["levels"]))
-    if test_levels[1].__class__ == int:
-        test_levels = test_levels[0], range(test_levels[1], test_levels[1] + 1)
-    for i in test_levels[1]:
-        print(f"Currently playing Level Nr.: {i}")
-        demo_level_1 = level_set["levels"][i]
-        print(demo_level_1["solution"])
+    for file_name, level_nrs in test_levels:
+        level_set = load_level_set(file_name)
+        if level_nrs is None:
+            level_nrs = range(len(level_set["levels"]))
+        if level_nrs.__class__ == int:
+            level_nrs = range(level_nrs, level_nrs + 1)
+        for i in level_nrs:
+            print(f"Currently playing '{file_name}' Level Nr.: {i}")
+            demo_level_1 = level_set["levels"][i]
+            print(demo_level_1["solution"])
 
-
-        if not play_level(demo_level_1["ascii"], yield_solution_delayed(demo_level_1["solution"])):
-            while not play_level(demo_level_1["ascii"], inputs_from_keyboard()):
-                play_level(demo_level_1["ascii"], yield_solution_delayed(demo_level_1["solution"], 1.0))
+            if not play_level(demo_level_1["ascii"], yield_solution_delayed(demo_level_1["solution"])):
+                while not play_level(demo_level_1["ascii"], inputs_from_keyboard()):
+                    play_level(
+                        demo_level_1["ascii"],
+                        chain(
+                            yield_solution_delayed(demo_level_1["solution"], 1.0),
+                            inputs_from_keyboard()
+                        )
+                    )
+                    break
