@@ -74,12 +74,6 @@ imgHash = make_img_hash()
 features = ["hot", "melt", "open", "shut", "move"]
 featPairs = [["hot", "melt"], ["open", "shut"]]
 
-oppDir = {
-    "left":    "right",
-    "right":   "left",
-    "up":      "down",
-    "down":    "up",
-}
 
 
 class Direction(Enum):
@@ -287,7 +281,7 @@ def advance_game_state(action: Direction, state: GameState):
     return state
 
 
-def can_move(e: GameObj, action: Direction, state: GameState, moved_objs: List[GameObj]) -> bool:
+def can_move(e: Union[GameObj, str], action: Direction, state: GameState, moved_objs: List[GameObj]) -> bool:
     if e in moved_objs:
         return False
 
@@ -296,32 +290,16 @@ def can_move(e: GameObj, action: Direction, state: GameState, moved_objs: List[G
     if not e.is_movable:
         return False
 
-    o = ' '
 
-    if action == Direction.Up:
-        if e.y - 1 < 0:
-            return False
-        if state.back_map[e.y - 1][e.x] == '_':
-            return False
-        o = state.obj_map[e.y - 1][e.x]
-    elif action == Direction.Down:
-        if e.y + 1 >= len(state.back_map):
-            return False
-        if state.back_map[e.y + 1][e.x] == '_':
-            return False
-        o = state.obj_map[e.y + 1][e.x]
-    elif action == Direction.Left:
-        if e.x - 1 < 0:
-            return False
-        if state.back_map[e.y][e.x - 1] == '_':
-            return False
-        o = state.obj_map[e.y][e.x - 1]
-    elif action == Direction.Right:
-        if e.x + 1 >= len(state.back_map[0]):
-            return False
-        if state.back_map[e.y][e.x + 1] == '_':
-            return False
-        o = state.obj_map[e.y][e.x + 1]
+    if action not in [Direction.Left, Direction.Right, Direction.Up, Direction.Down]:
+        return True
+    x_, y_ = e.x + action.dx(), e.y + action.dy()
+    if not (0 <= x_ < len(state.back_map[0]) and 0 <= y_ <= len(state.back_map)):
+        return False
+    if state.back_map[y_][x_] == '_':
+        return False
+    o = state.obj_map[y_][x_]
+
 
     if o == ' ':
         return True
@@ -351,14 +329,8 @@ def can_move(e: GameObj, action: Direction, state: GameState, moved_objs: List[G
 def move_obj(o: GameObj, direction: Direction, state: GameState, moved_objs: List[GameObj]) -> bool:
     if can_move(o, direction, state, moved_objs):
         state.obj_map[o.y][o.x] = ' '
-        if direction == Direction.Up:
-            o.y -= 1
-        elif direction == Direction.Down:
-            o.y += 1
-        elif direction == Direction.Left:
-            o.x -= 1
-        elif direction == Direction.Right:
-            o.x += 1
+        o.x += direction.dx()
+        o.y += direction.dy()
         state.obj_map[o.y][o.x] = o
         moved_objs.append(o)
         o.dir = direction
@@ -370,14 +342,8 @@ def move_obj(o: GameObj, direction: Direction, state: GameState, moved_objs: Lis
 def move_obj_merge(o: GameObj, direction: Direction, state: GameState, moved_objs: List[GameObj]) -> bool:
     if can_move(o, direction, state, moved_objs):
         state.obj_map[o.y][o.x] = ' '
-        if direction == Direction.Up:
-            o.y -= 1
-        elif direction == Direction.Down:
-            o.y += 1
-        elif direction == Direction.Left:
-            o.x -= 1
-        elif direction == Direction.Right:
-            o.x += 1
+        o.x += direction.dx()
+        o.y += direction.dy()
         state.obj_map[o.y][o.x] = o
         moved_objs.append(o)
         o.dir = direction
