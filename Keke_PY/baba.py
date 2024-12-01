@@ -236,7 +236,7 @@ class GameState:
         return double_map_to_string(self.obj_map, self.back_map)
 
     # TODO@ask: I can never guarantee, this string is unique, without ALWAYS checking EVERYTHING in here. :(
-    # TODO@ask: For this to work, "TODO@ask: maybe just switch om and ob" (ll. 927) needs to be fixed.
+    # TODO@ask: For this to work, "TODO@ask: maybe just switch obj_map and ob" (ll. 927) needs to be fixed.
     # TODO@ask: For this to work, "move_obj_merge" might be changed to either be the same as "move_obj", or delete the Game-Object entirely.
     def unique_str(self) -> str:
 
@@ -287,9 +287,7 @@ def advance_game_state(action: Direction, state: GameState):
     return state
 
 
-def can_move(e: GameObj, action: Direction,
-             om: List[List[Union[str, GameObj]]], bm: List[List[Union[str, GameObj]]],
-             moved_objs: List, p, u, phys, sort_phys):
+def can_move(e: GameObj, action: Direction, state: GameState, moved_objs: List[GameObj]) -> bool:
     if e in moved_objs:
         return False
 
@@ -303,46 +301,46 @@ def can_move(e: GameObj, action: Direction,
     if action == Direction.Up:
         if e.y - 1 < 0:
             return False
-        if bm[e.y - 1][e.x] == '_':
+        if state.back_map[e.y - 1][e.x] == '_':
             return False
-        o = om[e.y - 1][e.x]
+        o = state.obj_map[e.y - 1][e.x]
     elif action == Direction.Down:
-        if e.y + 1 >= len(bm):
+        if e.y + 1 >= len(state.back_map):
             return False
-        if bm[e.y + 1][e.x] == '_':
+        if state.back_map[e.y + 1][e.x] == '_':
             return False
-        o = om[e.y + 1][e.x]
+        o = state.obj_map[e.y + 1][e.x]
     elif action == Direction.Left:
         if e.x - 1 < 0:
             return False
-        if bm[e.y][e.x - 1] == '_':
+        if state.back_map[e.y][e.x - 1] == '_':
             return False
-        o = om[e.y][e.x - 1]
+        o = state.obj_map[e.y][e.x - 1]
     elif action == Direction.Right:
-        if e.x + 1 >= len(bm[0]):
+        if e.x + 1 >= len(state.back_map[0]):
             return False
-        if bm[e.y][e.x + 1] == '_':
+        if state.back_map[e.y][e.x + 1] == '_':
             return False
-        o = om[e.y][e.x + 1]
+        o = state.obj_map[e.y][e.x + 1]
 
     if o == ' ':
         return True
     if o.is_stopped:
         return False
     if o.is_movable:
-        if o in u:
-            return move_obj(o, action, om, bm, moved_objs, p, u, phys, sort_phys)
-        elif o in p and e not in p:
+        if o in state.pushables:
+            return move_obj(o, action, state, moved_objs)
+        elif o in state.players and e not in state.players:
             return True
-        elif o.object_type == GameObjectType.Physical and (len(u) == 0 or o not in u):
+        elif o.object_type == GameObjectType.Physical and (len(state.pushables) == 0 or o not in state.pushables):
             return False
         elif ((e.is_movable or o.is_movable) and e.object_type == GameObjectType.Physical and
               o.object_type == GameObjectType.Physical):
             return True
-        elif e.name == o.name and e in p and is_phys(o) and is_phys(e):
-            return move_obj_merge(o, action, om, bm, moved_objs, p, u, phys, sort_phys)
+        elif e.name == o.name and e in state.players and is_phys(o) and is_phys(e):
+            return move_obj_merge(o, action, state, moved_objs)
         else:
-            return move_obj(o, action, om, bm, moved_objs, p, u, phys, sort_phys)
+            return move_obj(o, action, state, moved_objs)
 
     if not o.is_stopped and not o.is_movable:
         return True
@@ -350,11 +348,9 @@ def can_move(e: GameObj, action: Direction,
     return True
 
 
-def move_obj(o: GameObj, direction: Direction,
-             om: List[List[Union[str, GameObj]]], bm: List[List[Union[str, GameObj]]],
-             moved_objs: List, p, u, phys, sort_phys):
-    if can_move(o, direction, om, bm, moved_objs, p, u, phys, sort_phys):
-        om[o.y][o.x] = ' '
+def move_obj(o: GameObj, direction: Direction, state: GameState, moved_objs: List[GameObj]) -> bool:
+    if can_move(o, direction, state, moved_objs):
+        state.obj_map[o.y][o.x] = ' '
         if direction == Direction.Up:
             o.y -= 1
         elif direction == Direction.Down:
@@ -363,7 +359,7 @@ def move_obj(o: GameObj, direction: Direction,
             o.x -= 1
         elif direction == Direction.Right:
             o.x += 1
-        om[o.y][o.x] = o
+        state.obj_map[o.y][o.x] = o
         moved_objs.append(o)
         o.dir = direction
         return True
@@ -371,11 +367,9 @@ def move_obj(o: GameObj, direction: Direction,
         return False
 
 
-def move_obj_merge(o: GameObj, direction: Direction,
-                   om: List[List[Union[str, GameObj]]], bm: List[List[Union[str, GameObj]]],
-                   moved_objs: List, p, u, phys: List, sort_phys: Dict):
-    if can_move(o, direction, om, bm, moved_objs, p, u, phys, sort_phys):
-        om[o.y][o.x] = ' '
+def move_obj_merge(o: GameObj, direction: Direction, state: GameState, moved_objs: List[GameObj]) -> bool:
+    if can_move(o, direction, state, moved_objs):
+        state.obj_map[o.y][o.x] = ' '
         if direction == Direction.Up:
             o.y -= 1
         elif direction == Direction.Down:
@@ -384,21 +378,18 @@ def move_obj_merge(o: GameObj, direction: Direction,
             o.x -= 1
         elif direction == Direction.Right:
             o.x += 1
-        om[o.y][o.x] = o
+        state.obj_map[o.y][o.x] = o
         moved_objs.append(o)
         o.dir = direction
         return True
     else:
-        om[o.y][o.x] = ' '
+        state.obj_map[o.y][o.x] = ' '
         # Code for additional logic as per the JavaScript function
         return True
 
 
-def move_players(direction: Direction, mo: List, state: GameState):
-    om = state.obj_map
-    bm = state.back_map
+def move_players(direction: Direction, moved_objs: List[GameObj], state: GameState):
     players = state.players
-    pushs = state.pushables
     phys = state.phys
     sort_phys = state.sort_phys
     killers = state.killers
@@ -406,19 +397,16 @@ def move_players(direction: Direction, mo: List, state: GameState):
     featured = state.featured
 
     for curPlayer in players:
-        move_obj(curPlayer, direction, om, bm, mo, players, pushs, phys, sort_phys)
+        move_obj(curPlayer, direction, state, moved_objs)
 
     destroy_objs(killed(players, killers), state)
     destroy_objs(drowned(phys, sinkers), state)
     destroy_objs(bad_feats(featured, sort_phys), state)
 
 
-def move_auto_movers(mo: List, state: GameState):
+def move_auto_movers(moved_objs: List[GameObj], state: GameState):
     automovers = state.auto_movers
-    om = state.obj_map
-    bm = state.back_map
     players = state.players
-    pushs = state.pushables
     phys = state.phys
     sort_phys = state.sort_phys
     killers = state.killers
@@ -426,7 +414,7 @@ def move_auto_movers(mo: List, state: GameState):
     featured = state.featured
 
     for curAuto in automovers:
-        m = move_obj(curAuto, curAuto.dir, om, bm, mo, players, pushs, phys, sort_phys)
+        m = move_obj(curAuto, curAuto.dir, state, moved_objs)
         if not m:
             curAuto.dir = Direction.opposite(curAuto.dir)  # walk towards the opposite direction
 
@@ -952,7 +940,7 @@ def set_overlaps(game_state: GameState):
         if not p.is_movable and not p.is_stopped:
             overlaps.append(p)
             if om[p.y][p.x] == p:
-                # TODO@ask: maybe just switch om and ob
+                # TODO@ask: maybe just switch obj_map and ob
                 om[p.y][p.x] = ' '
                 bm[p.y][p.x] = p
         else:
