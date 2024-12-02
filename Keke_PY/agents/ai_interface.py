@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from decimal import Overflow
 from typing import List, Tuple, Union, Iterable
 
 from tqdm import trange
@@ -26,9 +27,12 @@ class AIInterface(ABC):
 def trange_or_infinite_loop(end: Union[int, None]) -> Iterable:
 
     if end.__class__ == int:
-        for i in trange(end):
-            yield i
-        return
+        try:
+            for i in trange(end):
+                yield i
+            return
+        except OverflowError:
+            pass
 
     while True:
         for i in trange(1000000):

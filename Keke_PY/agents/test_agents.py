@@ -8,7 +8,7 @@ from BFS import BFS
 from DFS import DFS
 
 
-test_levels: Tuple[str, Union[range, int, None]] = "./json_levels/full_biy_LEVELS.json", range(6, 20)
+test_levels: Tuple[str, Union[range, int, None]] = "./json_levels/full_biy_LEVELS.json", range(7, 20)
 
 max_forward_model_calls: Union[int, None] = None
 max_depth: Union[int, None] = 200

@@ -306,24 +306,31 @@ def can_move(e: Union[GameObj, str], action: Direction, state: GameState, moved_
     if o.is_stopped:
         return False
     if o.is_movable:
+        # TODO@ask: does this make sense?
         if o in state.pushables:
             return move_obj(o, action, state, moved_objs)
-        elif o in state.players and e not in state.players:
-            return True
-        elif o.object_type == GameObjectType.Physical and (len(state.pushables) == 0 or o not in state.pushables):
-            return False
-        elif ((e.is_movable or o.is_movable) and e.object_type == GameObjectType.Physical and
-              o.object_type == GameObjectType.Physical):
-            return True
-        elif e.name == o.name and e in state.players and is_phys(o) and is_phys(e):
-            return move_obj_merge(o, action, state, moved_objs)
-        else:
-            return move_obj(o, action, state, moved_objs)
+        # TODO@ask: what is the line below supposed to do?
+        if o in state.players:
+            if e in state.players:
+                if e.name == o.name:
+                    # TODO@ask: doesn't the next 2 lines prevent player merging / moving in unison?
+                    if o.object_type == GameObjectType.Physical:
+                        return False
+                    return move_obj_merge(o, action, state, moved_objs)
+                else:
+                    #TODO@ask: could we also merge player characters of different type?
+                    move_obj(o, action, state, moved_objs)
+            else:
+                return True
+        # TODO@ask: can't non-player objects merge?
+        if o.object_type == GameObjectType.Physical:
+            return False #TODO@ask: why is this False??
+        return move_obj(o, action, state, moved_objs)
 
     if not o.is_stopped and not o.is_movable:
         return True
 
-    return True
+    assert False, "checks should have been exhaustive"
 
 
 def move_obj(o: GameObj, direction: Direction, state: GameState, moved_objs: List[GameObj]) -> bool:
@@ -391,7 +398,7 @@ def move_auto_movers(moved_objs: List[GameObj], state: GameState):
             #               Working count: 409
             #                broken count: 27
             #              ai fixed count: 25
-            move_obj(curAuto, curAuto.dir, state, moved_objs)
+            #move_obj(curAuto, curAuto.dir, state, moved_objs)
 
     destroy_objs(killed(players, killers), state)
     destroy_objs(drowned(phys, sinkers), state)
@@ -1007,11 +1014,10 @@ def destroy_objs(dead, game_state: GameState):
 
     for p, o in dead:
         # Remove reference of the player and the murder object
-        phys.remove(p)
-        sort_phys[p.name].remove(p)
+        phys = [ x for x in phys if x not in [o, p] ]
+        sort_phys[p.name] = [ x for x in sort_phys[p.name] if x != p ]
         if o != p:
-            phys.remove(o)
-            sort_phys[o.name].remove(o)
+            sort_phys[o.name] = [ x for x in sort_phys[o.name] if x != o ]
 
         # Clear the space
         bm[o.y][o.x] = ' '

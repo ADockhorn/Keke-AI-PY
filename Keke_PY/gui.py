@@ -1,5 +1,6 @@
 import time
 from itertools import chain
+from operator import concat
 from typing import Tuple, Union, Iterable, List, Optional
 
 from PIL.ImageOps import solarize
@@ -68,7 +69,7 @@ def play_game(initial_game_state: GameState, action_source: Iterable[Direction])
         update_display(screen, game_state)
 
         # TODO: remove these lines:
-        if False:
+        if True:
             for back in game_state.back_map:
                 print(back)
             for obj in game_state.obj_map:
@@ -89,19 +90,23 @@ def play_game(initial_game_state: GameState, action_source: Iterable[Direction])
         return False
 
 
-def inputs_from_keyboard() -> Iterable[Direction]:
+def inputs_from_keyboard(mem_buffer: List[Direction] = []) -> Iterable[Direction]:
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
             if event.type == pygame.KEYDOWN:
                 if event.key == K_w or event.key == K_UP:
+                    mem_buffer += [Direction.Up]
                     yield Direction.Up
                 elif event.key == K_a or event.key == K_LEFT:
+                    mem_buffer += [Direction.Left]
                     yield Direction.Left
                 elif event.key == K_s or event.key == K_DOWN:
+                    mem_buffer += [Direction.Down]
                     yield Direction.Down
                 elif event.key == K_d or event.key == K_RIGHT:
+                    mem_buffer += [Direction.Right]
                     yield Direction.Right
                 elif event.key == K_SPACE:
                     yield Direction.Wait
@@ -128,7 +133,7 @@ def yield_solution_delayed(solution: str, delay: float = 0.0) -> Iterable[Direct
                 yield Direction.Down
             elif char in "Rr":
                 yield Direction.Right
-            elif char in "Ss":
+            elif char in "SsWw":
                 yield Direction.Wait
             else:
                 return
@@ -140,19 +145,19 @@ working_levels: List[Tuple[str, Union[range, int, None, Iterable[int]]]] = [
         [i for i in range(14) if i not in []]
     ), (
         "./json_levels/full_biy_LEVELS.json",
-        [i for i in range(184) if i not in [9, 19, 23, 27, 32, 63, 70, 183]] # 183?!?
+        [i for i in range(184) if i not in []] # 183?!?
     ), (
         "./json_levels/search_biy_LEVELS.json",
-        [i for i in range(62) if i not in [20, 24, 61]]
+        [i for i in range(62) if i not in []]
     ), (
         "./json_levels/test_LEVELS.json",
-        [i for i in range(0, 134) if i not in [4, 13, 17, 18, 22, 46, 51, 133]]
+        [i for i in range(0, 134) if i not in []]
     ), (
         "./json_levels/train_LEVELS.json",
         [i for i in range(50) if i not in []]
     ), (
         "./json_levels/user_milk_biy_LEVELS.json",
-        [i for i in range(17) if i not in [5]]
+        [i for i in range(17) if i not in []]
     )
 ]
 
@@ -162,23 +167,23 @@ broken_levels: List[Tuple[str, Union[range, int, None, Iterable[int]]]] = [
         []
     ), (
         "./json_levels/full_biy_LEVELS.json",
-        [9, 19, 23, 27, 32, 63, 70, 183] # 183?!?
+        []
     ), (
         "./json_levels/search_biy_LEVELS.json",
-        [20, 24, 61]
+        []
     ), (
         "./json_levels/test_LEVELS.json",
-        [4, 13, 17, 18, 22, 46, 51, 133]
+        []
     ), (
         "./json_levels/train_LEVELS.json",
         []
     ), (
         "./json_levels/user_milk_biy_LEVELS.json",
-        [5]
+        []
     )
 ]
 
-test = working_levels + broken_levels
+test = working_levels
 
 def try_ai(level, max_forward_model_calls: Union[int, None] = 50, max_depth: Union[int, None] = 50) -> Optional[str]:
     ai_solution_attempt = AStar(simple_heuristic).search(make_level(parse_map(level)), max_forward_model_calls, max_depth)
@@ -193,6 +198,16 @@ def try_ai(level, max_forward_model_calls: Union[int, None] = 50, max_depth: Uni
 
 if __name__ == '__main__':
     from simulation import load_level_set
+
+
+    if False:
+        play_level(load_level_set(
+            "./json_levels/full_biy_LEVELS.json"
+        )["levels"][5]["ascii"], yield_solution_delayed(
+            "UUUULLLLLUULUUUUUUUURU", 0.5
+        ))
+
+
     working: List[Tuple[str, int]] = []
     broken: List[Tuple[str, int]] = []
     ai_fixed: List[Tuple[str, int, str]] = []
@@ -212,78 +227,92 @@ if __name__ == '__main__':
             else:
 
                 if play_level(demo_level_1["ascii"], yield_solution_delayed(demo_level_1["solution"])):
-                    working += [(file_name, i)]
+                    working.append((file_name, i))
                     continue
-                ai_solution = try_ai(demo_level_1["ascii"], 10000, len(demo_level_1["solution"]) + 2)
+                ai_solution = try_ai(
+                    demo_level_1["ascii"],
+                    0,#5 ** (len(demo_level_1["solution"]) + 2),
+                    len(demo_level_1["solution"]) + 2
+                )
                 if ai_solution is not None:
                     play_level(demo_level_1["ascii"], yield_solution_delayed(ai_solution, 0.5))
-                    ai_fixed += [(file_name, i, ai_solution)]
+                    ai_fixed.append((file_name, i, ai_solution))
+
+                    for name, index, solution in ai_fixed:
+                        print(f"{name}\t{index}\t: {solution}\n")
+                    input("Waiting...:")
                     continue
-                # TODO: insert manual solution input
-                broken += [(file_name, i)]
+                while True:#int(input("Try?")):
+                    key_buffer: List[Direction] = []
+                    play_level(demo_level_1["ascii"], chain(
+                        #yield_solution_delayed(demo_level_1["solution"], 0.5),
+                        inputs_from_keyboard(key_buffer)
+                    ))
+                    key_str: str = ""
+                    for direction in key_buffer:
+                        key_str += direction.name[0]
+                    print(key_str)
+
+
+                broken.append((file_name, i))
 
     print(f"Working count: {len(working)}\n broken count: {len(broken)}")
 
     for name, index, solution in ai_fixed:
-        print(f"{name}\t{i}\t: {solution}\n")
+        print(f"{name}\t{index}\t: {solution}\n")
 
 
 
 
 
+"""
 
-"""Working count: 409
- broken count: 27
-./json_levels/full_biy_LEVELS.json	5	: URRRULUUUUUR
+./json_levels/full_biy_LEVELS.json	9	: DLDULLLDRRRURRDULDUL => DLLDULDLDRRRUUUL
 
-./json_levels/full_biy_LEVELS.json	5	: UUDWUDUURDWLLLDDDDRUUURRRRRR
+./json_levels/full_biy_LEVELS.json	19	: DDLLRUUUUUUURUULDRDLLRDDDLULURDRUUURULLRDDDDDDDL => UDLUURULLLRD
 
-./json_levels/full_biy_LEVELS.json	5	: LLULULUUUUU
+./json_levels/full_biy_LEVELS.json  23  : rlrrllllrrrllrrdrrrrrrdlllllllllllluuluulddllluuurdrrrrrrrddddddddlllllurrrrrrrrrrruddlllluuddrrrruu =>
+                                          RRRRDDDDLULDRDLLLLRRUULDULDU
 
-./json_levels/full_biy_LEVELS.json	5	: UUUULLLLLUULUUUUUUUURU
+./json_levels/full_biy_LEVELS.json  27  : dlldlllurrrururdrdlllluldrrrruuurdddrrullddddllldlllurdruddldluuurrrrrrrluuuuuuurrdluddduuuldddddddd =>
+                                          DDLLLLLURRRRURDRDLLLLULDRRRRUUURDDDDDDDDLLLLLDLUUURDRURRRRUUUURRULULDDDDDDDDDDDDDR
 
-./json_levels/full_biy_LEVELS.json	5	: UUUUUUURRRRUURRU
+./json_levels/full_biy_LEVELS.json  32  : rrludl => RDDDDR
 
-./json_levels/full_biy_LEVELS.json	5	: DDDDDDDDDDDDDDDD
+./json_levels/full_biy_LEVELS.json  63  : rullluldsssud => RULLLULDRLRLRD
 
-./json_levels/full_biy_LEVELS.json	5	: DDRDDLLDDD
+./json_levels/full_biy_LEVELS.json  70  : rdddddddrddudlulruuruuulruululrddddrrruuludldluuu => LLDDDDDDDDDRLD
 
-./json_levels/search_biy_LEVELS.json	5	: URRRULUUUUUR
+./json_levels/full_biy_LEVELS.json  183 : llddrdrrrudlllluururrrurrdduulllllddrrrrrrrsllluuuuuuuuuuuuuuu =>
+                                          RRRRDRULURURRDDRDLDDDDLLLUULLLLLLLDRRRRRRRDRULURDDRUDRRULDLUUUUUUULLLLLLLLDDDDRRRUUUU
 
-./json_levels/search_biy_LEVELS.json	5	: LLULULUUUUU
+./json_levels/search_biy_LEVELS.json    20  : rullluldsssud => RULLLULDUUUUUD
 
-./json_levels/search_biy_LEVELS.json	5	: UUUULLLLLUULUUUUUUUURU
+./json_levels/search_biy_LEVELS.json    24  : rdddddddrddudlulruuruuulruululrddddrrruuludldluuu => LLDDDDDDDDDRLD
 
-./json_levels/search_biy_LEVELS.json	5	: DDDDDDDDDDDDDDDD
+./json_levels/search_biy_LEVELS.json    61  : llddrdrrrudlllluururrrurrdduulllllddrrrrrrrsllluuuuuuuuuuuuuuu =>
+                                              RRRRDRULURURRDDRDLDDDDLLLUULLLLLLLDRRRRRRRDRULURDDRUDRRULDLUUUUUUULLLLLLLLDDDDRRRUUUU
 
-./json_levels/search_biy_LEVELS.json	5	: DDRDDLLDDD
+./json_levels/test_LEVELS.json      4   : DLDULLLDRRRURRDULDUL => LLDDULDLDRRRUUUL
 
-./json_levels/test_LEVELS.json	5	: UUDWUDUURDWLLLDDDDRUUURRRRRR
+./json_levels/test_LEVELS.json      13  : DDLLRUUUUUUURUULDRDLLRDDDLULURDRUUURULLRDDDDDDDL => UDLUURULLLRD
 
-./json_levels/test_LEVELS.json	5	: UUUUUUURRRRUURRU
+./json_levels/test_LEVELS.json      17  : rlrrllllrrrllrrdrrrrrrdlllllllllllluuluulddllluuurdrrrrrrrddddddddlllllurrrrrrrrrrruddlllluuddrrrruu =>
+                                          RRRRDDDDLULDRDLLLLRRUULDULDU
 
-./json_levels/test_LEVELS.json	5	: DDDDDDDDDDDDDDDD
+./json_levels/test_LEVELS.json      18  : dlldlllurrrururdrdlllluldrrrruuurdddrrullddddllldlllurdruddldluuurrrrrrrluuuuuuurrdluddduuuldddddddd =>
+                                          DDLLLLLURRRRURDRDLLLLULDRRRRUUURDDDDDDDDLLLLLDLUUURDRURRRRUUUURRULULDDDDDDDDDDDDDR
 
-./json_levels/test_LEVELS.json	5	: DDRDDLLDDD
+./json_levels/test_LEVELS.json      22  : rrludl => RDDDDR
 
-./json_levels/train_LEVELS.json	5	: URRRULUUUUUR
+./json_levels/test_LEVELS.json      46  : rullluldsssud => RULLLULDUUUUUD
 
-./json_levels/train_LEVELS.json	5	: LLULULUUUUU
+./json_levels/test_LEVELS.json      51  : rdddddddrddudlulruuruuulruululrddddrrruuludldluuu => LLDDDDDDDDDRLD
 
-./json_levels/train_LEVELS.json	5	: UUUULLLLLUULUUUUUUUURU
+./json_levels/test_LEVELS.json      133 : llddrdrrrudlllluururrrurrdduulllllddrrrrrrrsllluuuuuuuuuuuuuuu
+                                          RRRRDRULURURRDDRDLDDDDLLLUULLLLLLLDRRRRRRRDRULURDDRUDRRULDLUUUUUUULLLLLLLLDDDDRRRUUUU
 
-./json_levels/user_milk_biy_LEVELS.json	5	: URRRULUUUUUR
-
-./json_levels/full_biy_LEVELS.json	5	: DDRDDR
-
-./json_levels/full_biy_LEVELS.json	5	: URRDDRDR
-
-./json_levels/search_biy_LEVELS.json	5	: URRDDRDR
-
-./json_levels/test_LEVELS.json	5	: DDRDDR
-
-./json_levels/test_LEVELS.json	5	: URRDDRDR
+./json_levels/user_milk_biy_LEVELS.json     5   : DDLLRUUUUUUURUULDRDLLRDDDLULURDRUUURULLRDDDDDDDL => UDLUURULLLRD
 
 
-Process finished with exit code 0
 """
