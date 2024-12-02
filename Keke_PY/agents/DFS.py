@@ -2,7 +2,7 @@ from collections import deque
 from itertools import cycle
 
 from tqdm import trange
-from ai_interface import AIInterface, trange_or_infinite_loop
+from Keke_PY.agents.ai_interface import AIInterface, trange_or_infinite_loop
 from Keke_PY.baba import GameState, check_win, Direction
 from Keke_PY.simulation import advance_game_state
 from typing import List, Tuple, Union

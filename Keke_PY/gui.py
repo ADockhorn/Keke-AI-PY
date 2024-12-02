@@ -1,10 +1,14 @@
 import time
 from itertools import chain
-from typing import Tuple, Union, Iterable, List
+from typing import Tuple, Union, Iterable, List, Optional
 
 from PIL.ImageOps import solarize
 
+from Keke_PY.agents.AStar import AStar, simple_heuristic
 from Keke_PY.baba import GameState, Direction, imgHash, advance_game_state, parse_map, make_level
+from Keke_PY.agents.BFS import BFS
+
+
 from pygame.locals import *
 import pygame
 
@@ -130,32 +134,69 @@ def yield_solution_delayed(solution: str, delay: float = 0.0) -> Iterable[Direct
                 return
 
 
-test_levels: List[Tuple[str, Union[range, int, None, Iterable[int]]]] = [
+working_levels: List[Tuple[str, Union[range, int, None, Iterable[int]]]] = [
     (
         "./json_levels/demo_LEVELS.json",
-        0 # [i for i in range(14) if i not in []]
+        [i for i in range(14) if i not in []]
     ), (
         "./json_levels/full_biy_LEVELS.json",
-        0 # [i for i in range(184) if i not in [9, 19, 23, 27, 32, 63, 70, 183]] # 183?!?
+        [i for i in range(184) if i not in [9, 19, 23, 27, 32, 63, 70, 183]] # 183?!?
     ), (
         "./json_levels/search_biy_LEVELS.json",
-        0 # [i for i in range(62) if i not in [20, 24, 61]]
+        [i for i in range(62) if i not in [20, 24, 61]]
     ), (
         "./json_levels/test_LEVELS.json",
-        0 # [i for i in range(0, 134) if i not in [4, 13, 17, 18, 22, 46, 51, 133]]
+        [i for i in range(0, 134) if i not in [4, 13, 17, 18, 22, 46, 51, 133]]
     ), (
         "./json_levels/train_LEVELS.json",
-        0 # [i for i in range(50) if i not in []]
+        [i for i in range(50) if i not in []]
     ), (
         "./json_levels/user_milk_biy_LEVELS.json",
-        0 # [i for i in range(17) if i not in [5]]
+        [i for i in range(17) if i not in [5]]
     )
 ]
 
+broken_levels: List[Tuple[str, Union[range, int, None, Iterable[int]]]] = [
+    (
+        "./json_levels/demo_LEVELS.json",
+        []
+    ), (
+        "./json_levels/full_biy_LEVELS.json",
+        [9, 19, 23, 27, 32, 63, 70, 183] # 183?!?
+    ), (
+        "./json_levels/search_biy_LEVELS.json",
+        [20, 24, 61]
+    ), (
+        "./json_levels/test_LEVELS.json",
+        [4, 13, 17, 18, 22, 46, 51, 133]
+    ), (
+        "./json_levels/train_LEVELS.json",
+        []
+    ), (
+        "./json_levels/user_milk_biy_LEVELS.json",
+        [5]
+    )
+]
+
+test = working_levels + broken_levels
+
+def try_ai(level, max_forward_model_calls: Union[int, None] = 50, max_depth: Union[int, None] = 50) -> Optional[str]:
+    ai_solution_attempt = AStar(simple_heuristic).search(make_level(parse_map(level)), max_forward_model_calls, max_depth)
+    if ai_solution_attempt[0] is not None:
+        print(ai_solution_attempt[0])
+        solution_str = ""
+        for d in ai_solution_attempt[0]:
+            solution_str += d[0]
+        return solution_str
+    else:
+        return None
 
 if __name__ == '__main__':
     from simulation import load_level_set
-    for file_name, level_nrs in test_levels:
+    working: List[Tuple[str, int]] = []
+    broken: List[Tuple[str, int]] = []
+    ai_fixed: List[Tuple[str, int, str]] = []
+    for file_name, level_nrs in test:
         level_set = load_level_set(file_name)
         if level_nrs is None:
             level_nrs = range(len(level_set["levels"]))
@@ -166,13 +207,83 @@ if __name__ == '__main__':
             demo_level_1 = level_set["levels"][i]
             print(demo_level_1["solution"])
 
-            if not play_level(demo_level_1["ascii"], yield_solution_delayed(demo_level_1["solution"])):
-                while not play_level(demo_level_1["ascii"], inputs_from_keyboard()):
-                    play_level(
-                        demo_level_1["ascii"],
-                        chain(
-                            yield_solution_delayed(demo_level_1["solution"], 1.0),
-                            inputs_from_keyboard()
-                        )
-                    )
-                    break
+            if False:
+                play_level(demo_level_1["ascii"], inputs_from_keyboard())
+            else:
+
+                if play_level(demo_level_1["ascii"], yield_solution_delayed(demo_level_1["solution"])):
+                    working += [(file_name, i)]
+                    continue
+                ai_solution = try_ai(demo_level_1["ascii"], 10000, len(demo_level_1["solution"]) + 2)
+                if ai_solution is not None:
+                    play_level(demo_level_1["ascii"], yield_solution_delayed(ai_solution, 0.5))
+                    ai_fixed += [(file_name, i, ai_solution)]
+                    continue
+                # TODO: insert manual solution input
+                broken += [(file_name, i)]
+
+    print(f"Working count: {len(working)}\n broken count: {len(broken)}")
+
+    for name, index, solution in ai_fixed:
+        print(f"{name}\t{i}\t: {solution}\n")
+
+
+
+
+
+
+"""Working count: 409
+ broken count: 27
+./json_levels/full_biy_LEVELS.json	5	: URRRULUUUUUR
+
+./json_levels/full_biy_LEVELS.json	5	: UUDWUDUURDWLLLDDDDRUUURRRRRR
+
+./json_levels/full_biy_LEVELS.json	5	: LLULULUUUUU
+
+./json_levels/full_biy_LEVELS.json	5	: UUUULLLLLUULUUUUUUUURU
+
+./json_levels/full_biy_LEVELS.json	5	: UUUUUUURRRRUURRU
+
+./json_levels/full_biy_LEVELS.json	5	: DDDDDDDDDDDDDDDD
+
+./json_levels/full_biy_LEVELS.json	5	: DDRDDLLDDD
+
+./json_levels/search_biy_LEVELS.json	5	: URRRULUUUUUR
+
+./json_levels/search_biy_LEVELS.json	5	: LLULULUUUUU
+
+./json_levels/search_biy_LEVELS.json	5	: UUUULLLLLUULUUUUUUUURU
+
+./json_levels/search_biy_LEVELS.json	5	: DDDDDDDDDDDDDDDD
+
+./json_levels/search_biy_LEVELS.json	5	: DDRDDLLDDD
+
+./json_levels/test_LEVELS.json	5	: UUDWUDUURDWLLLDDDDRUUURRRRRR
+
+./json_levels/test_LEVELS.json	5	: UUUUUUURRRRUURRU
+
+./json_levels/test_LEVELS.json	5	: DDDDDDDDDDDDDDDD
+
+./json_levels/test_LEVELS.json	5	: DDRDDLLDDD
+
+./json_levels/train_LEVELS.json	5	: URRRULUUUUUR
+
+./json_levels/train_LEVELS.json	5	: LLULULUUUUU
+
+./json_levels/train_LEVELS.json	5	: UUUULLLLLUULUUUUUUUURU
+
+./json_levels/user_milk_biy_LEVELS.json	5	: URRRULUUUUUR
+
+./json_levels/full_biy_LEVELS.json	5	: DDRDDR
+
+./json_levels/full_biy_LEVELS.json	5	: URRDDRDR
+
+./json_levels/search_biy_LEVELS.json	5	: URRDDRDR
+
+./json_levels/test_LEVELS.json	5	: DDRDDR
+
+./json_levels/test_LEVELS.json	5	: URRDDRDR
+
+
+Process finished with exit code 0
+"""

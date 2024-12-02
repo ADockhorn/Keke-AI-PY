@@ -382,7 +382,16 @@ def move_auto_movers(moved_objs: List[GameObj], state: GameState):
     for curAuto in automovers:
         m = move_obj(curAuto, curAuto.dir, state, moved_objs)
         if not m:
-            curAuto.dir = Direction.opposite(curAuto.dir)  # walk towards the opposite direction
+            # If the mover got stopped, it tries to change direction:
+            curAuto.dir = Direction.opposite(curAuto.dir)
+            #   TODO@ask: before the line below was added:
+            #               Working count: 441
+            #                broken count: 20
+            #           After it was added:
+            #               Working count: 409
+            #                broken count: 27
+            #              ai fixed count: 25
+            move_obj(curAuto, curAuto.dir, state, moved_objs)
 
     destroy_objs(killed(players, killers), state)
     destroy_objs(drowned(phys, sinkers), state)
@@ -906,13 +915,15 @@ def set_overlaps(game_state: GameState):
         if not p.is_movable and not p.is_stopped:
             overlaps.append(p)
             if om[p.y][p.x] == p:
-                # TODO@ask: maybe just switch obj_map and ob
-                om[p.y][p.x] = ' '
+                # TODO@ask: i now just switch obj_map and back_map, if necessary, instead of making the obj_map[y][x] = ' '
+                om[p.y][p.x] = bm[p.y][p.x]
                 bm[p.y][p.x] = p
         else:
             unoverlaps.append(p)
-            om[p.y][p.x] = p
-            bm[p.y][p.x] = ' '
+            if bm[p.y][p.x] == p:
+                # TODO@ask: i now just switch obj_map and back_map, if necessary, instead of making the back_map[y][x] = ' '
+                bm[p.y][p.x] = om[p.y][p.x]
+                om[p.y][p.x] = p
 
     unoverlaps.extend(words)
     # Words will always be in the object layer

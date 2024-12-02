@@ -39,5 +39,3 @@ if __name__ == "__main__":
             solution = agent.search(game_state, max_forward_model_calls, max_depth)
             print(f"{name} Solution: {solution}\n\n")
 
-
-rulllurrrldr

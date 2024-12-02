@@ -26,7 +26,9 @@ class AIInterface(ABC):
 def trange_or_infinite_loop(end: Union[int, None]) -> Iterable:
 
     if end.__class__ == int:
-        return trange(end)
+        for i in trange(end):
+            yield i
+        return
 
     while True:
         for i in trange(1000000):

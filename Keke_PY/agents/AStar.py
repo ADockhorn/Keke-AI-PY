@@ -4,7 +4,7 @@ from typing import Callable, List, Iterable
 
 from Keke_PY.agents.heuristics import weightedHeuristicSum, heuristics
 from Keke_PY.baba import GameState, Direction, check_win, advance_game_state
-from ai_interface import AIInterface, trange_or_infinite_loop
+from Keke_PY.agents.ai_interface import AIInterface, trange_or_infinite_loop
 from tqdm import trange
 from typing import List, Tuple, Union
 
@@ -77,7 +77,7 @@ def simple_heuristic(game_state: GameState) -> float:
     :return: Estimated cost to reach the goal.
     """
     if len(game_state.players) == 0:
-        return float('inf')
+        return 10 * float(len(game_state.back_map) + len(game_state.back_map[0]))
     if not game_state.winnables:
         return float('inf')  # No winnable objects
 
