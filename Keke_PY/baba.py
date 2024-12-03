@@ -182,7 +182,8 @@ class GameState:
     is_connectors: List
     sort_phys: Dict
     rules: List
-    # TODO@ask: having this here isn't sound with respect to the idea of equivalent states :(
+    # TODO: having this here isn't sound with respect to the idea of equivalent states :(
+    #       => delete here. Add to heuristics
     all_seen_rules: set
     rule_objs: List
     players: List
@@ -263,8 +264,6 @@ class GameState:
 
 def advance_game_state(action: Direction, state: GameState):
 
-    # TODO: Copy and give reference to child
-    #  TODO@ask: The above TODO should not be done, if states should be able to be independent of how they are reached.
     moved_objects = []
 
     if action != "space":
@@ -306,25 +305,26 @@ def can_move(e: Union[GameObj, str], action: Direction, state: GameState, moved_
     if o.is_stopped:
         return False
     if o.is_movable:
-        # TODO@ask: does this make sense?
+        # TODO: solve with stack
         if o in state.pushables:
             return move_obj(o, action, state, moved_objs)
-        # TODO@ask: what is the line below supposed to do?
         if o in state.players:
             if e in state.players:
                 if e.name == o.name:
-                    # TODO@ask: doesn't the next 2 lines prevent player merging / moving in unison?
+                    # TODO: doesn't the next 2 lines prevent player merging / moving in unison?
+                    #           => remove next 2 lines
                     if o.object_type == GameObjectType.Physical:
                         return False
                     return move_obj_merge(o, action, state, moved_objs)
                 else:
-                    #TODO@ask: could we also merge player characters of different type?
+                    #TODO: could we also merge player characters of different type?
+                    #           => check with real game
                     move_obj(o, action, state, moved_objs)
             else:
                 return True
-        # TODO@ask: can't non-player objects merge?
+        # TODO: can't non-player objects merge? => No
         if o.object_type == GameObjectType.Physical:
-            return False #TODO@ask: why is this False??
+            return False
         return move_obj(o, action, state, moved_objs)
 
     if not o.is_stopped and not o.is_movable:
@@ -391,14 +391,15 @@ def move_auto_movers(moved_objs: List[GameObj], state: GameState):
         if not m:
             # If the mover got stopped, it tries to change direction:
             curAuto.dir = Direction.opposite(curAuto.dir)
-            #   TODO@ask: before the line below was added:
+            #   TODO: before the line below was added:
             #               Working count: 441
             #                broken count: 20
             #           After it was added:
             #               Working count: 409
             #                broken count: 27
             #              ai fixed count: 25
-            #move_obj(curAuto, curAuto.dir, state, moved_objs)
+            #               => insert line
+            move_obj(curAuto, curAuto.dir, state, moved_objs)
 
     destroy_objs(killed(players, killers), state)
     destroy_objs(drowned(phys, sinkers), state)
@@ -528,7 +529,7 @@ def double_map_to_string(object_map: List[List[Union[str, GameObj]]], background
             elif game_object == " " and background == " ":
                 map_string += "."
             elif game_object == " ":
-                map_string += name_to_character[background.name + ("_word" if is_word(background) or is_key_word(background) else "_obj")] # TODO@ask: check this line change
+                map_string += name_to_character[background.name + ("_word" if is_word(background) or is_key_word(background) else "_obj")]
             else:
                 map_string += name_to_character[game_object.name + ("_word" if is_word(game_object) or is_key_word(game_object) else "_obj")]
         map_string += "\n"
@@ -922,13 +923,11 @@ def set_overlaps(game_state: GameState):
         if not p.is_movable and not p.is_stopped:
             overlaps.append(p)
             if om[p.y][p.x] == p:
-                # TODO@ask: i now just switch obj_map and back_map, if necessary, instead of making the obj_map[y][x] = ' '
                 om[p.y][p.x] = bm[p.y][p.x]
                 bm[p.y][p.x] = p
         else:
             unoverlaps.append(p)
             if bm[p.y][p.x] == p:
-                # TODO@ask: i now just switch obj_map and back_map, if necessary, instead of making the back_map[y][x] = ' '
                 bm[p.y][p.x] = om[p.y][p.x]
                 om[p.y][p.x] = p
 
@@ -978,7 +977,8 @@ def killed(players, killers):
             if overlapped(player, killer):
                 dead.append([player, killer])
                 # Todo, I assume we can break here
-                # TODO@ask: is there a meaning to the comment above?
+                # TODO: is there a meaning to the comment above?
+                #       => break and only delete player
     return dead
 
 

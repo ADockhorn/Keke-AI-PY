@@ -18,11 +18,12 @@ allSuffixes = ["stop", "sink", "push", "you", "kill", "hot", "move", "melt", "yo
  * @return {number} The weight multiplied with the negative number of goals.
  */"""
 def nbrOfGoals(state: GameState) -> float:
-    # TODO@ask: description doesn't include the logarithm:
+    # TODO: description doesn't include the logarithm:
+    #       => remove logarithm
     if len(state.winnables) != 0:
         return -math.log(len(state.winnables), math.e)
     else:
-        return math.inf # TODO@ask!: is this intended behavior? (the js code works like this)
+        return math.inf
 
 """/**
  * Returns negative number of players on current map multiplied by a weight.
@@ -76,7 +77,8 @@ def outOfPlan(state: GameState) -> float:
         # checking, if the 'IS' is in a rule is not needed, since isIsStuck() does that implicitly
         if isIsStuck(state, word.x, word.y):
             counter += 1
-    # TODO@ask: wouldn't is be nice to also check for stuck pre-fixes? Or are they less valuable?
+    # TODO: wouldn't is be nice to also check for stuck pre-fixes? Or are they less valuable?
+    #       => include, but split this into three heuristics
     return counter
 
 
@@ -94,7 +96,7 @@ def isIsStuck(state: GameState, x: int, y: int) -> bool:
     # If one direction is blocked by a word, that could create a rule with the 'IS',
     #       the direction is counted as free, since the 'IS' can still be used,
     #       if the opposite direction is free.
-    # TODO@ask: above definition would have considered the following as free:
+    # TODO: above definition would have considered the following as free:
     #       _____   w: prefix
     #       _wib    i: 'IS'
     #       _____   b: boulder
@@ -131,7 +133,7 @@ def isIsStuck(state: GameState, x: int, y: int) -> bool:
  * @return {boolean} Whether the Suffix is stuck and useless.
  */"""
 def suffixIsStuck(state: GameState, x: int, y: int) -> bool:
-    # TODO@ask: New Suggestion (the code below):
+    # TODO: New Suggestion (the code below):
     #       checks whether the word can be instantly moved or instantly completed (independently)
     #       instant moving means by one push / without shifting any blocking object sideways out of the way
     #       instant completing means by only adding rule parts on empty fields
@@ -196,7 +198,7 @@ def is_direction_blocked(state: GameState, x: int, y: int, direction: Direction)
                 return True
             if obj.object_type in [GameObjectType.Word, GameObjectType.Keyword]:
                 return None
-            return False # TODO@ask: The object might be pushable?!?!? -> None
+            return False # TODO: The object might be pushable => None
         else:
             if obj == '_':
                 return True
@@ -303,19 +305,19 @@ def distanceToKillables(state: GameState) -> float:
 def distance_to_winnables(state: GameState) -> float:
     avg = avgDistance(state.players, state.winnables)
     if avg is None:
-        return len(state.back_map) + len(state.back_map[0]) # TODO@ask: What if there is no distance??
+        return len(state.back_map) + len(state.back_map[0]) # TODO: What if there is no distance?? => add default as input
     return avg
-#distanceHeuristic 2: players to words (TODO@ask: js-comment says to only include certain words?!?!?)
+#distanceHeuristic 2: players to words (TODO: js-comment says to only include certain words?!?!?) => ignore comment
 def distance_to_words(state: GameState) -> float:
     avg = avgDistance(state.players, state.words)
     if avg is None:
-        return len(state.back_map) + len(state.back_map[0]) # TODO@ask: What if there is no distance??
+        return len(state.back_map) + len(state.back_map[0]) # TODO: What if there is no distance?? => add default as input
     return avg
 #distanceHeuristic 1: players to winnables
 def distance_to_pushables(state: GameState) -> float:
     avg = avgDistance(state.players, state.pushables)
     if avg is None:
-        return len(state.back_map) + len(state.back_map[0]) # TODO@ask: What if there is no distance??
+        return len(state.back_map) + len(state.back_map[0]) # TODO: What if there is no distance?? => add default as input
     return avg
 
 """/**
@@ -326,10 +328,11 @@ def distance_to_pushables(state: GameState) -> float:
  * @return {number} The weight multiplied with the amount of unique rules.
  */"""
 def maximizeDifferentRules(state: GameState) -> float:
-    # TODO@ask: is this the intended implementation?
+    # TODO: is this the intended implementation?
     #           it feels kinda odd, since it depends on more than the current state.
     #           the same state might now be valued differently :(
     #       I have no clue on how to implement this heuristic, without the above effect :(
+    #     => compare to root state :)
     return len(state.all_seen_rules)
 
 """/**
@@ -343,7 +346,7 @@ def maximizeDifferentRules(state: GameState) -> float:
  * @return {number} The weight multiplied with the average distance to the only win-word.
  */"""
 def minimizeDistanceToIsIfOnlyOneWinExists(state: GameState) -> float:
-    # TODO@ask: js-implementation uses 'WIN'-Objects from the beginning
+    # TODO: js-implementation uses 'WIN'-Objects from the beginning => remove heuristic
     #           this very wierd?!? I assumed, this is unintentional, and recalculated it every time
     single_win: Optional[GameObj] = None
     for word in state.words:
@@ -355,12 +358,12 @@ def minimizeDistanceToIsIfOnlyOneWinExists(state: GameState) -> float:
                 break
     distance_to_win: Optional[float] = None
     if single_win is not None:
-        # TODO@ask: js-comment and paper talke about distance of players and 'WIN'
+        # TODO: js-comment and paper talke about distance of players and 'WIN' => remove heuristic
         #           while function-name and implementation use 'IS' and 'WIN'
         #       What shal I use? (in the code below, I assumed the paper is right)
         distance_to_win = avgDistance(state.players, [single_win])
     if distance_to_win is None:
-        # TODO@ask: is the following default ok?
+        # TODO: is the following default ok? => remove heuristic
         #           should the return be different, if there is no player vs. not (exactly) one 'WIN'?
         return len(state.back_map) + len(state.back_map[0])
     return distance_to_win
