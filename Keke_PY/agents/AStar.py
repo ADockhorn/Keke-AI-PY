@@ -1,11 +1,9 @@
 import heapq
-from itertools import cycle
-from typing import Callable, List, Iterable
+from typing import Callable
 
-from Keke_PY.agents.heuristics import weightedHeuristicSum, heuristics
+from Keke_PY.agents.heuristics import weightedHeuristicSum, heuristics, heuristics_feature_vector_length
 from Keke_PY.baba import GameState, Direction, check_win, advance_game_state
 from Keke_PY.agents.ai_interface import AIInterface, trange_or_infinite_loop
-from tqdm import trange
 from typing import List, Tuple, Union
 
 
@@ -14,7 +12,7 @@ class AStar(AIInterface):
     A* Search Agent implementation.
     """
 
-    def __init__(self, heuristic: Callable[[GameState], float]):
+    def __init__(self, heuristic: Callable[[GameState, dict], float]):
         """
         Initialize the A* agent with a heuristic function.
 
@@ -33,9 +31,15 @@ class AStar(AIInterface):
         """
         # Priority queue: (f(n), g(n), current_state, actions_so_far)
         # f(n) = g(n) + h(n) where g(n) is the path cost and h(n) is the heuristic estimate
+
+        ctx = {
+            "initial GameState": initial_state,
+            "initial rules": set(initial_state.rules)
+        }
+
         pq = []
         index = 0  # Unique index to ensure tuples are compared correctly
-        heapq.heappush(pq, (self.heuristic(initial_state), 0, index, initial_state, []))
+        heapq.heappush(pq, (self.heuristic(initial_state, ctx), 0, index, initial_state, []))
 
         visited = set()
         for i in trange_or_infinite_loop(max_forward_model_calls):
@@ -60,7 +64,7 @@ class AStar(AIInterface):
                     # g(next) is the cost so far plus 1 (since each move costs 1)
                     new_g = g + 1
                     # f(next) = g(next) + h(next)
-                    new_f = new_g + self.heuristic(next_state)
+                    new_f = new_g + self.heuristic(next_state, ctx)
                     index += 1  # Increment the index to maintain uniqueness
 
                     heapq.heappush(pq, (new_f, new_g, index, next_state, actions + [action.name]))
@@ -68,12 +72,13 @@ class AStar(AIInterface):
         return None, max_forward_model_calls  # Return empty if no solution is found
 
 
-def simple_heuristic(game_state: GameState) -> float:
+def simple_heuristic(game_state: GameState, _ctx: dict) -> float:
     """
     A simple heuristic function that estimates the cost to the goal.
     In this case, it calculates the Manhattan distance between the player and the winning object.
 
     :param game_state: The current game state.
+    :param _ctx: Context given to the heuristics
     :return: Estimated cost to reach the goal.
     """
     if len(game_state.players) == 0:
@@ -85,14 +90,14 @@ def simple_heuristic(game_state: GameState) -> float:
     return min([min(abs(player.x - winnable.x) + abs(player.y - winnable.y) for winnable in game_state.winnables) for player in game_state.players])
 
 
-def test_heuristics(game_state: GameState) -> float:
+def test_heuristics(game_state: GameState, ctx: dict) -> float:
     if len(game_state.players) == 0:
         return float('inf')
     if not game_state.winnables:
         return float('inf')  # No winnable objects
     return weightedHeuristicSum(
-        game_state,
-        [0 for _ in range(len(heuristics))],
+        game_state, ctx,
+        [0 for _ in range(heuristics_feature_vector_length)],
         -1
     )
 

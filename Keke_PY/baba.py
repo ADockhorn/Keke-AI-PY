@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import List, Dict, Union
 from enum import Enum
 import pygame
-from copy import deepcopy
 
 # Assign ASCII values to images
 character_to_name = {
@@ -182,9 +181,6 @@ class GameState:
     is_connectors: List
     sort_phys: Dict
     rules: List
-    # TODO: having this here isn't sound with respect to the idea of equivalent states :(
-    #       => delete here. Add to heuristics
-    all_seen_rules: set
     rule_objs: List
     players: List
     auto_movers: List
@@ -209,7 +205,6 @@ class GameState:
         self.is_connectors = []
         self.sort_phys = {}
         self.rules = []
-        self.all_seen_rules = set()
         self.rule_objs = []
         self.players = []
         self.auto_movers = []
@@ -718,8 +713,6 @@ def interpret_rules(game_state: GameState):
     # Reset the objects
     reset_all(game_state)
 
-    # add all new rules to all_seen_rules
-    game_state.all_seen_rules |= set(game_state.rules)
 
 
 # Check if array contains string with a substring
