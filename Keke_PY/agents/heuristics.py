@@ -1,7 +1,7 @@
 from inspect import signature
 from typing import List, Callable, Union, Optional
 
-from Keke_PY.baba import GameState, parse_map, double_map_to_string, GameObj, Direction, GameObjectType
+from Keke_PY.baba import GameState, parse_map, only_top_objects_string, GameObj, Direction, GameObjectType
 
 important_SuffixWords = ["win", "push", "you"]
 
@@ -215,15 +215,16 @@ def is_free_or_usable(state: GameState, x: int, y: int, usable_names: List[str])
     @param usable_names is a list of words that are allowed to be at (x,y) for the rule to work
     @return whether the objects at (x,y) do not prevent the rule from being completed
     """
-    if not 0 <= y < len(state.back_map) or not 0 <= x < len(state.back_map[0]):
+    if not 0 <= y < len(state.object_map) or not 0 <= x < len(state.object_map[0]):
         return False
     if is_field_empty(state, x, y):
         return True
-    connected_field = state.back_map[y][x]
-    return (
-        connected_field.__class__ == GameObj and
-        connected_field.object_type in [GameObjectType.Word, GameObjectType.Keyword] and
-        connected_field.name in usable_names
+    connected_field = state.object_map[y][x]
+    return any(
+        obj.__class__ == GameObj and
+        obj.object_type in [GameObjectType.Word, GameObjectType.Keyword] and
+        obj.name in usable_names
+        for obj in connected_field
     )
 
 def is_field_empty(state: GameState, x: int, y: int) -> bool:
@@ -236,10 +237,9 @@ def is_field_empty(state: GameState, x: int, y: int) -> bool:
     @return whether the field is empty
     """
     return (
-        0 <= y < len(state.back_map) and
-        0 <= x < len(state.back_map[0]) and
-        state.back_map[y][x] == ' ' and
-        state.obj_map[y][x] == ' '
+        0 <= y < len(state.object_map) and
+        0 <= x < len(state.object_map[0]) and
+        state.object_map[y][x]
     )
 
 def is_movable_in_any_axis(state: GameState, x: int, y: int) -> bool:
@@ -279,7 +279,9 @@ def is_direction_blocked(state: GameState, x: int, y: int, direction: Direction)
         if obj.__class__ == GameObj:
             if obj.is_stopped:
                 return True
-            return None
+            if obj.is_movable:
+                return None
+            return False
         else:
             if obj == '_':
                 return True
@@ -290,12 +292,15 @@ def is_direction_blocked(state: GameState, x: int, y: int, direction: Direction)
     while True:
         x += dx
         y += dy
-        is_back_map_blocked: Optional[bool] = is_blocking(state.back_map[y][x])
-        if is_back_map_blocked:
-            return True
-        is_obj_map_blocked: Optional[bool] = is_blocking(state.back_map[y][x])
-        if is_obj_map_blocked is not None:
-            return is_obj_map_blocked
+        search_further: bool = False
+        for obj in state.object_map[y][x]:
+            test: Optional[bool] = is_blocking(obj)
+            if test:
+                return True
+            if test is None:
+                search_further = True
+        if not search_further:
+            return False
 
 
 
@@ -498,7 +503,7 @@ def dist(a: GameObj, b: GameObj) -> float:
  * @return {string[]} The parsed map.
  */"""
 def parseRoomForConnectivityFeature(state: GameState) -> List[List[str]]:
-    map = parse_map(double_map_to_string(state.obj_map, state.back_map))
+    map = parse_map(only_top_objects_string(state))
 
     for i, row in enumerate(map):
         for j, char in enumerate(row):

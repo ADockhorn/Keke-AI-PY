@@ -4,8 +4,8 @@
 # Translated to Python by Descar
 import copy
 from dataclasses import dataclass
-from typing import List, Dict, Union
-from enum import Enum
+from typing import List, Dict, Union, Optional
+from enum import Enum, unique
 import pygame
 
 # Assign ASCII values to images
@@ -174,8 +174,7 @@ class GameObj:
 @dataclass
 class GameState:
     orig_map: List
-    obj_map: List[List[Union[str, GameObj]]]
-    back_map: List[List[Union[str, GameObj]]]
+    object_map: List[List[List[Union[str, GameObj]]]]
     words: List
     phys: List
     is_connectors: List
@@ -198,8 +197,7 @@ class GameState:
 
     def clear(self):
         self.orig_map = []
-        self.obj_map = []
-        self.back_map = []
+        self.object_map = []
         self.words = []
         self.phys = []
         self.is_connectors = []
@@ -223,7 +221,8 @@ class GameState:
         return new_game_state
 
     def __str__(self):
-        return double_map_to_string(self.obj_map, self.back_map)
+        return self.unique_str()
+        #return double_map_to_string(self.obj_map, self.back_map)
 
     # TODO@ask: I can never guarantee, this string is unique, without ALWAYS checking EVERYTHING in here. :(
     # TODO@ask: For this to work, "TODO@ask: maybe just switch obj_map and ob" (ll. 927) needs to be fixed.
@@ -240,18 +239,13 @@ class GameState:
                 )] + str(obj.dir.value)
 
         def unique_position_str(i: int, j: int) -> str:
-            back = self.back_map[i][j]
-            obj = self.obj_map[i][j]
-            if back == " " and obj == " ":
-                return "."
-            else:
-                return unique_obj_str(back) + unique_obj_str(obj)
+            return ''.join(map(unique_obj_str, self.object_map[i][j])) + '.'
 
         return ''.join([
             '\n' if j == -1
                 else unique_position_str(i, j)
-        for i in range(len(self.obj_map))
-            for j in range(-1, len(self.obj_map[0]))
+        for i in range(len(self.object_map))
+            for j in range(-1, len(self.object_map[0]))
         ])
 
 
@@ -274,11 +268,40 @@ def advance_game_state(action: Direction, state: GameState):
 
     return state
 
-
-def can_move(e: Union[GameObj, str], action: Direction, state: GameState, moved_objs: List[GameObj]) -> bool:
-    if e in moved_objs:
+def a_can_push_b(
+        a: List[Union[GameObj, str]], b: Union[GameObj, str],
+        state: GameState,
+        objects_to_move_along: List[Union[GameObj, str]],
+        already_moved_objs: List[Union[GameObj, str]]
+) -> Optional[bool]:
+    if b == ' ':
+        return True
+    if b == '_' or b.is_stopped or b in already_moved_objs:
         return False
+    if b.is_movable:
+        if b in state.pushables:
+            objects_to_move_along.append(b)
+            return None
+        if b in state.players:
+            if all(x in state.players for x in a):
+                if all(x.name == b.name for x in a):
+                    return True
+                else:
+                    objects_to_move_along.append(b)
+                    return None
+        if b.object_type == GameObjectType.Physical:
+            return False
+        objects_to_move_along.append(b)
+        return None
+    if not b.is_stopped and not b.is_movable:
+        return True
+    assert False, "checks should have been exhaustive"
 
+
+def try_move(e: Union[GameObj, str], action: Direction, state: GameState, already_moved_objs: List[GameObj]) -> bool:
+
+    if e in already_moved_objs:
+        return False
     if e == " ":
         return False
     if not e.is_movable:
@@ -287,102 +310,66 @@ def can_move(e: Union[GameObj, str], action: Direction, state: GameState, moved_
 
     if action not in [Direction.Left, Direction.Right, Direction.Up, Direction.Down]:
         return True
-    x_, y_ = e.x + action.dx(), e.y + action.dy()
-    if not (0 <= x_ < len(state.back_map[0]) and 0 <= y_ <= len(state.back_map)):
-        return False
-    if state.back_map[y_][x_] == '_':
-        return False
-    o = state.obj_map[y_][x_]
-
-
-    if o == ' ':
-        return True
-    if o.is_stopped:
-        return False
-    if o.is_movable:
-        # TODO: solve with stack
-        if o in state.pushables:
-            return move_obj(o, action, state, moved_objs)
-        if o in state.players:
-            if e in state.players:
-                if e.name == o.name:
-                    # TODO: doesn't the next 2 lines prevent player merging / moving in unison?
-                    #           => remove next 2 lines
-                    if o.object_type == GameObjectType.Physical:
-                        return False
-                    return move_obj_merge(o, action, state, moved_objs)
-                else:
-                    #TODO: could we also merge player characters of different type?
-                    #           => check with real game
-                    move_obj(o, action, state, moved_objs)
-            else:
-                return True
-        # TODO: can't non-player objects merge? => No
-        if o.object_type == GameObjectType.Physical:
+    x_, y_ = e.x, e.y
+    current_field_list: List[Union[GameObj, str]] = [e]
+    objects_to_move_along: List[Union[GameObj, str]] = [e]
+    while True:
+        x_, y_ = x_ + action.dx(), y_ + action.dy()
+        if not (0 <= x_ < len(state.object_map[0]) and 0 <= y_ <= len(state.object_map)):
             return False
-        return move_obj(o, action, state, moved_objs)
+        objects_in_the_way: List[Union[GameObj, str]] = state.object_map[y_][x_]
+        local_objects_to_move_along: List[Union[GameObj, str]] = []
+        continue_deeper: bool = False
+        for object_in_the_way in objects_in_the_way:
+            test: Optional[bool] = a_can_push_b(current_field_list, object_in_the_way, state, local_objects_to_move_along, already_moved_objs)
+            if test == False:
+                return False
+            if test is None:
+                continue_deeper = True
+        objects_to_move_along += current_field_list
+        current_field_list = local_objects_to_move_along
+        if not continue_deeper:
+            break
+    objects_to_move_along += current_field_list
 
-    if not o.is_stopped and not o.is_movable:
-        return True
+    for object_to_move in reversed(objects_to_move_along):
+        state.object_map[object_to_move.y][object_to_move.x].remove(object_to_move)
+        object_to_move.x += action.dx()
+        object_to_move.y += action.dy()
+        state.object_map[object_to_move.y][object_to_move.x].append(object_to_move)
+        object_to_move.dir = action
+        already_moved_objs.append(object_to_move)
 
-    assert False, "checks should have been exhaustive"
-
-
-def move_obj(o: GameObj, direction: Direction, state: GameState, moved_objs: List[GameObj]) -> bool:
-    if can_move(o, direction, state, moved_objs):
-        state.obj_map[o.y][o.x] = ' '
-        o.x += direction.dx()
-        o.y += direction.dy()
-        state.obj_map[o.y][o.x] = o
-        moved_objs.append(o)
-        o.dir = direction
-        return True
-    else:
-        return False
-
-
-def move_obj_merge(o: GameObj, direction: Direction, state: GameState, moved_objs: List[GameObj]) -> bool:
-    if can_move(o, direction, state, moved_objs):
-        state.obj_map[o.y][o.x] = ' '
-        o.x += direction.dx()
-        o.y += direction.dy()
-        state.obj_map[o.y][o.x] = o
-        moved_objs.append(o)
-        o.dir = direction
-        return True
-    else:
-        state.obj_map[o.y][o.x] = ' '
-        # Code for additional logic as per the JavaScript function
-        return True
+    return True
 
 
-def move_players(direction: Direction, moved_objs: List[GameObj], state: GameState):
+
+
+def move_players(direction: Direction, already_moved_objs: List[GameObj], state: GameState):
     players = state.players
     phys = state.phys
     sort_phys = state.sort_phys
     killers = state.killers
     sinkers = state.sinkers
-    featured = state.featured
 
     for curPlayer in players:
-        move_obj(curPlayer, direction, state, moved_objs)
+        try_move(curPlayer, direction, state, already_moved_objs)
 
     destroy_objs(killed(players, killers), state)
     destroy_objs(drowned(phys, sinkers), state)
-    destroy_objs(bad_feats(featured, sort_phys), state)
+    destroy_objs(bad_feats(state.featured, sort_phys), state)
 
 
-def move_auto_movers(moved_objs: List[GameObj], state: GameState):
+def move_auto_movers(already_moved_objs: List[GameObj], state: GameState):
     automovers = state.auto_movers
     players = state.players
     phys = state.phys
     sort_phys = state.sort_phys
     killers = state.killers
     sinkers = state.sinkers
-    featured = state.featured
 
     for curAuto in automovers:
-        m = move_obj(curAuto, curAuto.dir, state, moved_objs)
+        m = try_move(curAuto, curAuto.dir, state, already_moved_objs)
         if not m:
             # If the mover got stopped, it tries to change direction:
             curAuto.dir = Direction.opposite(curAuto.dir)
@@ -394,11 +381,11 @@ def move_auto_movers(moved_objs: List[GameObj], state: GameState):
             #                broken count: 27
             #              ai fixed count: 25
             #               => insert line
-            move_obj(curAuto, curAuto.dir, state, moved_objs)
+            try_move(curAuto, curAuto.dir, state, already_moved_objs)
 
     destroy_objs(killed(players, killers), state)
     destroy_objs(drowned(phys, sinkers), state)
-    destroy_objs(bad_feats(featured, sort_phys), state)
+    destroy_objs(bad_feats(state.featured, sort_phys), state)
 
 
 def assign_map_objs(game_state: GameState):
@@ -414,22 +401,26 @@ def assign_map_objs(game_state: GameState):
     game_state.words = []
     game_state.is_connectors = []
 
-    game_map = game_state.obj_map
     phys = game_state.phys
     words = game_state.words
     sort_phys = game_state.sort_phys
     is_connectors = game_state.is_connectors
 
-    if len(game_map) == 0:
+    if len(game_state.orig_map) == 0:
         print("ERROR: Map not initialized yet")
         return False
 
-    for r in range(len(game_map)):
-        for c in range(len(game_map[0])):
-            character = game_map[r][c]
+    for r in range(len(game_state.orig_map)):
+        for c in range(len(game_state.orig_map[0])):
+            character = game_state.orig_map[r][c]
             object_name = character_to_name[character]
             if "_" not in object_name:
-                continue
+                if object_name == "border":
+                    game_state.object_map[r][c].append('_')
+                    continue
+                elif object_name == "empty":
+                    continue
+                assert False, f"The name '{object_name}' can not be resolved into an object"
             base_obj, word_type = object_name.split("_")
 
             # retrieve word-based objects
@@ -446,7 +437,7 @@ def assign_map_objs(game_state: GameState):
                     is_connectors.append(w)
 
                 # replace character with object
-                game_map[r][c] = w
+                game_state.object_map[r][c].append(w)
 
             # retrieve physical-based objects
             elif word_type == "obj":
@@ -460,73 +451,44 @@ def assign_map_objs(game_state: GameState):
                 sort_phys[base_obj].append(o)
 
                 # replace character with object
-                game_map[r][c] = o
+                game_state.object_map[r][c].append(o)
 
 
-def init_empty_map(m):
-    """
-    Initialize an empty map based on the dimensions of the input map.
-
-    :param m: The input map for which an empty map will be created.
-    :return: A 2D list representing an empty map.
-    """
-    new_map = []
-    for r in range(len(m)):
-        new_row = []
-        for c in range(len(m[0])):
-            new_row.append(' ')
-
-        new_map.append(new_row)
-    return new_map
 
 
-def split_map(m):
+def generate_empty_map(m: List[List[str]]) -> List[List[List[Union[GameObj, str]]]]:
     """
     Split the map into two layers: background map and object map.
 
     :param m: The input 2D map of characters.
     :return: Tuple (background_map, object_map).
     """
-    background_map = init_empty_map(m)
-    object_map = init_empty_map(m)
+    res: List[List[List[Union[GameObj, str]]]] = []
     for r in range(len(m)):
+        res.append([])
         for c in range(len(m[0])):
-            map_character = m[r][c]
-            parts = character_to_name[map_character].split("_")
+            res[r].append([])
 
-            # background
-            if len(parts) == 1:
-                background_map[r][c] = map_character
-                object_map[r][c] = ' '
-            # object
-            else:
-                background_map[r][c] = ' '
-                object_map[r][c] = map_character
+            #res[r][c].append(m[r][c])
 
-    return background_map, object_map
+    return res
 
 
-def double_map_to_string(object_map: List[List[Union[str, GameObj]]], background_map: List[List[Union[str, GameObj]]]):
+def only_top_objects_string(game_state: GameState) -> str:
     """
     Convert two 2D maps (object and background) into a combined string representation.
 
-    :param object_map: A 2D list representing the object map.
-    :param background_map: A 2D list representing the background map.
+    :param game_state: The current game-state
     :return: A string representation of the combined maps.
     """
     map_string = ""
-    for row in range(len(object_map)):
-        for column in range(len(object_map[0])):
-            game_object = object_map[row][column]
-            background = background_map[row][column]
-            if row == 0 or column == 0 or row == len(object_map)-1 or column == len(object_map[0])-1:
-                map_string += "_"
-            elif game_object == " " and background == " ":
+    for row in range(len(game_state.object_map)):
+        for column in range(len(game_state.object_map[0])):
+            obj = top_obj_at_pos(column, row, game_state)
+            if obj is None:
                 map_string += "."
-            elif game_object == " ":
-                map_string += name_to_character[background.name + ("_word" if is_word(background) or is_key_word(background) else "_obj")]
             else:
-                map_string += name_to_character[game_object.name + ("_word" if is_word(game_object) or is_key_word(game_object) else "_obj")]
+                map_string += name_to_character[obj.name + ("_word" if is_word(obj) or is_key_word(obj) else "_obj")]
         map_string += "\n"
     map_string = map_string.rstrip("\n")  # Remove the trailing newline
     return map_string
@@ -591,9 +553,7 @@ def make_level(game_map: List[List[str]]) -> GameState:
 
     game_state.orig_map = game_map
 
-    maps = split_map(game_state.orig_map)
-    game_state.back_map = maps[0]
-    game_state.obj_map = maps[1]
+    game_state.object_map = generate_empty_map(game_state.orig_map)
 
     assign_map_objs(game_state)
     interpret_rules(game_state)
@@ -601,20 +561,19 @@ def make_level(game_map: List[List[str]]) -> GameState:
     return game_state
 
 
-def obj_at_pos(x: int, y: int, om: List[List[GameObj]]):
+def top_obj_at_pos(x: int, y: int, state: GameState) -> Optional[GameObj]:
     """
     Get the object at a specific position in the object map.
 
     :param x: X coordinate.
     :param y: Y coordinate.
-    :param om: The object map (2D list).
+    :param state: The current game-state
     :return: The object at the specified coordinates.
     """
-    try:
-        return om[y][x]
-    except:
-        print("blub")
-    return om[y][x]
+    for obj in reversed(state.object_map[y][x]):
+        if obj.__class__ == GameObj:
+            return obj
+    return None
 
 
 def is_word(e: Union[str, GameObj]):
@@ -654,7 +613,7 @@ def is_phys(e: Union[str, GameObj]):
     return e.object_type == GameObjectType.Physical
 
 
-def add_active_rules(word_a: GameObj, word_b: GameObj, is_connector: GameObj, rules: List, rule_objs: List):
+def add_active_rules(word_a: Optional[GameObj], word_b: Optional[GameObj], is_connector: GameObj, rules: List, rule_objs: List):
     """
     Add active rules based on the word objects and their connectors (like "is" in "Baba is You").
 
@@ -664,6 +623,8 @@ def add_active_rules(word_a: GameObj, word_b: GameObj, is_connector: GameObj, ru
     :param rules: List of current active rules.
     :param rule_objs: List of rule objects in the game.
     """
+    if word_a is None or word_b is None:
+        return
     if (is_word(word_a) and not is_key_word(word_a)) and (is_word(word_b) or is_key_word(word_b)):
         # Add a new rule if not already made
         r = f"{word_a.name}-{is_connector.name}-{word_b.name}"
@@ -687,28 +648,25 @@ def interpret_rules(game_state: GameState):
     game_state.rule_objs = []
 
     # Get all relevant fields
-    om = game_state.obj_map
-    bm = game_state.back_map
     is_connectors = game_state.is_connectors
     rules = game_state.rules
     rule_objs = game_state.rule_objs
     sort_phys = game_state.sort_phys
-    phys = game_state.phys
 
     # iterate all is-connectors to identify rules
     for is_connector in is_connectors:
         # Horizontal position
-        word_a = obj_at_pos(is_connector.x - 1, is_connector.y, om)
-        word_b = obj_at_pos(is_connector.x + 1, is_connector.y, om)
+        word_a = top_obj_at_pos(is_connector.x - 1, is_connector.y, game_state)
+        word_b = top_obj_at_pos(is_connector.x + 1, is_connector.y, game_state)
         add_active_rules(word_a, word_b, is_connector, rules, rule_objs)
 
         # Vertical position
-        word_c = obj_at_pos(is_connector.x, is_connector.y - 1, om)
-        word_d = obj_at_pos(is_connector.x, is_connector.y + 1, om)
+        word_c = top_obj_at_pos(is_connector.x, is_connector.y - 1, game_state)
+        word_d = top_obj_at_pos(is_connector.x, is_connector.y + 1, game_state)
         add_active_rules(word_c, word_d, is_connector, rules, rule_objs)
 
     # Interpret sprite changing rules
-    transformation(om, bm, rules, sort_phys, phys)
+    transformation(game_state, rules, sort_phys)
 
     # Reset the objects
     reset_all(game_state)
@@ -905,29 +863,29 @@ def set_overlaps(game_state: GameState):
     game_state.overlaps = []
     game_state.unoverlaps = []
 
-    bm = game_state.back_map
-    om = game_state.obj_map
-    overlaps = game_state.overlaps
-    unoverlaps = game_state.unoverlaps
-    phys = game_state.phys
-    words = game_state.words
 
-    for p in phys:
+    for p in game_state.phys:
+        field = game_state.object_map[p.y][p.x]
         if not p.is_movable and not p.is_stopped:
-            overlaps.append(p)
-            if om[p.y][p.x] == p:
-                om[p.y][p.x] = bm[p.y][p.x]
-                bm[p.y][p.x] = p
+            game_state.overlaps.append(p)
+            # put the object as far down as possible at its position:
+            if field[0] != p:
+                field.remove(p)
+                field.insert(0, p)
         else:
-            unoverlaps.append(p)
-            if bm[p.y][p.x] == p:
-                bm[p.y][p.x] = om[p.y][p.x]
-                om[p.y][p.x] = p
+            game_state.unoverlaps.append(p)
+            # put the object as far up as possible at its position:
+            if field[len(field) - 1] != p:
+                field.remove(p)
+                field.append(p)
 
-    unoverlaps.extend(words)
-    # Words will always be in the object layer
-    for w in words:
-        om[w.y][w.x] = w
+    game_state.unoverlaps.extend(game_state.words)
+    # Words will always be as far up as possible:
+    for w in game_state.words:
+        field = game_state.object_map[w.y][w.x]
+        if field[len(field) - 1] != w:
+            field.remove(w)
+            field.append(w)
 
 
 # Check if an object is overlapping another
@@ -956,7 +914,7 @@ def reset_obj_props(phys: List[GameObj]):
 
 
 # Check if the player has stepped on a kill object
-def killed(players, killers):
+def killed(players: List[GameObj], killers: List[GameObj]) -> List[GameObj]:
     """
     Check if any player has been killed by a killer object.
 
@@ -964,11 +922,11 @@ def killed(players, killers):
     :param killers: List of killer objects.
     :return: List of killed objects.
     """
-    dead = []
+    dead: List[GameObj] = []
     for player in players:
         for killer in killers:
             if overlapped(player, killer):
-                dead.append([player, killer])
+                dead += [player, killer]
                 # Todo, I assume we can break here
                 # TODO: is there a meaning to the comment above?
                 #       => break and only delete player
@@ -976,7 +934,7 @@ def killed(players, killers):
 
 
 # Check if an object has drowned
-def drowned(phys, sinkers):
+def drowned(phys: List[GameObj], sinkers: List[GameObj]) -> List[GameObj]:
     """
     Check if any objects have drowned by falling into sinkers.
 
@@ -988,7 +946,7 @@ def drowned(phys, sinkers):
     for p in phys:
         for sinker in sinkers:
             if p != sinker and overlapped(p, sinker):
-                dead.append([p, sinker])
+                dead += [p, sinker]
     return dead
 
 
@@ -1000,23 +958,16 @@ def destroy_objs(dead, game_state: GameState):
     :param dead: List of objects to be removed.
     :param game_state: The current game state.
     """
-    bm = game_state.back_map
-    om = game_state.obj_map
-    phys = game_state.phys
     sort_phys = game_state.sort_phys
 
-    for p, o in dead:
-        # Remove reference of the player and the murder object
-        phys = [ x for x in phys if x not in [o, p] ]
-        sort_phys[p.name] = [ x for x in sort_phys[p.name] if x != p ]
-        if o != p:
-            sort_phys[o.name] = [ x for x in sort_phys[o.name] if x != o ]
+    for obj in dead:
+        # Remove all reference to the object
+        game_state.phys.remove(obj)# = [ x for x in game_state.phys if x != obj ]
+        sort_phys[obj.name].remove(obj)# = [ x for x in sort_phys[obj.name] if x != obj ]
+        game_state.object_map[obj.y][obj.x].remove(obj)# = [ x for x in game_state.object_map[obj.y][obj.x] if x != obj ]
 
-        # Clear the space
-        bm[o.y][o.x] = ' '
-        om[p.y][p.x] = ' '
 
-    # Reset the objects
+    # Reset the objects, if anything was deleted
     if dead:
         reset_all(game_state)
 
@@ -1052,15 +1003,13 @@ def is_obj_word(w: str):
 
 
 # Turns all of one object type into all of another object type
-def transformation(om, bm, rules, sort_phys, phys):
+def transformation(state: GameState, rules, sort_phys):
     """
     Apply transformation rules (e.g., "Baba is Flag") to change object types in the game state.
 
-    :param om: Object map.
-    :param bm: Background map.
+    :param state: The current game-state
     :param rules: List of active rules.
     :param sort_phys: Dictionary of sorted physical objects by type.
-    :param phys: List of physical objects.
     """
     # x-is-x takes priority and makes it immutable
     x_is_x = []
@@ -1075,39 +1024,34 @@ def transformation(om, bm, rules, sort_phys, phys):
         if parts[0] not in x_is_x and is_obj_word(parts[0]) and is_obj_word(parts[2]):
             all_objs = sort_phys.get(parts[0], []).copy()
             for obj in all_objs:
-                change_sprite(obj, parts[2], om, bm, phys, sort_phys)
+                change_sprite(obj, parts[2], state)
 
 
 # Changes a sprite from one thing to another
-def change_sprite(o, w, om, bm, phys, sort_phys):
+def change_sprite(o, w, state: GameState):
     """
     Change the sprite of a game object to a different type based on rules.
 
     :param o: Original game object.
     :param w: New object type name.
-    :param om: Object map.
-    :param bm: Background map.
-    :param phys: List of physical objects.
-    :param sort_phys: Dictionary of sorted physical objects by type.
+    :param state: The current game-state
     """
     character = name_to_character[w + "_obj"]
     o2 = GameObj.create_physical_object(w, character, o.x, o.y)
-    phys.append(o2)  # in with the new...
+    state.phys.append(o2)  # in with the new...
 
     # Replace object on obj_map/back_map
-    if obj_at_pos(o.x, o.y, om) == o:
-        om[o.y][o.x] = o2
-    else:
-        bm[o.y][o.x] = o2
+    field: List[Union[GameObj, str]] = state.object_map[o.y][o.x]
+    field[field.index(o)] = o2
 
     # Add to the list of objects under a certain name
-    if w not in sort_phys:
-        sort_phys[w] = [o2]
+    if w not in state.sort_phys:
+        state.sort_phys[w] = [o2]
     else:
-        sort_phys[w].append(o2)
+        state.sort_phys[w].append(o2)
 
-    phys.remove(o)  # ...out with the old
-    sort_phys[o.name].remove(o)
+    state.phys.remove(o)  # ...out with the old
+    state.sort_phys[o.name].remove(o)
 
 
 # Adds a feature to word groups based on ruleset
@@ -1141,7 +1085,7 @@ def set_features(game_state: GameState):
 
 
 # Similar to killed() check if feat pairs are overlapped and destroy both
-def bad_feats(featured, sort_phys):
+def bad_feats(featured, sort_phys) -> List[GameObj]:
     baddies = []
 
     for pair in featPairs:
@@ -1161,7 +1105,7 @@ def bad_feats(featured, sort_phys):
             for a in a_set:
                 for b in b_set:
                     if overlapped(a, b):
-                        baddies.append([a, b])
+                        baddies += [a, b]
 
     return baddies
 
