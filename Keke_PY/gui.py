@@ -1,13 +1,10 @@
 import time
 from itertools import chain
-from operator import concat
 from typing import Tuple, Union, Iterable, List, Optional
 
-from PIL.ImageOps import solarize
 
 from Keke_PY.agents.AStar import AStar, simple_heuristic
 from Keke_PY.baba import GameState, Direction, imgHash, advance_game_state, parse_map, make_level
-from Keke_PY.agents.BFS import BFS
 
 
 from pygame.locals import *
@@ -24,23 +21,16 @@ def render_tile(screen, tile, xpos, ypos):
 
 
 def render_game_state(screen, game_state: GameState):
-    background = game_state.back_map
-    objects = game_state.obj_map
 
-    for y, row in enumerate(background):
+    for y, row in enumerate(game_state.object_map):
         for x, tile in enumerate(row):
             # Calculate position for the tile
             x_pos = x * TILE_SIZE
             y_pos = y * TILE_SIZE
 
-            # Draw background tile
-            render_tile(screen, tile, x_pos, y_pos)
-
-            # Draw object map overlay
-            object_tile = objects[y][x]
-            if object_tile != " ":
-                render_tile(screen, object_tile, x_pos, y_pos)
-
+            # Draw all objects on this tile:
+            for obj in tile:
+                render_tile(screen, obj, x_pos, y_pos)
 
 # Example function to update the display
 def update_display(screen, game_state: GameState):
@@ -70,11 +60,8 @@ def play_game(initial_game_state: GameState, action_source: Iterable[Direction])
 
         # TODO: remove these lines:
         if True:
-            for back in game_state.back_map:
-                print(back)
-            for obj in game_state.obj_map:
-                print(obj)
-            print(game_state.unique_str())
+            for row in game_state.object_map:
+                print(row)
 
 
 
@@ -90,7 +77,7 @@ def play_game(initial_game_state: GameState, action_source: Iterable[Direction])
         return False
 
 
-def inputs_from_keyboard(mem_buffer: List[Direction] = []) -> Iterable[Direction]:
+def inputs_from_keyboard(mem_buffer: List[Direction]) -> Iterable[Direction]:
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -242,7 +229,7 @@ if __name__ == '__main__':
                         print(f"{name}\t{index}\t: {solution}\n")
                     input("Waiting...:")
                     continue
-                while True:#int(input("Try?")):
+                while int(input("Try?")):
                     key_buffer: List[Direction] = []
                     play_level(demo_level_1["ascii"], chain(
                         #yield_solution_delayed(demo_level_1["solution"], 0.5),

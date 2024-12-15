@@ -312,7 +312,7 @@ def try_move(e: Union[GameObj, str], action: Direction, state: GameState, alread
         return True
     x_, y_ = e.x, e.y
     current_field_list: List[Union[GameObj, str]] = [e]
-    objects_to_move_along: List[Union[GameObj, str]] = [e]
+    objects_to_move_along: List[Union[GameObj, str]] = []
     while True:
         x_, y_ = x_ + action.dx(), y_ + action.dy()
         if not (0 <= x_ < len(state.object_map[0]) and 0 <= y_ <= len(state.object_map)):
