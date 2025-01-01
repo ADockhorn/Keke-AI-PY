@@ -635,7 +635,7 @@ def weightedHeuristicSum(
     for heuristic in heuristics:
         weight: float = weights[weights_read_index]
         if abs(weight) <= doNothingThreshold:
-            weights_read_index += len(signature(heuristic).parameters)
+            weights_read_index += len(signature(heuristic).parameters) - 1
         else:
             weights_read_index += 1
             parameters: List = [state, ctx]

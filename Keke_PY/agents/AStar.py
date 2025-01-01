@@ -98,7 +98,7 @@ def test_heuristics(game_state: GameState, ctx: dict) -> float:
     return weightedHeuristicSum(
         game_state, ctx,
         [0 for _ in range(heuristics_feature_vector_length)],
-        -1
+        1
     )
 
 if __name__ == '__main__':
