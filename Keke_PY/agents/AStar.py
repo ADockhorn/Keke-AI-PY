@@ -3,7 +3,7 @@ from typing import Callable
 
 from Keke_PY.agents.heuristics import weightedHeuristicSum, heuristics, heuristics_feature_vector_length
 from Keke_PY.baba import GameState, Direction, check_win, advance_game_state
-from Keke_PY.agents.ai_interface import AIInterface, trange_or_infinite_loop
+from Keke_PY.agents.ai_interface import AIInterface, range_or_infinite_loop
 from typing import List, Tuple, Union
 
 
@@ -20,13 +20,20 @@ class AStar(AIInterface):
         """
         self.heuristic = heuristic
 
-    def search(self, initial_state: GameState, max_forward_model_calls: Union[int, None] = 50, max_depth: Union[int, None] = 50) -> Tuple[Union[List[str], None], int]:
+    def search(
+            self,
+            initial_state: GameState,
+            max_forward_model_calls: Union[int, None] = None,
+            max_depth: Union[int, None] = None,
+            print_progress_bar: bool = False
+    ) -> Tuple[Union[List[str], None], int]:
         """
         Perform the A* search algorithm.
 
         :param initial_state: The initial state of the game.
         :param max_forward_model_calls: Maximum number of node expansions to avoid infinite loops.
         :param max_depth: Maximum depth for algorithms like DFS.
+        :param print_progress_bar: if True, there will be a progress-bar in the console for the solving-attempt.
         :return: List of actions that lead to a solution (if found, else None), and the number of node expansions.
         """
         # Priority queue: (f(n), g(n), current_state, actions_so_far)
@@ -42,7 +49,7 @@ class AStar(AIInterface):
         heapq.heappush(pq, (self.heuristic(initial_state, ctx), 0, index, initial_state, []))
 
         visited = set()
-        for i in trange_or_infinite_loop(max_forward_model_calls):
+        for i in range_or_infinite_loop(max_forward_model_calls, print_progress_bar):
             if not pq:
                 break
             f, g, _, current_state, actions = heapq.heappop(pq)
@@ -109,5 +116,5 @@ if __name__ == '__main__':
 
         game_state = make_level(game_map)
 
-        solution = astar_agent.search(game_state, max_forward_model_calls=1000)
+        solution = astar_agent.search(game_state, 1000, None, True)
         print(solution)

@@ -1,7 +1,7 @@
 from collections import deque
 from itertools import cycle
 
-from Keke_PY.agents.ai_interface import AIInterface, trange_or_infinite_loop
+from Keke_PY.agents.ai_interface import AIInterface, range_or_infinite_loop
 from Keke_PY.baba import GameState, Direction, check_win, advance_game_state
 from typing import List, Tuple, Union
 from tqdm import trange
@@ -12,17 +12,24 @@ class BFS(AIInterface):
     Breadth-First Search implementation.
     """
 
-    def search(self, initial_state: GameState, max_forward_model_calls: Union[int, None] = 50, max_depth: Union[int, None] = 50) -> Tuple[Union[List[str], None], int]:
+    def search(
+            self,
+            initial_state: GameState,
+            max_forward_model_calls: Union[int, None] = None,
+            max_depth: Union[int, None] = None,
+            print_progress_bar: bool = False
+    ) -> Tuple[Union[List[str], None], int]:
         """
         :param initial_state: The initial state of the game.
         :param max_forward_model_calls: Maximum number of node expansions to avoid infinite loops.
         :param max_depth: Maximum depth for algorithms like DFS.
+        :param print_progress_bar: if True, there will be a progress-bar in the console for the solving-attempt.
         :return: List of actions that lead to a solution (if found, else None), and the number of node expansions.
         """
         queue = deque([(initial_state, [])])  # (current state, action history)
         visited = set()
 
-        for i in trange_or_infinite_loop(max_forward_model_calls):
+        for i in range_or_infinite_loop(max_forward_model_calls, print_progress_bar):
             if not queue:
                 break
             current_state, actions = queue.popleft()

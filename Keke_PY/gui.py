@@ -175,7 +175,7 @@ broken_levels: List[Tuple[str, Union[range, int, None, Iterable[int]]]] = [
 test = working_levels
 
 def try_ai(level, max_forward_model_calls: Union[int, None] = 50, max_depth: Union[int, None] = 50) -> Optional[str]:
-    ai_solution_attempt = AStar(simple_heuristic).search(make_level(parse_map(level)), max_forward_model_calls, max_depth)
+    ai_solution_attempt = AStar(simple_heuristic).search(make_level(parse_map(level)), max_forward_model_calls, max_depth, True)
     if ai_solution_attempt[0] is not None:
         print(ai_solution_attempt[0])
         solution_str = ""
@@ -212,7 +212,7 @@ if __name__ == '__main__':
             print(demo_level_1["solution"])
 
             if False:
-                play_level(demo_level_1["ascii"], inputs_from_keyboard())
+                play_level(demo_level_1["ascii"], inputs_from_keyboard([]))
             else:
 
                 if play_level(demo_level_1["ascii"], yield_solution_delayed(demo_level_1["solution"])):

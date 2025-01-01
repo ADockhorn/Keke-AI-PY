@@ -36,6 +36,6 @@ if __name__ == "__main__":
         for name, get_agent in agent_generators:
             print(f"Now running: {name}")
             agent = get_agent()
-            solution = agent.search(game_state, max_forward_model_calls, max_depth)
+            solution = agent.search(game_state, max_forward_model_calls, max_depth, True)
             print(f"{name} Solution: {solution}\n\n")
 
