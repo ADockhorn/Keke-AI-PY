@@ -31,6 +31,8 @@ def render_game_state(screen, game_state: GameState):
             # Draw all objects on this tile:
             for obj in tile:
                 render_tile(screen, obj, x_pos, y_pos)
+                x_pos += 5
+                y_pos += 5
 
 # Example function to update the display
 def update_display(screen, game_state: GameState):
@@ -229,10 +231,10 @@ if __name__ == '__main__':
                         print(f"{name}\t{index}\t: {solution}\n")
                     input("Waiting...:")
                     continue
-                while int(input("Try?")):
+                for _ in range(0):# while int(input("Try?")):
                     key_buffer: List[Direction] = []
                     play_level(demo_level_1["ascii"], chain(
-                        #yield_solution_delayed(demo_level_1["solution"], 0.5),
+                        yield_solution_delayed(demo_level_1["solution"], 0.5),
                         inputs_from_keyboard(key_buffer)
                     ))
                     key_str: str = ""
@@ -251,55 +253,3 @@ if __name__ == '__main__':
 
 
 
-
-"""
-
-./json_levels/full_biy_LEVELS.json	9	: DLDULLLDRRRURRDULDUL => DLLDULDLDRRRUUUL
-
-./json_levels/full_biy_LEVELS.json	19	: DDLLRUUUUUUURUULDRDLLRDDDLULURDRUUURULLRDDDDDDDL => UDLUURULLLRD
-
-./json_levels/full_biy_LEVELS.json  23  : rlrrllllrrrllrrdrrrrrrdlllllllllllluuluulddllluuurdrrrrrrrddddddddlllllurrrrrrrrrrruddlllluuddrrrruu =>
-                                          RRRRDDDDLULDRDLLLLRRUULDULDU
-
-./json_levels/full_biy_LEVELS.json  27  : dlldlllurrrururdrdlllluldrrrruuurdddrrullddddllldlllurdruddldluuurrrrrrrluuuuuuurrdluddduuuldddddddd =>
-                                          DDLLLLLURRRRURDRDLLLLULDRRRRUUURDDDDDDDDLLLLLDLUUURDRURRRRUUUURRULULDDDDDDDDDDDDDR
-
-./json_levels/full_biy_LEVELS.json  32  : rrludl => RDDDDR
-
-./json_levels/full_biy_LEVELS.json  63  : rullluldsssud => RULLLULDRLRLRD
-
-./json_levels/full_biy_LEVELS.json  70  : rdddddddrddudlulruuruuulruululrddddrrruuludldluuu => LLDDDDDDDDDRLD
-
-./json_levels/full_biy_LEVELS.json  183 : llddrdrrrudlllluururrrurrdduulllllddrrrrrrrsllluuuuuuuuuuuuuuu =>
-                                          RRRRDRULURURRDDRDLDDDDLLLUULLLLLLLDRRRRRRRDRULURDDRUDRRULDLUUUUUUULLLLLLLLDDDDRRRUUUU
-
-./json_levels/search_biy_LEVELS.json    20  : rullluldsssud => RULLLULDUUUUUD
-
-./json_levels/search_biy_LEVELS.json    24  : rdddddddrddudlulruuruuulruululrddddrrruuludldluuu => LLDDDDDDDDDRLD
-
-./json_levels/search_biy_LEVELS.json    61  : llddrdrrrudlllluururrrurrdduulllllddrrrrrrrsllluuuuuuuuuuuuuuu =>
-                                              RRRRDRULURURRDDRDLDDDDLLLUULLLLLLLDRRRRRRRDRULURDDRUDRRULDLUUUUUUULLLLLLLLDDDDRRRUUUU
-
-./json_levels/test_LEVELS.json      4   : DLDULLLDRRRURRDULDUL => LLDDULDLDRRRUUUL
-
-./json_levels/test_LEVELS.json      13  : DDLLRUUUUUUURUULDRDLLRDDDLULURDRUUURULLRDDDDDDDL => UDLUURULLLRD
-
-./json_levels/test_LEVELS.json      17  : rlrrllllrrrllrrdrrrrrrdlllllllllllluuluulddllluuurdrrrrrrrddddddddlllllurrrrrrrrrrruddlllluuddrrrruu =>
-                                          RRRRDDDDLULDRDLLLLRRUULDULDU
-
-./json_levels/test_LEVELS.json      18  : dlldlllurrrururdrdlllluldrrrruuurdddrrullddddllldlllurdruddldluuurrrrrrrluuuuuuurrdluddduuuldddddddd =>
-                                          DDLLLLLURRRRURDRDLLLLULDRRRRUUURDDDDDDDDLLLLLDLUUURDRURRRRUUUURRULULDDDDDDDDDDDDDR
-
-./json_levels/test_LEVELS.json      22  : rrludl => RDDDDR
-
-./json_levels/test_LEVELS.json      46  : rullluldsssud => RULLLULDUUUUUD
-
-./json_levels/test_LEVELS.json      51  : rdddddddrddudlulruuruuulruululrddddrrruuludldluuu => LLDDDDDDDDDRLD
-
-./json_levels/test_LEVELS.json      133 : llddrdrrrudlllluururrrurrdduulllllddrrrrrrrsllluuuuuuuuuuuuuuu
-                                          RRRRDRULURURRDDRDLDDDDLLLUULLLLLLLDRRRRRRRDRULURDDRUDRRULDLUUUUUUULLLLLLLLDDDDRRRUUUU
-
-./json_levels/user_milk_biy_LEVELS.json     5   : DDLLRUUUUUUURUULDRDLLRDDDLULURDRUUURULLRDDDDDDDL => UDLUURULLLRD
-
-
-"""

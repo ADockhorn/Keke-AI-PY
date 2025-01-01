@@ -3,6 +3,8 @@
 # Original Code by Milk
 # Translated to Python by Descar
 import copy
+import random
+import uuid
 from dataclasses import dataclass
 from typing import List, Dict, Union, Optional
 from enum import Enum, unique
@@ -139,6 +141,7 @@ class GameObj:
     is_stopped: bool
     feature: str        # only used for physical objects
     dir: Direction      # only used for physical object
+    id: uuid
 
     def __init__(self, name, img, x, y,
                  object_type=GameObjectType.Undefined, obj="", is_movable=False, is_stopped=False):
@@ -157,6 +160,8 @@ class GameObj:
 
         # word object feature
         self.obj = obj
+
+        self.id = uuid.uuid4()
 
     @classmethod
     def create_physical_object(cls, name, img_character, x, y):
@@ -312,6 +317,9 @@ def try_move(e: Union[GameObj, str], action: Direction, state: GameState, alread
         return True
     x_, y_ = e.x, e.y
     current_field_list: List[Union[GameObj, str]] = [e]
+    # if multiple player objects start at the same position, they should be moved together:
+    if e in state.players:
+        current_field_list = [x for x in state.object_map[e.y][e.x] if x.name == e.name and x not in already_moved_objs]
     objects_to_move_along: List[Union[GameObj, str]] = []
     while True:
         x_, y_ = x_ + action.dx(), y_ + action.dy()
@@ -373,14 +381,6 @@ def move_auto_movers(already_moved_objs: List[GameObj], state: GameState):
         if not m:
             # If the mover got stopped, it tries to change direction:
             curAuto.dir = Direction.opposite(curAuto.dir)
-            #   TODO: before the line below was added:
-            #               Working count: 441
-            #                broken count: 20
-            #           After it was added:
-            #               Working count: 409
-            #                broken count: 27
-            #              ai fixed count: 25
-            #               => insert line
             try_move(curAuto, curAuto.dir, state, already_moved_objs)
 
     destroy_objs(killed(players, killers), state)
@@ -959,8 +959,11 @@ def destroy_objs(dead, game_state: GameState):
     :param game_state: The current game state.
     """
     sort_phys = game_state.sort_phys
-
+    deleted_ids: set = set()
     for obj in dead:
+        if obj.id in deleted_ids:
+            continue
+        deleted_ids.add(obj.id)
         # Remove all reference to the object
         game_state.phys.remove(obj)# = [ x for x in game_state.phys if x != obj ]
         sort_phys[obj.name].remove(obj)# = [ x for x in sort_phys[obj.name] if x != obj ]
