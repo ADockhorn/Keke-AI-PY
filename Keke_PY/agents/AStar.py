@@ -91,14 +91,10 @@ def simple_heuristic(game_state: GameState, _ctx: dict) -> float:
 
 
 def test_heuristics(game_state: GameState, ctx: dict) -> float:
-    if len(game_state.players) == 0:
-        return float('inf')
-    if not game_state.winnables:
-        return float('inf')  # No winnable objects
     return weightedHeuristicSum(
         game_state, ctx,
-        [0 for _ in range(heuristics_feature_vector_length)],
-        1
+        [0] * heuristics_feature_vector_length,
+        -1
     )
 
 if __name__ == '__main__':
