@@ -1,9 +1,10 @@
 import heapq
 from typing import Callable
 
-from Keke_PY.agents.heuristics import weightedHeuristicSum, heuristics, heuristics_feature_vector_length
+from Keke_PY.heuristics.hand_crafted_heuristics import heuristics_feature_vector_length
+from Keke_PY.heuristics.weighted_sum import weighted_heuristic_sum
 from Keke_PY.baba import GameState, Direction, check_win, advance_game_state
-from Keke_PY.agents.ai_interface import AIInterface, range_or_infinite_loop
+from Keke_PY.search_agents.ai_interface import AIInterface, range_or_infinite_loop
 from typing import List, Tuple, Union
 
 
@@ -89,7 +90,7 @@ def simple_heuristic(game_state: GameState, _ctx: dict) -> float:
     :return: Estimated cost to reach the goal.
     """
     if len(game_state.players) == 0:
-        return 10 * float(len(game_state.back_map) + len(game_state.back_map[0]))
+        return 10 * float(len(game_state.object_map) + len(game_state.object_map[0]))
     if not game_state.winnables:
         return float('inf')  # No winnable objects
 
@@ -98,7 +99,7 @@ def simple_heuristic(game_state: GameState, _ctx: dict) -> float:
 
 
 def test_heuristics(game_state: GameState, ctx: dict) -> float:
-    return weightedHeuristicSum(
+    return weighted_heuristic_sum(
         game_state, ctx,
         [0] * heuristics_feature_vector_length,
         -1

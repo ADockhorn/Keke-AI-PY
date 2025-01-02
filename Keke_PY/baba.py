@@ -3,11 +3,10 @@
 # Original Code by Milk
 # Translated to Python by Descar
 import copy
-import random
 import uuid
 from dataclasses import dataclass
 from typing import List, Dict, Union, Optional
-from enum import Enum, unique
+from enum import Enum
 import pygame
 
 # Assign ASCII values to images
@@ -330,7 +329,7 @@ def try_move(e: Union[GameObj, str], action: Direction, state: GameState, alread
         continue_deeper: bool = False
         for object_in_the_way in objects_in_the_way:
             test: Optional[bool] = a_can_push_b(current_field_list, object_in_the_way, state, local_objects_to_move_along, already_moved_objs)
-            if test == False:
+            if test == False: # No, `test == False` can't be simplified to `not test` in case of `test == None` (the IDE is lying)
                 return False
             if test is None:
                 continue_deeper = True
@@ -390,7 +389,7 @@ def move_auto_movers(already_moved_objs: List[GameObj], state: GameState):
 
 def assign_map_objs(game_state: GameState):
     """
-    Populate the game state with objects from the object map.
+    Populate the game state with objects from the object blocked_fields_map.
     Objects can be physical (like "baba") or word-based (like "Baba is You").
 
     :param game_state: Current game state.
@@ -458,9 +457,9 @@ def assign_map_objs(game_state: GameState):
 
 def generate_empty_map(m: List[List[str]]) -> List[List[List[Union[GameObj, str]]]]:
     """
-    Split the map into two layers: background map and object map.
+    Split the blocked_fields_map into two layers: background blocked_fields_map and object blocked_fields_map.
 
-    :param m: The input 2D map of characters.
+    :param m: The input 2D blocked_fields_map of characters.
     :return: Tuple (background_map, object_map).
     """
     res: List[List[List[Union[GameObj, str]]]] = []
@@ -496,10 +495,10 @@ def only_top_objects_string(game_state: GameState) -> str:
 
 def map_to_string(game_map: List[List[str]]):
     """
-    Generate a printable version of the map by converting it into a comma-separated string.
+    Generate a printable version of the blocked_fields_map by converting it into a comma-separated string.
 
-    :param game_map: A 2D list representing the game map.
-    :return: A string representing the map.
+    :param game_map: A 2D list representing the game blocked_fields_map.
+    :return: A string representing the blocked_fields_map.
     """
     map_arr = []
     for r in range(len(game_map)):
@@ -518,10 +517,10 @@ def map_to_string(game_map: List[List[str]]):
 # turns a string object back into a 2d array
 def parse_map(map_string: str) -> List[List[str]]:
     """
-    Parse a string into a 2D map.
+    Parse a string into a 2D blocked_fields_map.
 
-    :param map_string: A string representing the map (e.g., '.' for empty, characters for objects).
-    :return: A 2D list representing the parsed map.
+    :param map_string: A string representing the blocked_fields_map (e.g., '.' for empty, characters for objects).
+    :return: A 2D list representing the parsed blocked_fields_map.
     """
     new_map = []
     rows = map_string.split("\n")
@@ -533,12 +532,12 @@ def parse_map(map_string: str) -> List[List[str]]:
 
 def parse_map_wh(ms: str, w: int, h: int) -> List[List[str]]:
     """
-    Parse a string map into a 2D list with specific width and height.
+    Parse a string blocked_fields_map into a 2D list with specific width and height.
 
-    :param ms: A string representation of the map.
-    :param w: Width of the map.
-    :param h: Height of the map.
-    :return: A 2D list representing the parsed map.
+    :param ms: A string representation of the blocked_fields_map.
+    :param w: Width of the blocked_fields_map.
+    :param h: Height of the blocked_fields_map.
+    :return: A 2D list representing the parsed blocked_fields_map.
     """
     new_map = []
     for r in range(h):
@@ -563,7 +562,7 @@ def make_level(game_map: List[List[str]]) -> GameState:
 
 def top_obj_at_pos(x: int, y: int, state: GameState) -> Optional[GameObj]:
     """
-    Get the object at a specific position in the object map.
+    Get the object at a specific position in the object blocked_fields_map.
 
     :param x: X coordinate.
     :param y: Y coordinate.
@@ -639,7 +638,7 @@ def add_active_rules(word_a: Optional[GameObj], word_b: Optional[GameObj], is_co
 
 def interpret_rules(game_state: GameState):
     """
-    Interpret and apply the rules based on the current game state and the words in the map.
+    Interpret and apply the rules based on the current game state and the words in the blocked_fields_map.
 
     :param game_state: The current game state.
     """

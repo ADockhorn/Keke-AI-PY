@@ -3,7 +3,7 @@ from itertools import chain
 from typing import Tuple, Union, Iterable, List, Optional
 
 
-from Keke_PY.agents.AStar import AStar, simple_heuristic
+from Keke_PY.search_agents.AStar import AStar, simple_heuristic
 from Keke_PY.baba import GameState, Direction, imgHash, advance_game_state, parse_map, make_level
 
 

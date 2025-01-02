@@ -1,8 +1,7 @@
 from typing import Tuple, Union, List, Callable
 
-from Keke_PY.agents.AStar import AStar, simple_heuristic, test_heuristics
-from Keke_PY.agents.ai_interface import AIInterface
-from Keke_PY.baba import Direction
+from Keke_PY.search_agents.AStar import AStar, simple_heuristic, test_heuristics
+from Keke_PY.search_agents.ai_interface import AIInterface
 from Keke_PY.simulation import load_level_set, parse_map, make_level
 from BFS import BFS
 from DFS import DFS
@@ -30,8 +29,8 @@ if __name__ == "__main__":
     for i in test_levels[1]:
         print(f"Level Nr.: {i}")
         demo_level_1 = level_set["levels"][i]
-        map = parse_map(demo_level_1["ascii"])
-        game_state = make_level(map)
+        game_map = parse_map(demo_level_1["ascii"])
+        game_state = make_level(game_map)
 
         for name, get_agent in agent_generators:
             print(f"Now running: {name}")

@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from decimal import Overflow
 from typing import List, Tuple, Union, Iterable
 
 from tqdm import trange
@@ -46,6 +45,6 @@ def range_or_infinite_loop(end: Union[int, None], print_progress_bar: bool) -> I
 
     count: int = 0
     while True:
-        for i in range_constructor(1000000):
+        for _ in range_constructor(1000000):
             yield count
             count += 1

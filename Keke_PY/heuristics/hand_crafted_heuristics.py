@@ -11,45 +11,45 @@ allSuffixes = ["stop", "sink", "push", "you", "kill", "hot", "move", "melt", "yo
 
 
 """/**
- * Returns negative number of goals on current map multiplied by a weight.
+ * Returns negative number of goals on current blocked_fields_map multiplied by a weight.
  *
- * @param {object} state The current gamestate.
+ * @param {object} state The current game-state.
  * @param {number} weight The weight of this heuristic being multiplied.
  * @return {number} The weight multiplied with the negative number of goals.
  */"""
-def nbrOfGoals(state: GameState, _ctx: dict) -> float:
+def number_of_goal_objects(state: GameState, _ctx: dict) -> float:
     return len(state.winnables)
 
 """/**
- * Returns negative number of players on current map multiplied by a weight.
+ * Returns negative number of players on current blocked_fields_map multiplied by a weight.
  *
- * @param {object} state The current gamestate.
+ * @param {object} state The current game-state.
  * @param {number} weight The weight of this heuristic being multiplied.
  * @return {number} The weight multiplied with the negative number of players.
  */"""
-def nbrOfPlayers(state: GameState, _ctx: dict) -> float:
+def number_of_player_objects(state: GameState, _ctx: dict) -> float:
     return -len(state.players)
 
 """/**
  * Returns the amount of closed rooms multiplied by a weight.
  * Close Room = A closed space from which you cannot move to another room.
  *
- * @param {object} state The current gamestate.
+ * @param {object} state The current game-state.
  * @param {number} weight The weight of this heuristic being multiplied.
  * @return {number} The weight multiplied with the amount of closed rooms.
  */"""
 def connectivity(state: GameState, _ctx: dict) -> float:
-    map: List[List[str]] = parseRoomForConnectivityFeature(state)
-    roomCount: int = 0
-    for i, row in enumerate(map):
+    char_map: List[List[str]] = parse_room_for_connectivity_feature(state)
+    room_count: int = 0
+    for i, row in enumerate(char_map):
         for j, char in enumerate(row):
             if char == '0':
-                roomCount += 1
-                mark_all_connected(map, i, j, len(map), len(row))
-    return roomCount
+                room_count += 1
+                mark_all_connected(char_map, i, j, len(char_map), len(row))
+    return room_count
 
 
-def nbrOfStuckIs(state: GameState, _ctx: dict) -> float:
+def number_of_stuck_is_words(state: GameState, _ctx: dict) -> float:
     """
     Number of stuck 'IS'-words.
     (For a clarification of what 'stuck' means, see 'isIsStuck()')
@@ -59,11 +59,11 @@ def nbrOfStuckIs(state: GameState, _ctx: dict) -> float:
     """
     counter: int = 0
     for word in state.is_connectors:
-        if isIsStuck(state, word.x, word.y):
+        if is_is_word_stuck(state, word.x, word.y):
             counter += 1
     return counter
 
-def nbrOfStuckPrefixes(state: GameState, _ctx: dict) -> float:
+def number_of_stuck_prefixes(state: GameState, _ctx: dict) -> float:
     """
     Number of stuck prefixes.
     (For a clarification of what 'stuck' means, see 'prefixIsStuck()')
@@ -73,11 +73,11 @@ def nbrOfStuckPrefixes(state: GameState, _ctx: dict) -> float:
     """
     counter: int = 0
     for word in state.words:
-        if word.name in allPrefixes and prefixIsStuck(state, word.x, word.y):
+        if word.name in allPrefixes and is_prefix_stuck(state, word.x, word.y):
                 counter += 1
     return counter
 
-def nbrOfStuckSuffixes(state: GameState, _ctx: dict) -> float:
+def number_of_stuck_suffixes(state: GameState, _ctx: dict) -> float:
     """
     Number of stuck suffixes.
     (For a clarification of what 'stuck' means, see 'suffixIsStuck()')
@@ -87,11 +87,11 @@ def nbrOfStuckSuffixes(state: GameState, _ctx: dict) -> float:
     """
     counter: int = 0
     for word in state.words:
-        if word.name in allSuffixes and suffixIsStuck(state, word.x, word.y):
+        if word.name in allSuffixes and is_suffix_stuck(state, word.x, word.y):
                 counter += 1
     return counter
 
-def nbrOfStuckImportantSuffixes(state: GameState, _ctx: dict) -> float:
+def number_of_stuck_important_suffixes(state: GameState, _ctx: dict) -> float:
     """
     Number of stuck important suffixes. (As defined above by 'important_SuffixWords')
     (For a clarification of what 'stuck' means, see 'suffixIsStuck()')
@@ -101,18 +101,18 @@ def nbrOfStuckImportantSuffixes(state: GameState, _ctx: dict) -> float:
     """
     counter: int = 0
     for word in state.words:
-        if word.name in important_SuffixWords and suffixIsStuck(state, word.x, word.y):
+        if word.name in important_SuffixWords and is_suffix_stuck(state, word.x, word.y):
                 counter += 1
     return counter
 
 
 
-def isIsStuck(state: GameState, x: int, y: int) -> bool:
+def is_is_word_stuck(state: GameState, x: int, y: int) -> bool:
     """
     Checks whether an 'IS' can't be instantly moved or instantly completed (independently).
         Instant moving means by one push / without shifting any blocking object sideways out of the way.
         Instant completing means by only adding rule parts on empty fields.
-        (checking not instant movability/completibility would be to resource intensive)
+        (checking not instant movability/completability would be to resource intensive)
         (compared to the js implementation, this only additionally checks,
             whether the incomplete side of a rule is free)
     (This does not check the 'IS''s field itself.)
@@ -137,12 +137,12 @@ def isIsStuck(state: GameState, x: int, y: int) -> bool:
 
 
 
-def suffixIsStuck(state: GameState, x: int, y: int) -> bool:
+def is_suffix_stuck(state: GameState, x: int, y: int) -> bool:
     """
     Checks whether a Suffix can't be instantly moved or instantly completed (independently).
         Instant moving means by one push / without shifting any blocking object sideways out of the way.
         Instant completing means by only adding rule parts on empty fields.
-        (checking not instant movability/completibility would be to resource intensive)
+        (checking not instant movability/completability would be to resource intensive)
         (compared to the js implementation, this should cover more cases of stuckness:
             . . x .       . can be anything; _ is stopped in some way;
             . . . .       x is anything but a prefix; the y is anything but 'IS';
@@ -170,12 +170,12 @@ def suffixIsStuck(state: GameState, x: int, y: int) -> bool:
 
     return not is_movable_in_any_axis(state, x, y)
 
-def prefixIsStuck(state: GameState, x: int, y: int) -> bool:
+def is_prefix_stuck(state: GameState, x: int, y: int) -> bool:
     """
     Checks whether a Prefix can't be instantly moved or instantly completed (independently).
         Instant moving means by one push / without shifting any blocking object sideways out of the way.
         Instant completing means by only adding rule parts on empty fields.
-        (checking not instant movability/completibility would be to resource intensive)
+        (checking not instant movability/completability would be to resource intensive)
         (compared to the js implementation (for suffixes, since there was none for prefixes),
             this should cover more cases of stuckness:
             . _ . .       . can be anything; _ is stopped in some way;
@@ -208,7 +208,7 @@ def is_free_or_usable(state: GameState, x: int, y: int, usable_names: List[str])
     """
     check for fields, that could in theory complete another field to a rule.
     returns true, if the field doesn't prevent the rule from being completed.
-    (The bounds of the map are not considered free or usable, since nothing can move or be put there)
+    (The bounds of the blocked_fields_map are not considered free or usable, since nothing can move or be put there)
     @param state is the current game-state
     @param x is x-coordinate of the field to be checked
     @param y is y-coordinate of the field to be checked
@@ -230,7 +230,7 @@ def is_free_or_usable(state: GameState, x: int, y: int, usable_names: List[str])
 def is_field_empty(state: GameState, x: int, y: int) -> bool:
     """
     Checks, whether there is nothing at (x,y)
-    (The bounds of the map are considered as not empty, since nothing can move or be put there)
+    (The bounds of the blocked_fields_map are considered as not empty, since nothing can move or be put there)
     @param state is the current game-state
     @param x is x-coordinate of the field to be checked
     @param y is y-coordinate of the field to be checked
@@ -275,19 +275,19 @@ def is_direction_blocked(state: GameState, x: int, y: int, direction: Direction)
     """
     dx, dy = direction.dx(), direction.dy()
 
-    def is_blocking(obj: Union[GameObj, str]) -> Optional[bool]:
-        if obj.__class__ == GameObj:
-            if obj.is_stopped:
+    def is_blocking(game_object: Union[GameObj, str]) -> Optional[bool]:
+        if game_object.__class__ == GameObj:
+            if game_object.is_stopped:
                 return True
-            if obj.is_movable:
+            if game_object.is_movable:
                 return None
             return False
         else:
-            if obj == '_':
+            if game_object == '_':
                 return True
-            if obj == ' ':
+            if game_object == ' ':
                 return False
-            assert False, f"the value '{obj}' is unknown to this code" # There should be no other string values
+            assert False, f"the value '{game_object}' is unknown to this code" # There should be no other string values
 
     while True:
         x += dx
@@ -305,55 +305,55 @@ def is_direction_blocked(state: GameState, x: int, y: int, direction: Direction)
 
 
 """/**
- * Returns number of auto_movers on current map multiplied by a weight.
+ * Returns number of auto_movers on current blocked_fields_map multiplied by a weight.
  *
- * @param {object} state The current gamestate.
+ * @param {object} state The current game-state.
  * @param {number} weight The weight of this heuristic being multiplied.
- * @return {number} The weight multiplied with the number of automovers.
+ * @return {number} The weight multiplied with the number of auto-movers.
  */"""
-def elimOfAutomovers(state: GameState, _ctx: dict) -> float:
+def number_of_auto_movers(state: GameState, _ctx: dict) -> float:
     return len(state.auto_movers)
 
 """/**
- * Returns number of killer objects on current map multiplied by a weight.
+ * Returns number of killer objects on current blocked_fields_map multiplied by a weight.
  *
- * @param {object} state The current gamestate.
+ * @param {object} state The current game-state.
  * @param {number} weight The weight of this heuristic being multiplied.
  * @return {number} The weight multiplied with the number of killers.
  */"""
-def elimOfThreads(state: GameState, _ctx: dict) -> float:
+def number_of_killer_objects(state: GameState, _ctx: dict) -> float:
     return len(state.killers)
 
 """/**
- * Returns negative number of pushable objects on current map multiplied by a weight.
+ * Returns negative number of pushable objects on current blocked_fields_map multiplied by a weight.
  *
- * @param {object} state The current gamestate.
+ * @param {object} state The current game-state.
  * @param {number} weight The weight of this heuristic being multiplied.
- * @return {number} The weight multiplied with the negative number of pushables.
+ * @return {number} The weight multiplied with the number of pushable objects.
  */"""
-def maximizePushables(state: GameState, _ctx: dict) -> float:
+def number_of_pushable_objects(state: GameState, _ctx: dict) -> float:
     return len(state.pushables)
 
 
 """/**
- * Returns number of sinkers on current map multiplied by a weight.
+ * Returns number of sinkers on current blocked_fields_map multiplied by a weight.
  *
- * @param {object} state The current gamestate.
+ * @param {object} state The current game-state.
  * @param {number} weight The weight of this heuristic being multiplied.
  * @return {number} The weight multiplied with the number of sinkers.
  */"""
-def minimizeSinkables(state: GameState, _ctx: dict) -> float:
+def number_of_sinkable_objects(state: GameState, _ctx: dict) -> float:
     return len(state.sinkers)
 
 
 """/**
- * Returns number of stopping objects on current map multiplied by a weight.
+ * Returns number of stopping objects on current blocked_fields_map multiplied by a weight.
  *
- * @param {object} state The current gamestate.
+ * @param {object} state The current game-state.
  * @param {number} weight The weight of this heuristic being multiplied.
  * @return {number} The weight multiplied with the number of stopping objects.
  */"""
-def minimizeStopables(state: GameState, _ctx: dict) -> float:
+def number_of_stopped_objects(state: GameState, _ctx: dict) -> float:
     count: int = 0
     for obj in state.phys:
         if obj.is_stopped:
@@ -365,27 +365,27 @@ def minimizeStopables(state: GameState, _ctx: dict) -> float:
 """/**
  * Calculates average distance from player objects to killing objects and multiplies it with a weight.
  *
- * @param {object} state The current gamestate.
+ * @param {object} state The current game-state.
  * @param {number} weight The weight of this heuristic being multiplied.
  * @return {number} The weight multiplied with the average distance to killing objects.
  */"""
-def distanceToKillables(state: GameState, _ctx: dict) -> float:
+def player_killer_distance(state: GameState, _ctx: dict) -> float:
     # TODO@ask: should this function also take a default value?
-    return avgDistance(state.players, state.killers) or 0.0
+    return average_distance(state.players, state.killers) or 0.0
 
 
 
 # distanceHeuristics:
-def distance_to_winnables(state: GameState, _ctx: dict, default_value: float) -> float:
+def distance_to_winnable_objects(state: GameState, _ctx: dict, default_value: float) -> float:
     """
     The average distance between players and objects that are winnable positions.
     If there are no players or winnable positions, the given default value is returned.
     @param state is the current game-state
     @param _ctx is the (unused) context given to the heuristics
     @param default_value is the value returned, if there are no distances
-    @return average distance between players and winnables or default_value
+    @return average distance between players and winnable objects or default_value
     """
-    avg = avgDistance(state.players, state.winnables)
+    avg = average_distance(state.players, state.winnables)
     if avg is None:
         return default_value
     return avg
@@ -398,11 +398,11 @@ def distance_to_words(state: GameState, _ctx: dict, default_value: float) -> flo
     @param default_value is the value returned, if there are no distances
     @return average distance between players and words or default_value
     """
-    avg = avgDistance(state.players, state.words)
+    avg = average_distance(state.players, state.words)
     if avg is None:
         return default_value
     return avg
-def distance_to_pushables(state: GameState, _ctx: dict, default_value: float) -> float:
+def distance_to_pushable_objects(state: GameState, _ctx: dict, default_value: float) -> float:
     """
     The average distance between players and pushable objects.
     If there are no players or pushable objects, the given default value is returned.
@@ -411,7 +411,7 @@ def distance_to_pushables(state: GameState, _ctx: dict, default_value: float) ->
     @param default_value is the value returned, if there are no distances
     @return average distance between players and pushable objects or default_value
     """
-    avg = avgDistance(state.players, state.pushables)
+    avg = average_distance(state.players, state.pushables)
     if avg is None:
         return default_value
     return avg
@@ -420,11 +420,11 @@ def distance_to_pushables(state: GameState, _ctx: dict, default_value: float) ->
 """/**
  * Tracks the amount of unique rules that where created during a level.
  *
- * @param {object} state The current gamestate.
+ * @param {object} state The current game-state.
  * @param {number} weight The weight of this heuristic being multiplied.
  * @return {number} The weight multiplied with the amount of unique rules.
  */"""
-def maximizeDifferentRules(state: GameState, ctx: dict) -> float:
+def number_of_newly_created_rules(state: GameState, ctx: dict) -> float:
     count: int = 0
     for rule in state.rules:
         if rule not in ctx["initial rules"]:
@@ -436,12 +436,12 @@ def maximizeDifferentRules(state: GameState, ctx: dict) -> float:
 """/**
  * Checks if there is a path from any player object to any winning object.
  *
- * @param {object} state The current gamestate.
+ * @param {object} state The current game-state.
  * @param {number} weight The weight of this heuristic being multiplied.
  * @return {number} The weight multiplied with -1 if there is a path to goal. Otherwise returns 0.
  */"""
-def goalPath(state: GameState, _ctx: dict) -> float:
-    reachable_map: List[List[str]] = parseRoomForConnectivityFeature(state)
+def goal_reachability(state: GameState, _ctx: dict) -> float:
+    reachable_map: List[List[str]] = parse_room_for_connectivity_feature(state)
     marks, tests = state.winnables, state.players
     if len(state.players) < len(state.winnables):
         marks, tests = state.players, state.winnables
@@ -465,13 +465,13 @@ def goalPath(state: GameState, _ctx: dict) -> float:
  * @param {object[]} g2 Second group of objects.
  * @return {number} Average distance between the given groups of objects.
  */"""
-def avgDistance(group1: List[GameObj], group2: List[GameObj]) -> Union[float, None]:
+def average_distance(group1: List[GameObj], group2: List[GameObj]) -> Union[float, None]:
     distance_sum: float = 0
     distances_count: int = 0
     for obj1 in group1:
         for obj2 in group2:
             distances_count += 1
-            distance_sum += dist(obj1, obj2)
+            distance_sum += distance(obj1, obj2)
     if distances_count == 0:
         return None
     return distance_sum / distances_count
@@ -483,7 +483,7 @@ def avgDistance(group1: List[GameObj], group2: List[GameObj]) -> Union[float, No
 
 
 
-def dist(a: GameObj, b: GameObj) -> float:
+def distance(a: GameObj, b: GameObj) -> float:
     """
     Manhattan-distance between two objects
     @param a is the first game-object
@@ -495,46 +495,46 @@ def dist(a: GameObj, b: GameObj) -> float:
 
 
 """/**
- * Parses a map in a way, that other functions like the _connectivity function can read it.
+ * Parses a blocked_fields_map in a way, that other functions like the _connectivity function can read it.
  * All walls and objects, where the player can (or shouldn't because death) not move on, are a "1".
- * All empty fields, fields with only overlappable objects, and playerfields are a "0".
+ * All empty fields, fields with only overlapped objects, and player fields are a "0".
  *
- * @param {object} state The current gamestate.
- * @return {string[]} The parsed map.
+ * @param {object} state The current game-state.
+ * @return {string[]} The parsed blocked_fields_map.
  */"""
-def parseRoomForConnectivityFeature(state: GameState) -> List[List[str]]:
-    map = parse_map(only_top_objects_string(state))
+def parse_room_for_connectivity_feature(state: GameState) -> List[List[str]]:
+    blocked_fields_map = parse_map(only_top_objects_string(state))
 
-    for i, row in enumerate(map):
+    for i, row in enumerate(blocked_fields_map):
         for j, char in enumerate(row):
             if char == '_':
-                map[i][j] = '1'
+                blocked_fields_map[i][j] = '1'
             else:
-                map[i][j] = '0'
+                blocked_fields_map[i][j] = '0'
 
     def set_all(objs: List[GameObj], c: str):
         for obj in objs:
-            map[obj.y][obj.x] = c
+            blocked_fields_map[obj.y][obj.x] = c
 
     set_all(state.killers, '1')
     set_all(state.pushables, '1')
     set_all(state.sinkers, '1')
-    set_all(findHotMelt(state), '1')
+    set_all(hot_objects_if_dangerous(state), '1')
     set_all(state.phys, '1')
     set_all(state.players, '0')
     set_all(state.winnables, '0')
 
-    return map
+    return blocked_fields_map
 
 
 
 """/**
  * Returns all objects, that are hot IF the player is melt. Otherwise just and empty list.
  *
- * @param {object} state The current gamestate.
+ * @param {object} state The current game-state.
  * @return {object[]} All objects, that are currently hot.
  */"""
-def findHotMelt(state: GameState) -> List[GameObj]:
+def hot_objects_if_dangerous(state: GameState) -> List[GameObj]:
 
     hots: List[str] = []
     for rule in state.rules:
@@ -566,25 +566,25 @@ def findHotMelt(state: GameState) -> List[GameObj]:
 
 """/**
  * Helper Function for the connectivity function.
- * Recursive function that takes a parsed map and marks visited positions with a "1".
+ * Recursive function that takes a parsed blocked_fields_map and marks visited positions with a "1".
  * If neighboring positions where not visited yet, the function calls itself with said neighboring position.
  *
- * @param {string[]} map The map of the level parsed to 0s and 1s. (0=empty and not visited field 1=wall or visited field)
- * @param {number} i The current y position on the map.
- * @param {number} j The current x position on the map.
+ * @param {string[]} blocked_fields_map The blocked_fields_map of the level parsed to 0s and 1s. (0=empty and not visited field 1=wall or visited field)
+ * @param {number} i The current y position on the blocked_fields_map.
+ * @param {number} j The current x position on the blocked_fields_map.
  * @param {number} mapL The maximum i dimension.
  * @param {number} rowL The maximum j dimension.
  */"""
-def mark_all_connected(map: List[List[str]], x: int, y: int, size_x: int, size_y: int):
+def mark_all_connected(blocked_fields_map: List[List[str]], x: int, y: int, size_x: int, size_y: int):
     if x < 0 or x >= size_x or y < 0 or y >= size_y:
         return
-    if map[x][y] == '1':
+    if blocked_fields_map[x][y] == '1':
         return
-    map[x][y] = '1'
-    mark_all_connected(map, x - 1, y, size_x, size_y)
-    mark_all_connected(map, x + 1, y, size_x, size_y)
-    mark_all_connected(map, x, y - 1, size_x, size_y)
-    mark_all_connected(map, x, y + 1, size_x, size_y)
+    blocked_fields_map[x][y] = '1'
+    mark_all_connected(blocked_fields_map, x - 1, y, size_x, size_y)
+    mark_all_connected(blocked_fields_map, x + 1, y, size_x, size_y)
+    mark_all_connected(blocked_fields_map, x, y - 1, size_x, size_y)
+    mark_all_connected(blocked_fields_map, x, y + 1, size_x, size_y)
 
 
 # TODO: the naming 'maximize'/'minimize' is inconsistent with the -/+ factor!!!
@@ -592,29 +592,29 @@ def mark_all_connected(map: List[List[str]], x: int, y: int, size_x: int, size_y
 
 heuristics: List[Callable] = [
 
-    nbrOfGoals,
-    nbrOfPlayers,
+    number_of_goal_objects,
+    number_of_player_objects,
     connectivity,
-    elimOfAutomovers,
+    number_of_auto_movers,
 
-    nbrOfStuckIs,
-    nbrOfStuckPrefixes,
-    nbrOfStuckSuffixes,
-    nbrOfStuckImportantSuffixes,
+    number_of_stuck_is_words,
+    number_of_stuck_prefixes,
+    number_of_stuck_suffixes,
+    number_of_stuck_important_suffixes,
 
-    elimOfThreads,
-    maximizePushables,
-    minimizeSinkables,
-    minimizeStopables,
-    distanceToKillables,
+    number_of_killer_objects,
+    number_of_pushable_objects,
+    number_of_sinkable_objects,
+    number_of_stopped_objects,
+    player_killer_distance,
 
-    distance_to_winnables,
+    distance_to_winnable_objects,
     distance_to_words,
-    distance_to_pushables,
+    distance_to_pushable_objects,
 
-    maximizeDifferentRules,
+    number_of_newly_created_rules,
 
-    goalPath
+    goal_reachability
 
 ]
 
@@ -622,38 +622,3 @@ heuristics_feature_vector_length: int = sum(map(
     lambda heuristic: len(signature(heuristic).parameters) - 1,
     heuristics
 ))
-
-
-
-def weightedHeuristicSum(
-    state: GameState, ctx: dict,
-    weights: List[float],
-    doNothingThreshold: float = 0.01
-) -> float:
-    feature_sum: float = 0.0
-    weights_read_index: int = 0
-    for heuristic in heuristics:
-        weight: float = weights[weights_read_index]
-        if abs(weight) <= doNothingThreshold:
-            weights_read_index += len(signature(heuristic).parameters) - 1
-        else:
-            weights_read_index += 1
-            parameters: List = [state, ctx]
-            for _ in range(len(signature(heuristic).parameters) - 2):
-                parameters.append(weights[weights_read_index])
-                weights_read_index += 1
-            feature_sum += weight * heuristic(*parameters)
-    return feature_sum
-
-
-
-
-
-
-
-
-
-
-
-
-

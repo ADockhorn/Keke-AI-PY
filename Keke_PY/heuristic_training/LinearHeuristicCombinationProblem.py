@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import List, Tuple, Union, Iterable
 
 import numpy as np
@@ -6,13 +5,13 @@ from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.core.problem import Problem
 from pymoo.optimize import minimize
 
-from Keke_PY.agents.AStar import AStar
-from Keke_PY.agents.heuristics import heuristics_feature_vector_length, weightedHeuristicSum
+from Keke_PY.search_agents.AStar import AStar
+from Keke_PY.heuristics.hand_crafted_heuristics import heuristics_feature_vector_length
+from Keke_PY.heuristics.weighted_sum import weighted_heuristic_sum
 from Keke_PY.baba import GameState, parse_map, make_level
 from Keke_PY.simulation import load_level_set
 
 
-@dataclass
 class LinearHeuristicCombinationProblem(Problem):
     level_batches: List[List[str]]
     max_forward_model_calls: int
@@ -41,7 +40,7 @@ class LinearHeuristicCombinationProblem(Problem):
                 start_state: GameState = make_level(parse_map(level))
                 for agent_nr, agentFeatureVector in enumerate(x):
                     agent: AStar = AStar(
-                        lambda game_state, ctx: weightedHeuristicSum(
+                        lambda game_state, ctx: weighted_heuristic_sum(
                             game_state, ctx,
                             agentFeatureVector,
                             0.5
