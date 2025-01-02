@@ -1,13 +1,19 @@
 """
 This file is copied from
 https://github.com/AlbrErik/bachelor-thesis/blob/4680deba885c282a94643b0812f2206f0fb2dba7/KekeCompetition-main/OptimizingKekeAgents/gpmodule.py
+
+I have changed it slightly for compatibility with my own Code.
 """
 
 import random
 from copy import deepcopy
+
+from typing import List
+
+
 #from testmodule import printTree
 
-def create_random_tree(depth: int, operations: list[tuple], heuristics: list):
+def create_random_tree(depth: int, operations: List[tuple], heuristics: list):
     if(depth == 0):
          return {'parent': random.choice(heuristics), 'children': []}
     #choose new root node
@@ -59,7 +65,7 @@ def crossover(trees: list, max_depth):
     first.update({'p1': trees[0]['id'], 'p2': trees[1]['id']})
     return first
 
-def mutation(tree: dict, ops: list[tuple], heu: list[int], max_depth):
+def mutation(tree: dict, ops: List[tuple], heu: List[int], max_depth):
     t = deepcopy(tree)
     del_tree = random.choice(get_all_subtrees(t))
     #Edge-Case: The whole tree is going to be deleted
