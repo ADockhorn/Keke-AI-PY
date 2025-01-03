@@ -1,4 +1,3 @@
-from inspect import signature
 from typing import List, Callable, Union, Optional
 
 from Keke_PY.baba import GameState, parse_map, only_top_objects_string, GameObj, Direction, GameObjectType
