@@ -14,13 +14,13 @@ def weighted_heuristic_sum(
     weights_read_index: int = 0
     for heuristic in heuristics:
         weight: float = weights[weights_read_index]
+        weights_read_index += 1
         if abs(weight) <= do_nothing_threshold:
-            weights_read_index += len(signature(heuristic).parameters) - 1
+            weights_read_index += heuristic.additional_parameters
         else:
-            weights_read_index += 1
-            parameters: List = [state, ctx]
-            for _ in range(len(signature(heuristic).parameters) - 2):
-                parameters.append(weights[weights_read_index])
-                weights_read_index += 1
-            feature_sum += weight * heuristic(*parameters)
+            additional_parameters: List[float] = weights[
+                weights_read_index : weights_read_index + heuristic.additional_parameters
+            ]
+            weights_read_index += heuristic.additional_parameters
+            feature_sum += weight * heuristic.run(state, ctx, *additional_parameters)
     return feature_sum

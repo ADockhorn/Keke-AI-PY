@@ -2,6 +2,7 @@ from inspect import signature
 from typing import List, Callable, Union, Optional
 
 from Keke_PY.baba import GameState, parse_map, only_top_objects_string, GameObj, Direction, GameObjectType
+from Keke_PY.heuristics.ParametrisedHeuristic import ParametrisedHeuristic
 
 important_SuffixWords = ["win", "push", "you"]
 
@@ -590,7 +591,7 @@ def mark_all_connected(blocked_fields_map: List[List[str]], x: int, y: int, size
 # TODO: the naming 'maximize'/'minimize' is inconsistent with the -/+ factor!!!
 #       -> rename: don't assume min-/maximization
 
-heuristics: List[Callable] = [
+raw_heuristics: List[Callable] = [
 
     number_of_goal_objects,
     number_of_player_objects,
@@ -618,7 +619,11 @@ heuristics: List[Callable] = [
 
 ]
 
+heuristics: List[ParametrisedHeuristic] = [
+    ParametrisedHeuristic(h) for h in raw_heuristics
+]
+
 heuristics_feature_vector_length: int = sum(map(
-    lambda heuristic: len(signature(heuristic).parameters) - 1,
+    lambda heuristic: 1 + heuristic.additional_parameters,
     heuristics
 ))
