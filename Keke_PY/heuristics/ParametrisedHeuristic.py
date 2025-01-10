@@ -17,12 +17,12 @@ class ParametrisedHeuristic(ABC):
         pass
 
     @staticmethod
-    def from_func(heuristic: Callable, override_nr_of_parameters: int = -1) -> 'ParametrisedHeuristicCallableWrapper':
-        return ParametrisedHeuristicCallableWrapper(heuristic, override_nr_of_parameters)
+    def from_func(heuristic: Callable, override_nr_of_parameters: int = -1) -> 'ParametrisedHeuristicFromCallable':
+        return ParametrisedHeuristicFromCallable(heuristic, override_nr_of_parameters)
 
 
 @dataclass
-class ParametrisedHeuristicCallableWrapper(ParametrisedHeuristic):
+class ParametrisedHeuristicFromCallable(ParametrisedHeuristic):
     heuristic_callable: Callable
     _nr_of_parameters: int
 

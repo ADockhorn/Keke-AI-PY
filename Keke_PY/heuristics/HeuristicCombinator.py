@@ -5,7 +5,7 @@ from inspect import signature
 from typing import Callable, List
 
 from Keke_PY.baba import GameState
-from Keke_PY.heuristics.ParametrisedHeuristic import ParametrisedHeuristic, ParametrisedHeuristicCallableWrapper
+from Keke_PY.heuristics.ParametrisedHeuristic import ParametrisedHeuristic, ParametrisedHeuristicFromCallable
 
 
 class HeuristicCombinator(ParametrisedHeuristic, ABC):
@@ -20,30 +20,30 @@ class HeuristicCombinator(ParametrisedHeuristic, ABC):
         return self.nr_of_parameters - self.nr_of_static_parameters
 
     @staticmethod
-    def from_parametrised_heuristic(heuristic: ParametrisedHeuristic) -> 'HeuristicCombinatorCallableWrapper':
-        if isinstance(heuristic, ParametrisedHeuristicCallableWrapper):
-            return HeuristicCombinatorCallableWrapper(
+    def from_parametrised_heuristic(heuristic: ParametrisedHeuristic) -> 'HeuristicCombinatorFromCallable':
+        if isinstance(heuristic, ParametrisedHeuristicFromCallable):
+            return HeuristicCombinatorFromCallable(
                 heuristic.heuristic_callable,
                 heuristic.nr_of_parameters,
                 heuristic.nr_of_parameters
             )
 
-        return HeuristicCombinatorCallableWrapper(
+        return HeuristicCombinatorFromCallable(
             heuristic.run,
             heuristic.nr_of_parameters,
             heuristic.nr_of_parameters
         )
 
     @staticmethod
-    def from_pure_combinator(pure_combinator: Callable[[float], float], override_nr_of_inputs: int = -1) -> 'HeuristicCombinatorPureCombinatorWrapper':
-        return HeuristicCombinatorPureCombinatorWrapper(
+    def from_pure_combinator(pure_combinator: Callable[[float], float], override_nr_of_inputs: int = -1) -> 'HeuristicCombinatorFromPureCombinator':
+        return HeuristicCombinatorFromPureCombinator(
             pure_combinator, override_nr_of_inputs
         )
 
 
 
 @dataclass
-class HeuristicCombinatorCallableWrapper(HeuristicCombinator, ParametrisedHeuristicCallableWrapper):
+class HeuristicCombinatorFromCallable(HeuristicCombinator, ParametrisedHeuristicFromCallable):
 
     _nr_of_static_parameters: int
 
@@ -61,7 +61,7 @@ class HeuristicCombinatorCallableWrapper(HeuristicCombinator, ParametrisedHeuris
 
 
 @dataclass
-class HeuristicCombinatorPureCombinatorWrapper(HeuristicCombinator):
+class HeuristicCombinatorFromPureCombinator(HeuristicCombinator):
 
     pure_combinator: Callable[[float], float]
     _nr_of_parameters: int

@@ -14,7 +14,7 @@ from typing import List
 
 from Keke_PY.heuristics.HeuristicTree import HeuristicTreeNode
 from Keke_PY.heuristics.HeuristicCombinator import HeuristicCombinator
-from Keke_PY.heuristics.ParametrisedHeuristic import ParametrisedHeuristicCallableWrapper
+from Keke_PY.heuristics.ParametrisedHeuristic import ParametrisedHeuristicFromCallable
 
 
 
