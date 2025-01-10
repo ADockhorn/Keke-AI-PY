@@ -619,10 +619,10 @@ raw_heuristics: List[Callable] = [
 ]
 
 heuristics: List[ParametrisedHeuristic] = [
-    ParametrisedHeuristic(h) for h in raw_heuristics
+    ParametrisedHeuristic.from_func(h) for h in raw_heuristics
 ]
 
 heuristics_feature_vector_length: int = sum(map(
-    lambda heuristic: 1 + heuristic.additional_parameters,
+    lambda heuristic: 1 + heuristic.nr_of_parameters,
     heuristics
 ))

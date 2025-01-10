@@ -2,7 +2,9 @@
 This file is copied from
 https://github.com/AlbrErik/bachelor-thesis/blob/4680deba885c282a94643b0812f2206f0fb2dba7/KekeCompetition-main/OptimizingKekeAgents/gpmodule.py
 
-I have changed it slightly for compatibility with my own Code.
+I have changed it for compatibility with my own Code, and naming-conventions.
+Dicts will be replaced by custom types.
+But the functionality should stay broadly the same.
 """
 
 import random
@@ -10,23 +12,29 @@ from copy import deepcopy
 
 from typing import List
 
+from Keke_PY.heuristics.HeuristicTree import HeuristicTreeNode
+from Keke_PY.heuristics.HeuristicCombinator import HeuristicCombinator
+from Keke_PY.heuristics.ParametrisedHeuristic import ParametrisedHeuristicCallableWrapper
 
-#from testmodule import printTree
 
-def create_random_tree(depth: int, operations: List[tuple], heuristics: list):
-    if(depth == 0):
-         return {'parent': random.choice(heuristics), 'children': []}
+
+def create_random_tree(depth: int, operations: List[HeuristicCombinator], leaf_operations: List[HeuristicCombinator]) -> HeuristicTreeNode:
+    if depth == 0:
+         return HeuristicTreeNode.with_random_params(
+             HeuristicCombinator.from_parametrised_heuristic(random.choice(leaf_operations)),
+             -10.0, 10.0
+         )
     #choose new root node
-    new_node = random.choice(operations)
+    operator: HeuristicCombinator = random.choice(operations)
     #add children to root node
     children = []
-    for i in range(0, new_node[1]):
-        children.append(create_random_tree(depth - 1, operations, heuristics))
+    for i in range(0, operator.nr_of_dynamic_inputs):
+        children.append(create_random_tree(depth - 1, operations, leaf_operations))
     #return (sub)tree
-    return {'parent' : new_node[0], 'children': children}
+    return HeuristicTreeNode.with_random_params(operator, -10.0, 10.0, children)
 
-def selectTrees(trees: list, solutions: list, popsize: int):
-    if(len(trees) == 0):
+def select_trees(trees: list, solutions: list, popsize: int):
+    if len(trees) == 0:
         return None
 
     sample_size = int(popsize/2)
@@ -100,7 +108,7 @@ def get_depth(tree: dict):
     return depth
 
 def replace_subtree(tree: dict, subtree: dict):
-    tree['parent'] = subtree['parent']
+    tree['operation'] = subtree['operation']
     tree['children'] = subtree['children']
 
 def get_all_subtrees(tree: dict, depth = 0, subtrees = None):
