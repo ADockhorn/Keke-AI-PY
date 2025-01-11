@@ -1,15 +1,15 @@
+from dataclasses import dataclass
 from typing import List, Tuple, Union, Iterable
 
 import numpy as np
-from pymoo.algorithms.moo.nsga2 import NSGA2
+from pymoo.core.algorithm import Algorithm
+from pymoo.core.callback import Callback
 from pymoo.core.problem import Problem
-from pymoo.optimize import minimize
 
 from Keke_PY.search_agents.AStar import AStar
 from Keke_PY.heuristics.hand_crafted_heuristics import heuristics_feature_vector_length
 from Keke_PY.heuristics.weighted_sum import weighted_heuristic_sum
 from Keke_PY.baba import GameState, parse_map, make_level
-from Keke_PY.simulation import load_level_set
 
 
 class LinearHeuristicCombinationProblem(Problem):
@@ -56,37 +56,21 @@ class LinearHeuristicCombinationProblem(Problem):
         out["G"] = np.zeros((len(x), 0))
 
 
+class RecordTrainingCallback(Callback):
 
+    class IterationRecord:
+        @dataclass
+        class AgentRecord:
+            genome: [float]
+            evaluations: [float]
+        def __init__(self, algorithm_state: Algorithm):
+            self.agents = [
+                RecordTrainingCallback.IterationRecord.AgentRecord(agent.X, agent.F)
+                for agent in algorithm_state.pop
+            ]
 
+    iterations: List[IterationRecord] = []
 
-# Test this class:
-if __name__ == "__main__":
-    test_files_as_batches: List[Tuple[str, Union[range, int, None, Iterable[int]]]] = [
-        (
-            "./json_levels/demo_LEVELS.json",
-            [i for i in range(14) if i not in range(1, 100)]
-        ), (
-            "./json_levels/test_LEVELS.json",
-            [i for i in range(0, 134) if i not in range(1, 1000)]
-        )
-    ]
-
-    test_batches: List[List[str]] = []
-
-    for file_name, level_nrs in test_files_as_batches:
-        batch: List[str] = []
-        level_set = load_level_set(file_name)
-        if level_nrs is None:
-            level_nrs = range(len(level_set["levels"]))
-        if level_nrs.__class__ == int:
-            level_nrs = range(level_nrs, level_nrs + 1)
-        for index in level_nrs:
-            demo_level: str = level_set["levels"][index]["ascii"]
-            batch.append(demo_level)
-        test_batches.append(batch)
-
-    test_problem = LinearHeuristicCombinationProblem(test_batches, 2000)
-
-    optimization_algorithm = NSGA2(pop_size=10)
-
-    minimize(test_problem, optimization_algorithm)
+    def notify(self, algorithm_state: Algorithm):
+        iteration_record = RecordTrainingCallback.IterationRecord(algorithm_state)
+        self.iterations.append(iteration_record)
