@@ -6,7 +6,7 @@ from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.optimize import minimize
 
 from Keke_PY.heuristic_training.LinearHeuristicCombinationProblem import LinearHeuristicCombinationProblem, \
-    RecordTrainingCallback
+    TrainingRecord
 from Keke_PY.simulation import load_level_set
 
 
@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
     dump_file_name: str = "test_return.pickle"
 
-    callback = RecordTrainingCallback()
+    callback = TrainingRecord()
 
     res = minimize(
         test_problem,

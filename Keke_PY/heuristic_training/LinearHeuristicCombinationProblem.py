@@ -99,7 +99,7 @@ def evaluate_ai_on_level(
 
 
 
-class RecordTrainingCallback(Callback):
+class TrainingRecord(Callback):
 
     class IterationRecord:
         @dataclass
@@ -108,12 +108,12 @@ class RecordTrainingCallback(Callback):
             evaluations: [float]
         def __init__(self, algorithm_state: Algorithm):
             self.agents = [
-                RecordTrainingCallback.IterationRecord.AgentRecord(agent.X, agent.F)
+                TrainingRecord.IterationRecord.AgentRecord(agent.X, agent.F)
                 for agent in algorithm_state.pop
             ]
 
     iterations: List[IterationRecord] = []
 
     def notify(self, algorithm_state: Algorithm):
-        iteration_record = RecordTrainingCallback.IterationRecord(algorithm_state)
+        iteration_record = TrainingRecord.IterationRecord(algorithm_state)
         self.iterations.append(iteration_record)
