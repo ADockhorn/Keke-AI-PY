@@ -12,20 +12,24 @@ from copy import deepcopy
 
 from typing import List
 
-from Keke_PY.heuristics.HeuristicTree import HeuristicTreeNode
-from Keke_PY.heuristics.HeuristicCombinator import HeuristicCombinator
-from Keke_PY.heuristics.ParametrisedHeuristic import ParametrisedHeuristicFromCallable
+from pymoo.core.sampling import Sampling
+
+from Keke_PY.heuristics.HeuristicTree import DefaultOpRepr, HeuristicTreeNode, \
+    default_comb_operations, default_leaf_operations
 
 
-
-def create_random_tree(depth: int, operations: List[HeuristicCombinator], leaf_operations: List[HeuristicCombinator]) -> HeuristicTreeNode:
+def create_random_tree(
+        depth: int,
+        operations: List[DefaultOpRepr] = default_comb_operations,
+        leaf_operations: List[DefaultOpRepr] = default_leaf_operations
+) -> HeuristicTreeNode:
     if depth == 0:
          return HeuristicTreeNode.with_random_params(
-             HeuristicCombinator.from_parametrised_heuristic(random.choice(leaf_operations)),
+             random.choice(leaf_operations),
              -10.0, 10.0
          )
     #choose new root node
-    operator: HeuristicCombinator = random.choice(operations)
+    operator: DefaultOpRepr = random.choice(operations)
     #add children to root node
     children = []
     for i in range(0, operator.nr_of_dynamic_inputs):
@@ -33,25 +37,7 @@ def create_random_tree(depth: int, operations: List[HeuristicCombinator], leaf_o
     #return (sub)tree
     return HeuristicTreeNode.with_random_params(operator, -10.0, 10.0, children)
 
-def select_trees(trees: list, solutions: list, popsize: int):
-    if len(trees) == 0:
-        return None
 
-    sample_size = int(popsize/2)
-    win = filter_winning_trees(trees, solutions)
-
-    lose = trees
-    for t in win:
-        lose.remove(t)
-    if(len(win) > sample_size):
-        return random.sample(win, sample_size)
-    if(len(win) == sample_size):
-        return win
-    if(sample_size > len(win) and len(win) > 0):
-        return win + random.sample(lose, (sample_size - len(win)))
-    # win contains no trees
-    else:
-        return random.sample(lose, sample_size)
 
 def crossover(trees: list, max_depth):
     first = deepcopy(trees[0])
@@ -88,14 +74,6 @@ def mutation(tree: dict, ops: List[tuple], heu: List[int], max_depth):
     replace_subtree(del_tree[1], new_tree)
     t.update({'p1': t['id'], 'p2': 0})
     return t
-
-# return a list containing trees which cleared the level
-def filter_winning_trees(t: list, sol: list):
-    wins = []
-    for i in range(0, len(t)):
-        if(sol[i]['won_level'] == True):
-            wins.append(t[i])
-    return wins
 
 def get_depth(tree: dict):
     depth = 0

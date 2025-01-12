@@ -65,13 +65,16 @@ class HeuristicCombinatorFromPureCombinator(HeuristicCombinator):
 
     pure_combinator: Callable[[float], float]
     _nr_of_parameters: int
+    _nr_of_static_parameters: int
 
-    def __init__(self, pure_combinator: Callable[[float], float], override_nr_of_inputs: int = -1):
+    def __init__(self, pure_combinator: Callable[[float], float], override_nr_of_inputs: int = -1, nr_of_static_parameters: int = 0):
         self.pure_combinator = pure_combinator
         if override_nr_of_inputs == -1:
             self._nr_of_parameters = len(signature(pure_combinator).parameters)
         else:
             self._nr_of_parameters = override_nr_of_inputs
+        assert self.nr_of_parameters >= nr_of_static_parameters, "The number of parameters can't be greater than the total number of floats"
+        self._nr_of_static_parameters = nr_of_static_parameters
 
     @property
     def nr_of_parameters(self) -> int:
@@ -79,11 +82,8 @@ class HeuristicCombinatorFromPureCombinator(HeuristicCombinator):
 
     @property
     def nr_of_static_parameters(self) -> int:
-        return 0
+        return self._nr_of_static_parameters
 
-    @property
-    def nr_of_dynamic_inputs(self) -> int:
-        return self._nr_of_parameters
 
     def run(self, state: GameState, ctx: dict, *args: float) -> float:
         return self.pure_combinator(*args)
@@ -96,6 +96,7 @@ default_combinators: List[HeuristicCombinator] = [
     HeuristicCombinator.from_pure_combinator(float.__sub__),
     HeuristicCombinator.from_pure_combinator(math.sin),
     HeuristicCombinator.from_pure_combinator(math.tan), # TODO@ask: should we include this despite the singularities?
+    HeuristicCombinatorFromPureCombinator(lambda x: x, 1, 1), # TODO@ask: can this be here, even though, it is a leaf operation?
     HeuristicCombinator.from_pure_combinator(lambda x: max(x, 0)), # TODO@ask: I would like to include this
     HeuristicCombinator.from_pure_combinator(math.tanh), # TODO@ask: I would like to include this
 ]
