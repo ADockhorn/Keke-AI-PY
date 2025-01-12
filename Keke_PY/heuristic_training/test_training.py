@@ -1,3 +1,4 @@
+import multiprocessing
 import pickle
 from typing import List, Tuple, Union, Iterable
 
@@ -12,10 +13,10 @@ from Keke_PY.simulation import load_level_set
 test_files_as_batches: List[Tuple[str, Union[range, int, None, Iterable[int]]]] = [
     (
         "./json_levels/demo_LEVELS.json",
-        [i for i in range(14) if i not in range(1, 100)]
+        [i for i in range(14) if i not in range(10, 1000)]
     ), (
         "./json_levels/test_LEVELS.json",
-        [i for i in range(0, 134) if i not in range(1, 1000)]
+        [i for i in range(0, 134) if i not in range(10, 1000)]
     )
 ]
 
@@ -33,7 +34,7 @@ for file_name, level_nrs in test_files_as_batches:
         batch.append(demo_level)
     test_batches.append(batch)
 
-test_problem = LinearHeuristicCombinationProblem(test_batches, 2000)
+test_problem = LinearHeuristicCombinationProblem(test_batches, 2000, multiprocessing.Pool())
 
 optimization_algorithm = NSGA2(pop_size=3)
 

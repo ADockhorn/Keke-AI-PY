@@ -1,5 +1,8 @@
+import itertools
+from concurrent.futures import Executor, ProcessPoolExecutor
 from dataclasses import dataclass
-from typing import List, Tuple, Union, Iterable
+from itertools import chain
+from typing import List, Tuple, Union, Iterable, Dict
 
 import numpy as np
 from pymoo.core.algorithm import Algorithm
@@ -13,13 +16,25 @@ from Keke_PY.baba import GameState, parse_map, make_level
 
 
 class LinearHeuristicCombinationProblem(Problem):
+
     level_batches: List[List[str]]
+    all_levels: List[str]
+
     max_forward_model_calls: int
 
+    executor: Executor
 
-    def __init__(self, level_batches: List[List[str]], max_forward_model_calls: int = 2000):
+
+    def __init__(
+            self,
+            level_batches: List[List[str]],
+            max_forward_model_calls: int = 2000,
+            executor: Executor = ProcessPoolExecutor()
+    ):
         self.level_batches = level_batches
         self.max_forward_model_calls = max_forward_model_calls
+        self.all_levels = list(set(chain(*level_batches)))
+        self.executor = executor
 
         super().__init__(
             n_var = heuristics_feature_vector_length,
@@ -30,30 +45,58 @@ class LinearHeuristicCombinationProblem(Problem):
 
     def _evaluate(self, x, out, *args, **kwargs):
 
+        simulation_data_list: List[Tuple[Tuple[int, np.ndarray], str, int]] = list(itertools.product(
+            enumerate(x),
+            self.all_levels,
+            [self.max_forward_model_calls]
+        ))
+
+        simulation_results: Dict[Tuple[int, str], int] = dict(list(self.executor.map(
+            evaluate_ai_on_level, simulation_data_list
+        )))
+
         # this output is supposed to be minimized:
         out["F"] = np.zeros((len(x), len(self.level_batches)))
 
-        # TODO: can the following loops be parallelized?
         for batch_nr, batch in enumerate(self.level_batches):
             forward_model_calls_normalization_factor: float = 1.0 / (self.max_forward_model_calls * len(batch))
             for level_nr, level in enumerate(batch):
-                start_state: GameState = make_level(parse_map(level))
-                for agent_nr, agentFeatureVector in enumerate(x):
-                    agent: AStar = AStar(
-                        lambda game_state, ctx: weighted_heuristic_sum(
-                            game_state, ctx,
-                            agentFeatureVector,
-                            0.5
-                        )
-                    )
-                    solution: Tuple[Union[List[str], None], int] = agent.search(start_state, self.max_forward_model_calls, None, False)
-                    forward_model_calls: int = solution[1]
-                    print(agent_nr, batch_nr, level_nr, forward_model_calls)
-                    penalty: float = forward_model_calls * forward_model_calls_normalization_factor
+                for agent_nr, _agentFeatureVector in enumerate(x):
+                    penalty: float = simulation_results[(agent_nr, level)] * forward_model_calls_normalization_factor
                     out["F"][agent_nr, batch_nr] += penalty
 
         # There are no constrains:
         out["G"] = np.zeros((len(x), 0))
+
+
+
+
+
+def evaluate_ai_on_level(
+    simulation_data: Tuple[Tuple[int, np.ndarray], str, int]
+) -> Tuple[Tuple[int, str], int]:
+    ai_index: int = simulation_data[0][0]
+    ai: List[float] = list(simulation_data[0][1])
+    level: str = simulation_data[1]
+    max_forward_model_calls: int = simulation_data[2]
+    start_state: GameState = make_level(parse_map(level))
+    agent: AStar = AStar(
+        lambda game_state, ctx: weighted_heuristic_sum(
+            game_state, ctx,
+            ai,
+            0.5
+        )
+    )
+    solution: Tuple[Union[List[str], None], int] = agent.search(
+        start_state,
+        max_forward_model_calls,
+        None,
+        False
+    )
+    forward_model_calls: int = solution[1]
+    print((ai_index, level), forward_model_calls)
+    return (ai_index, level), forward_model_calls
+
 
 
 class RecordTrainingCallback(Callback):
