@@ -32,6 +32,9 @@ class GenericHeuristicTreeNode(ParametrisedHeuristic, Generic[OpRepr, Child]):
         assert \
             len(self.parameters) == self.combinator.nr_of_static_parameters,\
             "The number of parameters of a node should be the same as parameters for the operator"
+        assert \
+            all([child.nr_of_parameters == 0 for child in self.children]),\
+            "All child notes have to expect zero additional parameters."
 
     @property
     def nr_of_parameters(self) -> int:
@@ -209,6 +212,9 @@ def create_random_tree(
 
 
 def crossover(tree1: HeuristicTree, tree2: HeuristicTree, max_depth: int) -> HeuristicTree:
+    if tree1.depth == 0 or tree2.depth == 0:
+        # abort crossover, if any parent is too small:
+        return tree1
     res: HeuristicTree = deepcopy(tree1)
     # search random subtree for removal (parent 1)
     first_sub: Tuple[int, HeuristicTree] = random.choice(get_all_subtrees(res)[1:])

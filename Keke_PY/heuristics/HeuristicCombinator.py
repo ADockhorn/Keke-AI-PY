@@ -57,7 +57,7 @@ class HeuristicCombinatorFromCallable(HeuristicCombinator, ParametrisedHeuristic
         return self._nr_of_static_parameters
 
     def run(self, state: GameState, ctx: dict, *args: float) -> float:
-        return self.heuristic_callable(state, ctx, *args)
+        return float(self.heuristic_callable(state, ctx, *args))
 
 
 @dataclass
@@ -86,7 +86,7 @@ class HeuristicCombinatorFromPureCombinator(HeuristicCombinator):
 
 
     def run(self, state: GameState, ctx: dict, *args: float) -> float:
-        return self.pure_combinator(*args)
+        return float(self.pure_combinator(*args))
 
 
 

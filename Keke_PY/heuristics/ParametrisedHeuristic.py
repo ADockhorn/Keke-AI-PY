@@ -38,5 +38,5 @@ class ParametrisedHeuristicFromCallable(ParametrisedHeuristic):
         return self._nr_of_parameters
 
     def run(self, state: GameState, ctx: dict, *args: float) -> float:
-        return self.heuristic_callable(state, ctx, *args)
+        return float(self.heuristic_callable(state, ctx, *args))
 

@@ -13,10 +13,10 @@ from Keke_PY.simulation import load_level_set
 test_files_as_batches: List[Tuple[str, Union[range, int, None, Iterable[int]]]] = [
     (
         "./json_levels/demo_LEVELS.json",
-        [i for i in range(14) if i not in range(10, 1000)]
+        [i for i in range(14) if i not in range(1, 1000)]
     ), (
         "./json_levels/test_LEVELS.json",
-        [i for i in range(0, 134) if i not in range(10, 1000)]
+        [i for i in range(0, 134) if i not in range(1, 1000)]
     )
 ]
 
@@ -63,5 +63,3 @@ if __name__ == '__main__':
         loaded_data = pickle.load(file)
 
     print(loaded_data.__class__)
-
-    print(pickle.dumps())

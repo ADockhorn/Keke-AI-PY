@@ -32,7 +32,7 @@ if __name__ == '__main__':
     res = minimize(
         test_problem,
         optimization_algorithm,
-        termination=("n_gen", 3),
+        #termination=("n_gen", 3),
         callback=callback
     )
 
@@ -43,5 +43,3 @@ if __name__ == '__main__':
         loaded_data = pickle.load(file)
 
     print(loaded_data.__class__)
-
-    print(pickle.dumps())
