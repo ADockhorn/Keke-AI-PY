@@ -87,6 +87,20 @@ default_leaf_operations = [DefaultOpRepr(len(default_combinators) + i) for i, _ 
 @dataclass
 class HeuristicTreeNode(GenericHeuristicTreeNode[DefaultOpRepr, 'HeuristicTreeNode']):
 
+    depth: int = 0
+
+    def __post_init__(self):
+        if len(self.children) > 0:
+            self.depth = 1 + max(map(lambda c: c.depth, self.children))
+
+    def update_depth(self):
+        for child in self.children:
+            child.update_depth()
+        if len(self.children) > 0:
+            self.depth = 1 + max(map(lambda c: c.depth, self.children))
+        else:
+            self.depth = 0
+
     def to_data(self) -> Iterator[Union[int, float]]:
         yield self.combinator.op_index
         for param in self.parameters:

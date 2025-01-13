@@ -1,7 +1,7 @@
 import pickle
 
 from Keke_PY.heuristics.HeuristicTree import HeuristicTreeNode
-from Keke_PY.heuristics.gpmodule import create_random_tree
+from Keke_PY.heuristics.gpmodule import create_random_tree, mutation
 
 if __name__ == "__main__":
 
@@ -23,3 +23,5 @@ if __name__ == "__main__":
     print(random_tree)
     print(loaded_tree)
     print(loaded_data)
+    print(mutation(random_tree, 10))
+    print(random_tree)

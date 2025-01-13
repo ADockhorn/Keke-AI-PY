@@ -2,7 +2,7 @@ import itertools
 from concurrent.futures import Executor, ProcessPoolExecutor
 from dataclasses import dataclass
 from itertools import chain
-from typing import List, Tuple, Union, Iterable, Dict
+from typing import List, Tuple, Union, Dict
 
 import numpy as np
 from pymoo.core.algorithm import Algorithm
