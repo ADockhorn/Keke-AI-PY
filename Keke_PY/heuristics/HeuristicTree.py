@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import List, TypeVar, Generic, Union, Iterator, Tuple
 
 import numpy as np
+from pymoo.core.duplicate import ElementwiseDuplicateElimination
 
 from Keke_PY.baba import GameState
 from Keke_PY.heuristics.HeuristicCombinator import HeuristicCombinator, default_combinators
@@ -14,7 +15,6 @@ from pymoo.core.sampling import Sampling as PymooSampling
 from pymoo.core.mutation import Mutation as PymooMutation
 from pymoo.core.crossover import Crossover as PymooCrossover
 
-from Keke_PY.search_agents.test_agents import max_depth
 
 OpRepr = TypeVar('OpRepr', bound=HeuristicCombinator)
 Child = TypeVar('Child', bound=ParametrisedHeuristic)
@@ -170,6 +170,10 @@ class HeuristicTree(GenericHeuristicTreeNode[DefaultOpRepr, 'HeuristicTree']):
                 offspring2: HeuristicTree = crossover(parent2, parent1, max_depth)
                 res[0, k, 0], res[1, k, 0] = offspring1, offspring2
             return res
+
+    class DuplicationElimination(ElementwiseDuplicateElimination):
+        def is_equal(self, a, b):
+            return a.X[0] == b.X[0]
 
 
 
