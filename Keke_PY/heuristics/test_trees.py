@@ -1,7 +1,6 @@
 import pickle
 
-from Keke_PY.heuristics.HeuristicTree import HeuristicTree
-from Keke_PY.heuristics.gpmodule import create_random_tree, mutation
+from Keke_PY.heuristics.HeuristicTree import HeuristicTree, create_random_tree, mutation
 
 if __name__ == "__main__":
 
