@@ -3,10 +3,18 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import List, TypeVar, Generic, Union, Iterator, Tuple
 
+import numpy as np
+
 from Keke_PY.baba import GameState
 from Keke_PY.heuristics.HeuristicCombinator import HeuristicCombinator, default_combinators
 from Keke_PY.heuristics.ParametrisedHeuristic import ParametrisedHeuristic
 from Keke_PY.heuristics.hand_crafted_heuristics import heuristics
+
+from pymoo.core.sampling import Sampling as PymooSampling
+from pymoo.core.mutation import Mutation as PymooMutation
+from pymoo.core.crossover import Crossover as PymooCrossover
+
+from Keke_PY.search_agents.test_agents import max_depth
 
 OpRepr = TypeVar('OpRepr', bound=HeuristicCombinator)
 Child = TypeVar('Child', bound=ParametrisedHeuristic)
@@ -123,6 +131,45 @@ class HeuristicTree(GenericHeuristicTreeNode[DefaultOpRepr, 'HeuristicTree']):
             for _ in range(operator.nr_of_dynamic_inputs)
         ]
         return cls(operator, children, parameters)
+
+
+    class Sampling(PymooSampling):
+        def _do(self, problem, n_samples, **kwargs):
+            max_depth: int = problem.max_depth
+            res = np.full((n_samples, 1), None, dtype=object)
+            for i in range(n_samples):
+                res[i, 0] = create_random_tree(max_depth)
+            return res
+
+    class Mutation(PymooMutation):
+        def __init__(self):
+            super().__init__()
+        def _do(self, problem, X, **kwargs):
+            max_depth: int = problem.max_depth
+            # for each individual
+            for i in range(len(X)):
+                X[i, 0] = mutation(X[i, 0], max_depth)
+            return X
+
+    class Crossover(PymooCrossover):
+        def __init__(self):
+            # define the crossover: number of parents and number of offsprings
+            super().__init__(2, 2)
+        def _do(self, problem, X, **kwargs):
+            # The input of has the following shape (n_parents, n_matings, n_var)
+            _, n_matings, n_var = X.shape
+            max_depth: int = problem.max_depth
+            # The output with the shape (n_offsprings, n_matings, n_var)
+            # Because there the number of parents and offsprings are equal it keeps the shape of X
+            res = np.full_like(X, None, dtype=object)
+            # for each mating provided
+            for k in range(n_matings):
+                # get the first and the second parent
+                parent1, parent2 = X[0, k, 0], X[1, k, 0]
+                offspring1: HeuristicTree = crossover(parent1, parent2, max_depth)
+                offspring2: HeuristicTree = crossover(parent2, parent1, max_depth)
+                res[0, k, 0], res[1, k, 0] = offspring1, offspring2
+            return res
 
 
 
