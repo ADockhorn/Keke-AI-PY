@@ -85,7 +85,7 @@ default_leaf_operations = [DefaultOpRepr(len(default_combinators) + i) for i, _ 
 
 
 @dataclass
-class HeuristicTreeNode(GenericHeuristicTreeNode[DefaultOpRepr, 'HeuristicTreeNode']):
+class HeuristicTree(GenericHeuristicTreeNode[DefaultOpRepr, 'HeuristicTree']):
 
     depth: int = 0
 
@@ -111,14 +111,14 @@ class HeuristicTreeNode(GenericHeuristicTreeNode[DefaultOpRepr, 'HeuristicTreeNo
 
 
     @classmethod
-    def from_data(cls, data: Iterator[Union[int, float]]) -> 'HeuristicTreeNode':
+    def from_data(cls, data: Iterator[Union[int, float]]) -> 'HeuristicTree':
         operator: DefaultOpRepr = DefaultOpRepr(next(data))
         parameters: List[float] = [
             next(data)
             for _ in range(operator.nr_of_static_parameters)
         ]
-        children: List[HeuristicTreeNode] = [
-            HeuristicTreeNode.from_data(data)
+        children: List[HeuristicTree] = [
+            HeuristicTree.from_data(data)
             for _ in range(operator.nr_of_dynamic_inputs)
         ]
         return cls(operator, children, parameters)

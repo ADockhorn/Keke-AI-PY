@@ -12,7 +12,7 @@ from copy import deepcopy
 
 from typing import List, Tuple
 
-from Keke_PY.heuristics.HeuristicTree import DefaultOpRepr, HeuristicTreeNode, \
+from Keke_PY.heuristics.HeuristicTree import DefaultOpRepr, HeuristicTree, \
     default_comb_operations, default_leaf_operations
 
 
@@ -20,9 +20,9 @@ def create_random_tree(
         depth: int,
         operations: List[DefaultOpRepr] = default_comb_operations,
         leaf_operations: List[DefaultOpRepr] = default_leaf_operations
-) -> HeuristicTreeNode:
+) -> HeuristicTree:
     if depth == 0:
-         return HeuristicTreeNode.with_random_params(
+         return HeuristicTree.with_random_params(
              random.choice(leaf_operations),
              -10.0, 10.0
          )
@@ -33,17 +33,17 @@ def create_random_tree(
     for i in range(0, operator.nr_of_dynamic_inputs):
         children.append(create_random_tree(depth - 1, operations, leaf_operations))
     #return (sub)tree
-    return HeuristicTreeNode.with_random_params(operator, -10.0, 10.0, children)
+    return HeuristicTree.with_random_params(operator, -10.0, 10.0, children)
 
 
 
-def crossover(tree1: HeuristicTreeNode, tree2: HeuristicTreeNode, max_depth: int) -> HeuristicTreeNode:
-    res: HeuristicTreeNode = deepcopy(tree1)
+def crossover(tree1: HeuristicTree, tree2: HeuristicTree, max_depth: int) -> HeuristicTree:
+    res: HeuristicTree = deepcopy(tree1)
     # search random subtree for removal (parent 1)
-    first_sub: Tuple[int, HeuristicTreeNode] = random.choice(get_all_subtrees(res)[1:])
+    first_sub: Tuple[int, HeuristicTree] = random.choice(get_all_subtrees(res)[1:])
     #calc max_depth for subtree in "parent 2" and choose subtree
     max_d: int = max_depth - first_sub[0]
-    second_subs: List[Tuple[int, HeuristicTreeNode]] = get_all_subtrees(tree2)
+    second_subs: List[Tuple[int, HeuristicTree]] = get_all_subtrees(tree2)
     second_subs = list(filter(lambda tup: tup[1].depth <= max_d, second_subs))
     second_sub = random.choice(second_subs)
     #replace subtree in parent 1 with subtree in parent 2
@@ -53,12 +53,12 @@ def crossover(tree1: HeuristicTreeNode, tree2: HeuristicTreeNode, max_depth: int
     return res
 
 def mutation(
-        tree: HeuristicTreeNode,
+        tree: HeuristicTree,
         max_depth,
         ops: List[DefaultOpRepr] = default_comb_operations,
         heu: List[DefaultOpRepr] = default_leaf_operations
-) -> HeuristicTreeNode:
-    t: HeuristicTreeNode = deepcopy(tree)
+) -> HeuristicTree:
+    t: HeuristicTree = deepcopy(tree)
     del_tree = random.choice(get_all_subtrees(t))
     if del_tree[0] == max_depth:
         depth = 0
@@ -71,12 +71,12 @@ def mutation(
     #t.update({'p1': t['id'], 'p2': 0}) # TODO@ask: sollen die "Stambäume" irgendwie festgehalten werden?
     return t
 
-def replace_subtree(tree: HeuristicTreeNode, subtree: HeuristicTreeNode):
+def replace_subtree(tree: HeuristicTree, subtree: HeuristicTree):
     tree.combinator = subtree.combinator
     tree.parameters = subtree.parameters
     tree.children = subtree.children
 
-def get_all_subtrees(tree: HeuristicTreeNode, depth = 0, subtrees = None) -> List[Tuple[int, HeuristicTreeNode]]:
+def get_all_subtrees(tree: HeuristicTree, depth = 0, subtrees = None) -> List[Tuple[int, HeuristicTree]]:
     if subtrees is None:
         subtrees = []
     subtrees.append((depth, tree))
