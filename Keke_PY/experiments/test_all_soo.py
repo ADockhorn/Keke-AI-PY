@@ -25,7 +25,7 @@ optimization_algorithm: Algorithm = [
     DE(pop_size=pop_size),
     ES(n_offsprings=pop_size, pop_size=pop_size//2),     # gives it 5 more evaluations than other algorithms TODO@ask: ???
     PatternSearch(pop_size=pop_size, eliminate_duplicates=True),
-][1]
+][0]
 
 representation.setup(optimization_algorithm)
 

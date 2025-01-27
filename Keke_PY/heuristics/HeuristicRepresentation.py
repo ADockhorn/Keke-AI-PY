@@ -274,8 +274,15 @@ class TrackedRepresentation(HeuristicRepresentation):
             super().__init__(
                 self._inner_crossover.n_parents,
                 self._inner_crossover.n_offsprings,
-                self._inner_crossover.prob.get(), # TODO: try to remove this line
+                self._inner_crossover.prob,
             )
+
+        def do(self, problem, pop, parents=None, **kwargs):
+            prob_src = self.prob
+            self.prob = prob_src.get()
+            result = Crossover.do(self, problem, pop, parents, **kwargs)
+            self.prob = prob_src
+            return result
 
         def _do(self, problem, x, **kwargs):
             inner_x = x[:, :, self._tracked_repr._offset:]
