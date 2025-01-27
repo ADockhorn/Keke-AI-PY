@@ -8,26 +8,32 @@ from pymoo.algorithms.soo.nonconvex.pattern import PatternSearch
 from pymoo.core.algorithm import Algorithm
 from pymoo.optimize import minimize
 
-from Keke_PY.heuristic_training.LinearHeuristicCombinationProblem import TrainingRecord, \
-    LinearHeuristicCombinationProblem
+from Keke_PY.heuristic_training.KekeProblem import KekeProblem
+from Keke_PY.heuristic_training.LinearHeuristicCombinationProblem import TrainingRecord
+from Keke_PY.heuristics.HeuristicRepresentation import TrackedRepresentation
+from Keke_PY.heuristics.WeightedHeuristicSum import WeightedHeuristicSumRepresentation
 from Keke_PY.simulation import load_level_set
 
 pop_size: int = 3
 n_generations: int = 3
+
+representation = TrackedRepresentation(WeightedHeuristicSumRepresentation())
+
 
 optimization_algorithm: Algorithm = [
     GA(pop_size=pop_size, eliminate_duplicates=True),
     DE(pop_size=pop_size),
     ES(n_offsprings=pop_size, pop_size=pop_size//2),     # gives it 5 more evaluations than other algorithms TODO@ask: ???
     PatternSearch(pop_size=pop_size, eliminate_duplicates=True),
-][0]
+][1]
+
+representation.setup(optimization_algorithm)
 
 
 level_set = load_level_set("./json_levels/train_LEVELS.json")
-test_batch: List[str] = [level_set["levels"][index]["ascii"] for index in range(50)]#[:3]
+test_batch: List[str] = [level_set["levels"][index]["ascii"] for index in range(50)][:1]
 
-test_problem = LinearHeuristicCombinationProblem([test_batch], 2000, multiprocessing.Pool())
-
+test_problem = KekeProblem([test_batch], representation, 2000, multiprocessing.Pool())
 
 
 
@@ -38,11 +44,13 @@ if __name__ == '__main__':
 
     callback = TrainingRecord()
 
+
     res = minimize(
         test_problem,
         optimization_algorithm,
         termination=("n_gen", n_generations),
-        callback=callback
+        callback=callback,
+        verbose=True
     )
 
 

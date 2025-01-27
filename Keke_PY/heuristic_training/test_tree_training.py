@@ -15,7 +15,7 @@ optimization_algorithm = NSGA2(
     sampling = HeuristicTree.Sampling(),
     crossover = HeuristicTree.Crossover(),
     mutation = HeuristicTree.Mutation(),
-    eliminate_duplicates = HeuristicTree.DuplicationElimination()
+    eliminate_duplicates = HeuristicTree.DuplicateElimination()
 )
 
 

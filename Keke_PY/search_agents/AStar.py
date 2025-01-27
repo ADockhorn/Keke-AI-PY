@@ -1,8 +1,6 @@
 import heapq
-from typing import Callable
 
-from Keke_PY.heuristics.hand_crafted_heuristics import heuristics_feature_vector_length
-from Keke_PY.heuristics.weighted_sum import weighted_heuristic_sum
+from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
 from Keke_PY.baba import GameState, Direction, check_win, advance_game_state
 from Keke_PY.search_agents.ai_interface import AIInterface, range_or_infinite_loop
 from typing import List, Tuple, Union
@@ -13,12 +11,13 @@ class AStar(AIInterface):
     A* Search Agent implementation.
     """
 
-    def __init__(self, heuristic: Callable[[GameState, dict], float]):
+    def __init__(self, heuristic: Heuristic):
         """
         Initialize the A* agent with a heuristic function.
 
         :param heuristic: A function that estimates the cost from the current state to the goal.
         """
+        assert heuristic.nr_of_parameters == 0, "heuristic is not allowed to expect any parameters."
         self.heuristic = heuristic
 
     def search(
@@ -47,7 +46,7 @@ class AStar(AIInterface):
 
         pq = []
         index = 0  # Unique index to ensure tuples are compared correctly
-        heapq.heappush(pq, (self.heuristic(initial_state, ctx), 0, index, initial_state, []))
+        heapq.heappush(pq, (self.heuristic.run(initial_state, ctx), 0, index, initial_state, []))
 
         visited = set()
         for i in range_or_infinite_loop(max_forward_model_calls, print_progress_bar):
@@ -72,7 +71,7 @@ class AStar(AIInterface):
                     # g(next) is the cost so far plus 1 (since each move costs 1)
                     new_g = g + 1
                     # f(next) = g(next) + h(next)
-                    new_f = new_g + self.heuristic(next_state, ctx)
+                    new_f = new_g + self.heuristic.run(next_state, ctx)
                     index += 1  # Increment the index to maintain uniqueness
 
                     heapq.heappush(pq, (new_f, new_g, index, next_state, actions + [action.name]))
@@ -80,35 +79,31 @@ class AStar(AIInterface):
         return None, max_forward_model_calls  # Return empty if no solution is found
 
 
-def simple_heuristic(game_state: GameState, _ctx: dict) -> float:
-    """
-    A simple heuristic function that estimates the cost to the goal.
-    In this case, it calculates the Manhattan distance between the player and the winning object.
+class SimpleHeuristic(Heuristic):
 
-    :param game_state: The current game state.
-    :param _ctx: Context given to the heuristics
-    :return: Estimated cost to reach the goal.
-    """
-    if len(game_state.players) == 0:
-        return 10 * float(len(game_state.object_map) + len(game_state.object_map[0]))
-    if not game_state.winnables:
-        return float('inf')  # No winnable objects
+    def run(self, state: GameState, ctx: dict, *args: float) -> float:
+        """
+        A simple heuristic function that estimates the cost to the goal.
+        In this case, it calculates the Manhattan distance between the player and the winning object.
 
-    # Calculate Manhattan distance from each player to the closest winnable object
-    return min([min(abs(player.x - winnable.x) + abs(player.y - winnable.y) for winnable in game_state.winnables) for player in game_state.players])
+        :param state: The current game state.
+        :param ctx: Context given to the heuristics
+        :return: Estimated cost to reach the goal.
+        """
+        if len(game_state.players) == 0:
+            return 10 * float(len(game_state.object_map) + len(game_state.object_map[0]))
+        if not game_state.winnables:
+            return float('inf')  # No winnable objects
+
+        # Calculate Manhattan distance from each player to the closest winnable object
+        return min([min(abs(player.x - winnable.x) + abs(player.y - winnable.y) for winnable in game_state.winnables) for player in game_state.players])
 
 
-def test_heuristics(game_state: GameState, ctx: dict) -> float:
-    return weighted_heuristic_sum(
-        game_state, ctx,
-        [0] * heuristics_feature_vector_length,
-        -1
-    )
 
 if __name__ == '__main__':
     from Keke_PY.simulation import load_level_set, parse_map, map_to_string, make_level
     level_set = load_level_set("json_levels/full_biy_LEVELS.json")
-    astar_agent = AStar(heuristic=simple_heuristic)
+    astar_agent = AStar(heuristic=SimpleHeuristic())
 
     demo_levels = level_set["levels"]
     for level in demo_levels:

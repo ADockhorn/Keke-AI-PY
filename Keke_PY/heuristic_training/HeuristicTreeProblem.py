@@ -80,7 +80,7 @@ def evaluate_ai_on_level(
     level: str = simulation_data[1]
     max_forward_model_calls: int = simulation_data[2]
     start_state: GameState = make_level(parse_map(level))
-    agent: AStar = AStar(ai.run)
+    agent: AStar = AStar(ai)
     solution: Tuple[Union[List[str], None], int] = agent.search(
         start_state,
         max_forward_model_calls,

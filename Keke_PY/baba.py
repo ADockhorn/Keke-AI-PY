@@ -564,7 +564,7 @@ def top_obj_at_pos(x: int, y: int, state: GameState) -> Optional[GameObj]:
     """
     Get the object at a specific position in the object blocked_fields_map.
 
-    :param x: X coordinate.
+    :param x: x coordinate.
     :param y: Y coordinate.
     :param state: The current game-state
     :return: The object at the specified coordinates.

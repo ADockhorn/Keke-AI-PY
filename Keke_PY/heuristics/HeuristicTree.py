@@ -8,7 +8,7 @@ from pymoo.core.duplicate import ElementwiseDuplicateElimination
 
 from Keke_PY.baba import GameState
 from Keke_PY.heuristics.HeuristicCombinator import HeuristicCombinator, default_combinators
-from Keke_PY.heuristics.ParametrisedHeuristic import ParametrisedHeuristic
+from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
 from Keke_PY.heuristics.hand_crafted_heuristics import heuristics
 
 from pymoo.core.sampling import Sampling as PymooSampling
@@ -17,10 +17,10 @@ from pymoo.core.crossover import Crossover as PymooCrossover
 
 
 OpRepr = TypeVar('OpRepr', bound=HeuristicCombinator)
-Child = TypeVar('Child', bound=ParametrisedHeuristic)
+Child = TypeVar('Child', bound=Heuristic)
 
 @dataclass
-class GenericHeuristicTreeNode(ParametrisedHeuristic, Generic[OpRepr, Child]):
+class GenericHeuristicTreeNode(Heuristic, Generic[OpRepr, Child]):
     combinator: OpRepr
     children: List[Child]
     parameters: List[float]
@@ -35,10 +35,6 @@ class GenericHeuristicTreeNode(ParametrisedHeuristic, Generic[OpRepr, Child]):
         assert \
             all([child.nr_of_parameters == 0 for child in self.children]),\
             "All child notes have to expect zero additional parameters."
-
-    @property
-    def nr_of_parameters(self) -> int:
-        return 0
 
     def run(self, state: GameState, ctx: dict, *args: float) -> float:
         return self.combinator.run(
@@ -64,10 +60,10 @@ class GenericHeuristicTreeNode(ParametrisedHeuristic, Generic[OpRepr, Child]):
 
 
 
-raw_default_operations: List[HeuristicCombinator] = [
+raw_default_operations: [HeuristicCombinator] = (
     *default_combinators,
     *map(HeuristicCombinator.from_parametrised_heuristic, heuristics)
-]
+)
 
 @dataclass
 class DefaultOpRepr(HeuristicCombinator):
@@ -90,9 +86,9 @@ class DefaultOpRepr(HeuristicCombinator):
         return self.op.run(state, ctx, *args)
 
 
-default_operations = [DefaultOpRepr(i) for i, _ in enumerate(raw_default_operations)]
-default_comb_operations = [DefaultOpRepr(i) for i, _ in enumerate(default_combinators)]
-default_leaf_operations = [DefaultOpRepr(len(default_combinators) + i) for i, _ in enumerate(heuristics)]
+default_operations: [DefaultOpRepr] = (DefaultOpRepr(i) for i, _ in enumerate(raw_default_operations))
+default_comb_operations: [DefaultOpRepr] = (DefaultOpRepr(i) for i, _ in enumerate(default_combinators))
+default_leaf_operations: [DefaultOpRepr] = (DefaultOpRepr(len(default_combinators) + i) for i, _ in enumerate(heuristics))
 
 
 
@@ -147,34 +143,34 @@ class HeuristicTree(GenericHeuristicTreeNode[DefaultOpRepr, 'HeuristicTree']):
     class Mutation(PymooMutation):
         def __init__(self):
             super().__init__()
-        def _do(self, problem, X, **kwargs):
+        def _do(self, problem, x, **kwargs):
             max_depth: int = problem.max_depth
             # for each individual
-            for i in range(len(X)):
-                X[i, 0] = mutation(X[i, 0], max_depth)
-            return X
+            for i in range(len(x)):
+                x[i, 0] = mutation(x[i, 0], max_depth)
+            return x
 
     class Crossover(PymooCrossover):
         def __init__(self):
             # define the crossover: number of parents and number of offsprings
             super().__init__(2, 2)
-        def _do(self, problem, X, **kwargs):
+        def _do(self, problem, x, **kwargs):
             # The input of has the following shape (n_parents, n_matings, n_var)
-            _, n_matings, n_var = X.shape
+            _, n_matings, n_var = x.shape
             max_depth: int = problem.max_depth
             # The output with the shape (n_offsprings, n_matings, n_var)
-            # Because there the number of parents and offsprings are equal it keeps the shape of X
-            res = np.full_like(X, None, dtype=object)
+            # Because there the number of parents and offsprings are equal it keeps the shape of x
+            res = np.full_like(x, None, dtype=object)
             # for each mating provided
             for k in range(n_matings):
                 # get the first and the second parent
-                parent1, parent2 = X[0, k, 0], X[1, k, 0]
+                parent1, parent2 = x[0, k, 0], x[1, k, 0]
                 offspring1: HeuristicTree = crossover(parent1, parent2, max_depth)
                 offspring2: HeuristicTree = crossover(parent2, parent1, max_depth)
                 res[0, k, 0], res[1, k, 0] = offspring1, offspring2
             return res
 
-    class DuplicationElimination(ElementwiseDuplicateElimination):
+    class DuplicateElimination(ElementwiseDuplicateElimination):
         def is_equal(self, a, b):
             return a.X[0] == b.X[0]
 
@@ -226,7 +222,6 @@ def crossover(tree1: HeuristicTree, tree2: HeuristicTree, max_depth: int) -> Heu
     #replace subtree in parent 1 with subtree in parent 2
     replace_subtree(first_sub[1], second_sub[1])
     res.update_depth()
-    # first.update({'p1': trees[0]['id'], 'p2': trees[1]['id']}) # TODO@ask: sollen die "Stambäume" irgendwie festgehalten werden?
     return res
 
 def mutation(
@@ -245,7 +240,6 @@ def mutation(
     new_tree = create_random_tree(depth, ops, heu)
     replace_subtree(del_tree[1], new_tree)
     t.update_depth()
-    #t.update({'p1': t['id'], 'p2': 0}) # TODO@ask: sollen die "Stambäume" irgendwie festgehalten werden?
     return t
 
 def replace_subtree(tree: HeuristicTree, subtree: HeuristicTree):

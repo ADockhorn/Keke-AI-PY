@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from collections.abc import Callable
 from inspect import signature
+from typing import final
 
 from Keke_PY.baba import GameState
 
@@ -20,6 +21,13 @@ class ParametrisedHeuristic(ABC):
     def from_func(heuristic: Callable, override_nr_of_parameters: int = -1) -> 'ParametrisedHeuristicFromCallable':
         return ParametrisedHeuristicFromCallable(heuristic, override_nr_of_parameters)
 
+
+class Heuristic(ParametrisedHeuristic, ABC):
+
+    @final
+    @property
+    def nr_of_parameters(self) -> int:
+        return 0
 
 @dataclass
 class ParametrisedHeuristicFromCallable(ParametrisedHeuristic):
