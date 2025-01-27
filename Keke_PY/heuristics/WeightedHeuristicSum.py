@@ -62,7 +62,7 @@ class WeightedHeuristicSumRepresentation(HeuristicRepresentation):
         return WeightedHeuristicSum(list(x), self.do_nothing_threshold)
 
     def serialize(self, x: np.ndarray) -> str:
-        return ';'.join(x)
+        return ';'.join(map(str, x))
 
     def deserialize(self, x: str) -> np.ndarray:
         return np.fromiter(map(float, x.split(';')), float)

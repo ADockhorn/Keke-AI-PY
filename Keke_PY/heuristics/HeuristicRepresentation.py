@@ -200,7 +200,7 @@ class TrackedRepresentation(HeuristicRepresentation):
     def into_heuristic(self, x: np.ndarray) -> Heuristic:
         return self._inner_repr.into_heuristic(x[self._offset:])
     def serialize(self, x: np.ndarray) -> str:
-        return f"{';'.join(x[:self._offset])};{self._inner_repr.serialize(x[self._offset:])}"
+        return f"{';'.join(map(str, map(int, x[:self._offset])))};{self._inner_repr.serialize(x[self._offset:])}"
     def deserialize(self, x: str) -> np.ndarray:
         entries = x.split(';')
         track_data: [int] = map(int, entries[:self._offset])
@@ -259,8 +259,8 @@ class TrackedRepresentation(HeuristicRepresentation):
             res: np.ndarray = x if id(inner_res) == id(inner_x) else \
                 numpy.pad(inner_res, ((0, 0), (self._tracked_repr._offset, 0)), constant_values=-1)
             for i in range(len(x)):
-                res[i, 1] = x[i, 0]
                 res[i, 1:self._tracked_repr._offset] = -1
+                res[i, 1] = x[i, 0]
                 res[i, 0] = self._tracked_repr._new_id()
             return res
 

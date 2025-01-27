@@ -17,6 +17,7 @@ from Keke_PY.simulation import load_level_set
 pop_size: int = 3
 n_generations: int = 3
 
+#representation = HeuristicTree
 representation = TrackedRepresentation(WeightedHeuristicSumRepresentation())
 
 

@@ -23,6 +23,8 @@ class KekeProblem(Problem):
 
     representation: HeuristicRepresentation
 
+    generation: int = 0
+
 
     def __init__(
             self,
@@ -48,6 +50,9 @@ class KekeProblem(Problem):
         )
 
     def _evaluate(self, x, out, *args, **kwargs):
+        self.generation += 1
+
+        self.log_generation_data(list(x))
 
         simulation_data_list: List[Tuple[Tuple[int, Heuristic], str, int]] = list(itertools.product(
             enumerate(map(lambda arr: self.representation.into_heuristic(arr), x)),
@@ -58,6 +63,8 @@ class KekeProblem(Problem):
         simulation_results: Dict[Tuple[int, str], int] = dict(list(self.executor.map(
             evaluate_ai_on_level, simulation_data_list
         )))
+
+        self.log_simulation_info(simulation_results)
 
         # this output is supposed to be minimized:
         out["F"] = np.zeros((len(x), len(self.level_batches)))
@@ -71,6 +78,24 @@ class KekeProblem(Problem):
 
         # There are no constrains:
         out["G"] = np.zeros((len(x), 0))
+
+
+    def log_generation_data(self, x: list):
+        for index, instance in enumerate(x):
+            print("INSTANCE: ", {
+                "gen": self.generation,
+                "index": index,
+                "heuristic": self.representation.serialize(instance)
+            })
+
+    def log_simulation_info(self, simulation_results: Dict[Tuple[int, str], int]):
+        for (ai_id, level), forward_model_calls in simulation_results.items():
+            print("EVALUATION: ", {
+                "gen": self.generation,
+                "index": ai_id,
+                "level": level,
+                "forward_model_calls": forward_model_calls
+            })
 
 
 
@@ -92,5 +117,4 @@ def evaluate_ai_on_level(
         False
     )
     forward_model_calls: int = solution[1]
-    print((ai_index, level), forward_model_calls)
     return (ai_index, level), forward_model_calls
