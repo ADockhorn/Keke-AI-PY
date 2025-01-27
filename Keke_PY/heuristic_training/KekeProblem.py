@@ -83,9 +83,13 @@ class KekeProblem(Problem):
         out["G"] = np.zeros((len(x), 0))
 
 
+    def log_text(self, *args):
+        print(*args)
+
+
     def log_generation_data(self, x: list):
         for index, instance in enumerate(x):
-            print("EVALUATE INSTANCE: ", {
+            self.log_text("EVALUATE INSTANCE: ", {
                 "gen": self.generation,
                 "index": index,
                 "heuristic": self.representation.serialize(instance)
@@ -93,7 +97,7 @@ class KekeProblem(Problem):
 
     def log_simulation_info(self, simulation_results: Dict[Tuple[int, str], int]):
         for (ai_id, level), forward_model_calls in simulation_results.items():
-            print("EVALUATION: ", {
+            self.log_text("EVALUATION: ", {
                 "gen": self.generation,
                 "index": ai_id,
                 "level": level,
