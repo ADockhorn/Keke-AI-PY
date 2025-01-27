@@ -1,6 +1,7 @@
 import math
 from abc import ABC, abstractmethod
-from typing import TypeVar, Generic
+from copy import deepcopy
+from typing import TypeVar, Generic, List
 
 import numpy
 import numpy as np
@@ -186,6 +187,8 @@ class TrackedRepresentation(HeuristicRepresentation):
     def _new_id(self) -> int:
         self._last_id += 1
         return self._last_id
+    def register_instance(self, instance: np.ndarray):
+        print("TRACKED INSTANCE: ", self.serialize(instance))
 
 
     def get_problem_data(self) -> Problem:
@@ -244,6 +247,7 @@ class TrackedRepresentation(HeuristicRepresentation):
             res = numpy.pad(inner, ((0, 0), (self._tracked_repr._offset, 0)), constant_values=-1)
             for i in range(n_samples):
                 res[i, 0] = self._tracked_repr._new_id()
+                self._tracked_repr.register_instance(deepcopy(res[i, :]))
             return res
 
     class TrackedMutation(Mutation):
@@ -262,6 +266,7 @@ class TrackedRepresentation(HeuristicRepresentation):
                 res[i, 1:self._tracked_repr._offset] = -1
                 res[i, 1] = x[i, 0]
                 res[i, 0] = self._tracked_repr._new_id()
+                self._tracked_repr.register_instance(deepcopy(res[i, :]))
             return res
 
     class TrackedCrossover(Crossover):
@@ -295,6 +300,7 @@ class TrackedRepresentation(HeuristicRepresentation):
                 for j in range(n_offsprings):
                     res[j, i, 0] = self._tracked_repr._new_id()
                     res[j, i, 1:1+self._inner_crossover.n_parents] = parents
+                    self._tracked_repr.register_instance(deepcopy(res[j, i, :]))
             return res
 
     class TrackedDuplicateElimination(DuplicateElimination):

@@ -82,7 +82,7 @@ class KekeProblem(Problem):
 
     def log_generation_data(self, x: list):
         for index, instance in enumerate(x):
-            print("INSTANCE: ", {
+            print("EVALUATE INSTANCE: ", {
                 "gen": self.generation,
                 "index": index,
                 "heuristic": self.representation.serialize(instance)
