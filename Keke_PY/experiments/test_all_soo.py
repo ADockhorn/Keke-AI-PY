@@ -32,9 +32,17 @@ representation.setup(optimization_algorithm)
 
 
 level_set = load_level_set("./json_levels/train_LEVELS.json")
-test_batch: List[str] = [level_set["levels"][index]["ascii"] for index in range(50)][:1]
+levels: List[str] = [level_set["levels"][index]["ascii"] for index in range(50)]
+training_batches: List[List[str]] = [levels[:1]]
+test_batch: [str] = levels[1:2]
 
-test_problem = KekeProblem([test_batch], representation, 2000, multiprocessing.Pool())
+test_problem = KekeProblem(
+    training_batches = training_batches,
+    representation = representation,
+    max_forward_model_calls = 2000,
+    executor = multiprocessing.Pool(),
+    test_batch = test_batch
+)
 
 
 
