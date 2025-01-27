@@ -6,7 +6,7 @@ from typing import List, Tuple, Union, Dict
 import numpy as np
 from pymoo.core.problem import Problem
 
-from Keke_PY.heuristics.HeuristicRepresentation import HeuristicRepresentation
+from Keke_PY.heuristic_representations.HeuristicRepresentation import HeuristicRepresentation
 from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
 from Keke_PY.search_agents.AStar import AStar
 from Keke_PY.baba import GameState, parse_map, make_level

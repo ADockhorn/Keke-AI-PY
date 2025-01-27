@@ -10,15 +10,16 @@ from pymoo.optimize import minimize
 
 from Keke_PY.heuristic_training.KekeProblem import KekeProblem
 from Keke_PY.heuristic_training.LinearHeuristicCombinationProblem import TrainingRecord
-from Keke_PY.heuristics.HeuristicRepresentation import TrackedRepresentation
-from Keke_PY.heuristics.WeightedHeuristicSum import WeightedHeuristicSumRepresentation
+from Keke_PY.heuristic_representations.TrackedRepresentation import TrackedRepresentation
+from Keke_PY.heuristic_representations.WeightedHeuristicSumRepresentation import WeightedHeuristicSumRepresentation
 from Keke_PY.simulation import load_level_set
 
 pop_size: int = 3
 n_generations: int = 3
 
 #representation = HeuristicTree
-representation = TrackedRepresentation(WeightedHeuristicSumRepresentation())
+representation = WeightedHeuristicSumRepresentation()
+representation = TrackedRepresentation(representation)
 
 
 optimization_algorithm: Algorithm = [
