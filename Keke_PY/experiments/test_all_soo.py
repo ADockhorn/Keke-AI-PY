@@ -17,15 +17,15 @@ from Keke_PY.simulation import load_level_set
 
 pop_size: int = 3
 n_generations: int = 3
-n_eval: int = pop_size * n_generations
+n_evals: int = pop_size * n_generations
 
-representation = HeuristicTreeRepresentation(3)
-#representation = WeightedHeuristicSumRepresentation(0.5)
+#representation = HeuristicTreeRepresentation(3)
+representation = WeightedHeuristicSumRepresentation(0.5)
 representation = TrackedRepresentation(representation)
 
 
 optimization_algorithm: Algorithm = [
-    RandomSamplingAlgorithm(n_sample_points=n_eval, batch_size=pop_size, sampling=representation.sampling),
+    RandomSamplingAlgorithm(n_sample_points=n_evals, batch_size=pop_size, sampling=representation.sampling),
     GA(pop_size=pop_size, eliminate_duplicates=True),
     DE(pop_size=pop_size),
     ES(n_offsprings=pop_size, pop_size=pop_size//2),
@@ -38,7 +38,7 @@ representation.setup(optimization_algorithm)
 level_set = load_level_set("./json_levels/train_LEVELS.json")
 levels: List[str] = [level_set["levels"][index]["ascii"] for index in range(50)]
 training_batches: List[List[str]] = [levels[:1]]
-test_batch: [str] = levels[1:2]
+test_batch: [str] = levels[1:1]
 
 test_problem = KekeProblem(
     training_batches = training_batches,
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     res = minimize(
         test_problem,
         optimization_algorithm,
-        termination=("n_eval", n_eval),
+        termination=("n_eval", n_evals),
         verbose=True
     )
 

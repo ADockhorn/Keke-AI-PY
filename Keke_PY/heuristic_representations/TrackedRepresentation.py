@@ -76,10 +76,12 @@ class TrackedRepresentation(HeuristicRepresentation):
     class TrackedSampling(Sampling):
         _tracked_repr: 'TrackedRepresentation'
         _inner_sampling: Sampling
+
         def __init__(self, tracked_representation: 'TrackedRepresentation'):
             self._tracked_repr = tracked_representation
             self._inner_sampling = tracked_representation._inner_repr.sampling
             super().__init__()
+
         def _do(self, problem, n_samples, **kwargs) -> np.ndarray:
             inner = self._inner_sampling._do(self._tracked_repr._get_inner_problem(problem), n_samples, **kwargs)
             res = numpy.pad(inner, ((0, 0), (self._tracked_repr._offset, 0)), constant_values=-1)
@@ -91,10 +93,17 @@ class TrackedRepresentation(HeuristicRepresentation):
     class TrackedMutation(Mutation):
         _tracked_repr: 'TrackedRepresentation'
         _inner_mutation: Mutation
+
         def __init__(self, tracked_representation: 'TrackedRepresentation'):
             self._tracked_repr = tracked_representation
             self._inner_mutation = tracked_representation._inner_repr.mutation
             super().__init__()
+            self.prob = self._inner_mutation.prob.get()
+
+        def do(self, problem, pop, inplace=True, **kwargs):
+            self.prob = self._inner_mutation.prob.get()
+            return Mutation.do(self, problem, pop, inplace, **kwargs)
+
         def _do(self, problem, x, **kwargs):
             inner_x: np.ndarray = x[:, self._tracked_repr._offset:]
             inner_res: np.ndarray = self._inner_mutation._do(self._tracked_repr._get_inner_problem(problem), inner_x, **kwargs)
@@ -116,16 +125,13 @@ class TrackedRepresentation(HeuristicRepresentation):
             self._inner_crossover = tracked_representation._inner_repr.crossover
             super().__init__(
                 self._inner_crossover.n_parents,
-                self._inner_crossover.n_offsprings,
-                self._inner_crossover.prob,
+                self._inner_crossover.n_offsprings
             )
+            self.prob = self._inner_crossover.prob.get()
 
         def do(self, problem, pop, parents=None, **kwargs):
-            prob_src = self.prob
-            self.prob = prob_src.get()
-            result = Crossover.do(self, problem, pop, parents, **kwargs)
-            self.prob = prob_src
-            return result
+            self.prob = self._inner_crossover.prob.get()
+            return Crossover.do(self, problem, pop, parents, **kwargs)
 
         def _do(self, problem, x, **kwargs):
             inner_x = x[:, :, self._tracked_repr._offset:]
