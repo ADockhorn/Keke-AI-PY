@@ -3,11 +3,10 @@ from abc import ABC, abstractmethod
 import numpy as np
 from pymoo.core.algorithm import Algorithm
 from pymoo.core.crossover import Crossover
-from pymoo.core.duplicate import DuplicateElimination, NoDuplicateElimination
+from pymoo.core.duplicate import DuplicateElimination
 from pymoo.core.mutation import Mutation
 from pymoo.core.problem import Problem
 from pymoo.core.sampling import Sampling
-from pymoo.operators.mutation.nom import NoMutation
 
 from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
 
@@ -49,10 +48,11 @@ class HeuristicRepresentation(ABC):
             self.sampling, self.crossover, self.mutation, self.duplicate_elimination
         )
         alg.eliminate_duplicates = duplicate_elimination
-        #if alg.initialization is not None:
-        alg.initialization.sampling = sampling
-        alg.initialization.eliminate_duplicates = duplicate_elimination
-        alg.mating.eliminate_duplicates = duplicate_elimination
-        alg.mating.crossover = crossover
-        alg.mating.mutation = mutation
+        if hasattr(alg, 'initialization'):
+            alg.initialization.sampling = sampling
+            alg.initialization.eliminate_duplicates = duplicate_elimination
+        if hasattr(alg, 'mating'):
+            alg.mating.eliminate_duplicates = duplicate_elimination
+            alg.mating.crossover = crossover
+            alg.mating.mutation = mutation
 
