@@ -90,13 +90,13 @@ class SimpleHeuristic(Heuristic):
         :param ctx: Context given to the heuristics
         :return: Estimated cost to reach the goal.
         """
-        if len(game_state.players) == 0:
-            return 10 * float(len(game_state.object_map) + len(game_state.object_map[0]))
-        if not game_state.winnables:
+        if len(state.players) == 0:
+            return 10 * float(len(state.object_map) + len(state.object_map[0]))
+        if not state.winnables:
             return float('inf')  # No winnable objects
 
         # Calculate Manhattan distance from each player to the closest winnable object
-        return min([min(abs(player.x - winnable.x) + abs(player.y - winnable.y) for winnable in game_state.winnables) for player in game_state.players])
+        return min([min(abs(player.x - winnable.x) + abs(player.y - winnable.y) for winnable in state.winnables) for player in state.players])
 
 
 

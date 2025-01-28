@@ -3,7 +3,7 @@ from itertools import chain
 from typing import Tuple, Union, Iterable, List, Optional
 
 
-from Keke_PY.search_agents.AStar import AStar, simple_heuristic
+from Keke_PY.search_agents.AStar import AStar, SimpleHeuristic
 from Keke_PY.baba import GameState, Direction, imgHash, advance_game_state, parse_map, make_level
 
 
@@ -175,7 +175,7 @@ broken_levels: List[Tuple[str, Union[range, int, None, Iterable[int]]]] = [
 test = working_levels
 
 def try_ai(level, max_forward_model_calls: Union[int, None] = 50, max_depth: Union[int, None] = 50) -> Optional[str]:
-    ai_solution_attempt = AStar(simple_heuristic).search(make_level(parse_map(level)), max_forward_model_calls, max_depth, True)
+    ai_solution_attempt = AStar(SimpleHeuristic()).search(make_level(parse_map(level)), max_forward_model_calls, max_depth, True)
     if ai_solution_attempt[0] is not None:
         print(ai_solution_attempt[0])
         solution_str = ""
