@@ -38,7 +38,9 @@ class KekeProblem(Problem):
         self.training_batches = training_batches
         self.test_batch = test_batch
         self.max_forward_model_calls = max_forward_model_calls
-        self.all_levels = list(set(chain(test_batch, *training_batches)))
+        training_levels = set(chain(*training_batches))
+        assert all(level not in training_levels for level in test_batch), "Training on test-levels is not allowed!"
+        self.all_levels = list(training_levels) + test_batch
         self.representation = representation
         self.executor = executor
 
