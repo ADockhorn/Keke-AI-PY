@@ -15,7 +15,7 @@ from Keke_PY.search_agents.AStar import AStar
 class KekeProblem(Problem):
 
     training_batches: List[List[str]]
-    test_batch: [str]
+    test_batch: List[str]
     all_levels: List[str]
 
     max_forward_model_calls: int
@@ -33,7 +33,7 @@ class KekeProblem(Problem):
             representation: HeuristicRepresentation,
             max_forward_model_calls: int = 2000,
             executor: Executor = ProcessPoolExecutor(),
-            test_batch: [str] = ()
+            test_batch: List[str] = ()
     ):
         self.training_batches = training_batches
         self.test_batch = test_batch
@@ -54,6 +54,8 @@ class KekeProblem(Problem):
             vtype=problem_data.vtype,
         )
 
+        self.log_level_data()
+
     def _evaluate(self, x, out, *args, **kwargs):
         self.generation += 1
 
@@ -69,7 +71,7 @@ class KekeProblem(Problem):
             evaluate_ai_on_level, simulation_data_list
         )))
 
-        self.log_simulation_info(simulation_results)
+        self.log_simulation_data(simulation_results)
 
         # this output is supposed to be minimized:
         out["F"] = np.zeros((len(x), len(self.training_batches)))
@@ -89,21 +91,38 @@ class KekeProblem(Problem):
         print(*args)
 
 
+    def log_level_data(self):
+        for level_id, level in enumerate(self.all_levels):
+            self.log_text("LEVEL: ", {
+                "level_id": level_id,
+                "ascii": level,
+            })
+        self._level_to_id_map: Dict[str, int] = dict(map(lambda t: (t[1], t[0]), enumerate(self.all_levels)))
+        for batch_name, batch in chain(enumerate(self.training_batches), [(-1, self.test_batch)]):
+            for index, level in enumerate(batch):
+                level_id = self._level_to_id_map[level]
+                assert self.all_levels[level_id] == level
+                self.log_text("BATCH: ", {
+                    "batch": batch_name,
+                    "index": index,
+                    "level_id": level_id
+                })
+
     def log_generation_data(self, x: list):
         for index, instance in enumerate(x):
-            self.log_text("EVALUATE INSTANCE: ", {
+            self.log_text("INSTANCE: ", {
                 "gen": self.generation,
                 "index": index,
-                "heuristic": self.representation.serialize(instance)
+                "heuristic": self.representation.serialize(instance),
             })
 
-    def log_simulation_info(self, simulation_results: Dict[Tuple[int, str], int]):
+    def log_simulation_data(self, simulation_results: Dict[Tuple[int, str], int]):
         for (ai_id, level), forward_model_calls in simulation_results.items():
-            self.log_text("EVALUATION: ", {
+            self.log_text("EVAL: ", {
                 "gen": self.generation,
                 "index": ai_id,
-                "level": level,
-                "forward_model_calls": forward_model_calls
+                "level_id": self._level_to_id_map[level],
+                "forward_model_calls": forward_model_calls,
             })
 
 

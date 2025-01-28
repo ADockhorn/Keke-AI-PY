@@ -28,7 +28,7 @@ class TrackedRepresentation(HeuristicRepresentation):
     def track_instance(self, problem, instance: np.ndarray):
         assert instance[0] == len(self._tracked_instances), "instance must have id equal to _current_id()"
         self._tracked_instances.append(instance.copy())
-        problem.log_text("TRACK INSTANCE: ", self.serialize(instance, False))
+        problem.log_text(f"TRACK: {self.serialize(instance, False)}")
 
 
 
