@@ -1,5 +1,6 @@
 import multiprocessing
-from typing import List
+import time
+from typing import List, Iterable
 
 from pymoo.algorithms.soo.nonconvex.de import DE
 from pymoo.algorithms.soo.nonconvex.es import ES
@@ -35,34 +36,39 @@ optimization_algorithm: Algorithm = [
 representation.setup(optimization_algorithm)
 
 
-level_set = load_level_set("./json_levels/train_LEVELS.json")
-levels: List[str] = [level_set["levels"][index]["ascii"] for index in range(50)]
-training_batches: List[List[str]] = [levels[:1]]
-test_batch: [str] = levels[1:1]
+training_levels = [level["ascii"] for level in load_level_set("./json_levels/train_LEVELS.json")["levels"]][:3]
+test_levels = [level["ascii"] for level in load_level_set("./json_levels/test_LEVELS.json")["levels"]][:3]
 
 test_problem = KekeProblem(
-    training_batches = training_batches,
+    training_batches = [training_levels],
     representation = representation,
     max_forward_model_calls = 2000,
     executor = multiprocessing.Pool(),
-    test_batch = test_batch
+    test_batch = test_levels
 )
 
+def measure_time() -> Iterable[None]:
+    start = time.time()
+    yield None
+    end = time.time()
+    print("The time of execution of above program is :", (end - start), "s")
 
 
 if __name__ == '__main__':
 
-    print(f"testing {optimization_algorithm} ...")
-    dump_file_name: str = "test_1_return.pickle"
+    for _ in measure_time():
+
+        print(f"testing {optimization_algorithm} ...")
+        dump_file_name: str = "test_1_return.pickle"
 
 
 
-    res = minimize(
-        test_problem,
-        optimization_algorithm,
-        termination=("n_eval", n_evals),
-        verbose=True
-    )
+        res = minimize(
+            test_problem,
+            optimization_algorithm,
+            termination=("n_eval", n_evals),
+            verbose=True
+        )
 
 
-    print(f"testing {optimization_algorithm} done")
+        print(f"testing {optimization_algorithm} done")
