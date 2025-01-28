@@ -3,17 +3,12 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import List, TypeVar, Generic, Union, Iterator, Tuple
 
-import numpy as np
-from pymoo.core.duplicate import ElementwiseDuplicateElimination
 
 from Keke_PY.baba import GameState
 from Keke_PY.heuristics.HeuristicCombinator import HeuristicCombinator, default_combinators
 from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
 from Keke_PY.heuristics.hand_crafted_heuristics import heuristics
 
-from pymoo.core.sampling import Sampling as PymooSampling
-from pymoo.core.mutation import Mutation as PymooMutation
-from pymoo.core.crossover import Crossover as PymooCrossover
 
 
 OpRepr = TypeVar('OpRepr', bound=HeuristicCombinator)
@@ -87,8 +82,8 @@ class DefaultOpRepr(HeuristicCombinator):
 
 
 default_operations: [DefaultOpRepr] = (DefaultOpRepr(i) for i, _ in enumerate(raw_default_operations))
-default_comb_operations: [DefaultOpRepr] = (DefaultOpRepr(i) for i, _ in enumerate(default_combinators))
-default_leaf_operations: [DefaultOpRepr] = (DefaultOpRepr(len(default_combinators) + i) for i, _ in enumerate(heuristics))
+default_comb_operations: List[DefaultOpRepr] = [DefaultOpRepr(i) for i, _ in enumerate(default_combinators)]
+default_leaf_operations: List[DefaultOpRepr] = [DefaultOpRepr(len(default_combinators) + i) for i, _ in enumerate(heuristics)]
 
 
 
@@ -119,10 +114,10 @@ class HeuristicTree(GenericHeuristicTreeNode[DefaultOpRepr, 'HeuristicTree']):
 
 
     @classmethod
-    def from_data(cls, data: Iterator[Union[int, float]]) -> 'HeuristicTree':
-        operator: DefaultOpRepr = DefaultOpRepr(next(data))
+    def from_data(cls, data: Iterator[Union[int, float, str]]) -> 'HeuristicTree':
+        operator: DefaultOpRepr = DefaultOpRepr(int(next(data)))
         parameters: List[float] = [
-            next(data)
+            float(next(data))
             for _ in range(operator.nr_of_static_parameters)
         ]
         children: List[HeuristicTree] = [
@@ -130,49 +125,6 @@ class HeuristicTree(GenericHeuristicTreeNode[DefaultOpRepr, 'HeuristicTree']):
             for _ in range(operator.nr_of_dynamic_inputs)
         ]
         return cls(operator, children, parameters)
-
-
-    class Sampling(PymooSampling):
-        def _do(self, problem, n_samples, **kwargs):
-            max_depth: int = problem.max_depth
-            res = np.full((n_samples, 1), None, dtype=object)
-            for i in range(n_samples):
-                res[i, 0] = create_random_tree(max_depth)
-            return res
-
-    class Mutation(PymooMutation):
-        def __init__(self):
-            super().__init__()
-        def _do(self, problem, x, **kwargs):
-            max_depth: int = problem.max_depth
-            # for each individual
-            for i in range(len(x)):
-                x[i, 0] = mutation(x[i, 0], max_depth)
-            return x
-
-    class Crossover(PymooCrossover):
-        def __init__(self):
-            # define the crossover: number of parents and number of offsprings
-            super().__init__(2, 2)
-        def _do(self, problem, x, **kwargs):
-            # The input of has the following shape (n_parents, n_matings, n_var)
-            _, n_matings, n_var = x.shape
-            max_depth: int = problem.max_depth
-            # The output with the shape (n_offsprings, n_matings, n_var)
-            # Because there the number of parents and offsprings are equal it keeps the shape of x
-            res = np.full_like(x, None, dtype=object)
-            # for each mating provided
-            for k in range(n_matings):
-                # get the first and the second parent
-                parent1, parent2 = x[0, k, 0], x[1, k, 0]
-                offspring1: HeuristicTree = crossover(parent1, parent2, max_depth)
-                offspring2: HeuristicTree = crossover(parent2, parent1, max_depth)
-                res[0, k, 0], res[1, k, 0] = offspring1, offspring2
-            return res
-
-    class DuplicateElimination(ElementwiseDuplicateElimination):
-        def is_equal(self, a, b):
-            return a.X[0] == b.X[0]
 
 
 

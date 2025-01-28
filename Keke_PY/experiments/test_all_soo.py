@@ -10,6 +10,7 @@ from pymoo.optimize import minimize
 
 from Keke_PY.experiments.RandomSamplingAlgorithm import RandomSamplingAlgorithm
 from Keke_PY.experiments.KekeProblem import KekeProblem
+from Keke_PY.heuristic_representations.HeuristicTreeRepresentation import HeuristicTreeRepresentation
 from Keke_PY.heuristic_representations.TrackedRepresentation import TrackedRepresentation
 from Keke_PY.heuristic_representations.WeightedHeuristicSumRepresentation import WeightedHeuristicSumRepresentation
 from Keke_PY.simulation import load_level_set
@@ -18,9 +19,9 @@ pop_size: int = 3
 n_generations: int = 3
 n_eval: int = pop_size * n_generations
 
-#representation = HeuristicTree
-representation = WeightedHeuristicSumRepresentation(0.5)
-#representation = TrackedRepresentation(representation)
+representation = HeuristicTreeRepresentation(3)
+#representation = WeightedHeuristicSumRepresentation(0.5)
+representation = TrackedRepresentation(representation)
 
 
 optimization_algorithm: Algorithm = [
@@ -29,9 +30,9 @@ optimization_algorithm: Algorithm = [
     DE(pop_size=pop_size),
     ES(n_offsprings=pop_size, pop_size=pop_size//2),     # gives it 5 more evaluations than other algorithms TODO@ask: ???
     PatternSearch(pop_size=pop_size, eliminate_duplicates=True),
-][3]
+][1]
 
-#representation.setup(optimization_algorithm)
+representation.setup(optimization_algorithm)
 
 
 level_set = load_level_set("./json_levels/train_LEVELS.json")

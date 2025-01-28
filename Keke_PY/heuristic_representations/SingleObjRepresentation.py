@@ -1,3 +1,4 @@
+import math
 from abc import abstractmethod
 from typing import Generic, TypeVar
 
@@ -30,7 +31,7 @@ class SingleObjRepresentation(Generic[T], HeuristicRepresentation):
     def _deserialize(self, x: str) -> T:
         pass
     @abstractmethod
-    def _sample(self):
+    def _sample(self) -> T:
         pass
     @abstractmethod
     def _mutate(self, x: T) -> T:
@@ -45,8 +46,8 @@ class SingleObjRepresentation(Generic[T], HeuristicRepresentation):
     def get_problem_data(self) -> Problem:
         return Problem(
             n_var=1,
-            xl=None,
-            xu=None,
+            xl=(-math.inf,),
+            xu=(math.inf,),
             vtype=object,
         )
     def into_heuristic(self, x: np.ndarray) -> Heuristic:
