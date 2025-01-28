@@ -1,15 +1,15 @@
 import itertools
 from concurrent.futures import Executor, ProcessPoolExecutor
 from itertools import chain
-from typing import List, Tuple, Union, Dict
+from typing import List, Tuple, Dict, Union
 
 import numpy as np
 from pymoo.core.problem import Problem
 
+from Keke_PY.baba import GameState, make_level, parse_map
 from Keke_PY.heuristic_representations.HeuristicRepresentation import HeuristicRepresentation
 from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
 from Keke_PY.search_agents.AStar import AStar
-from Keke_PY.baba import GameState, parse_map, make_level
 
 
 class KekeProblem(Problem):
@@ -103,9 +103,6 @@ class KekeProblem(Problem):
                 "level": level,
                 "forward_model_calls": forward_model_calls
             })
-
-
-
 
 
 def evaluate_ai_on_level(

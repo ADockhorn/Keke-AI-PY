@@ -9,7 +9,7 @@ from pymoo.core.algorithm import Algorithm
 from pymoo.optimize import minimize
 
 from Keke_PY.experiments.RandomSamplingAlgorithm import RandomSamplingAlgorithm
-from Keke_PY.heuristic_training.KekeProblem import KekeProblem
+from Keke_PY.experiments.KekeProblem import KekeProblem
 from Keke_PY.heuristic_representations.TrackedRepresentation import TrackedRepresentation
 from Keke_PY.heuristic_representations.WeightedHeuristicSumRepresentation import WeightedHeuristicSumRepresentation
 from Keke_PY.simulation import load_level_set
@@ -28,7 +28,7 @@ optimization_algorithm: Algorithm = [
     DE(pop_size=pop_size),
     ES(n_offsprings=pop_size, pop_size=pop_size//2),     # gives it 5 more evaluations than other algorithms TODO@ask: ???
     PatternSearch(pop_size=pop_size, eliminate_duplicates=True),
-][0]
+][1]
 
 representation.setup(optimization_algorithm)
 

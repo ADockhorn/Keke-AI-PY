@@ -8,7 +8,7 @@ from pymoo.optimize import minimize
 from pymoo.util.reference_direction import das_dennis
 
 from Keke_PY.heuristic_representations.WeightedHeuristicSumRepresentation import WeightedHeuristicSumRepresentation
-from Keke_PY.heuristic_training.KekeProblem import KekeProblem
+from Keke_PY.experiments.KekeProblem import KekeProblem
 from Keke_PY.simulation import load_level_set
 
 pop_size = 3# 10
