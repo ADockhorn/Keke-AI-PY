@@ -28,7 +28,7 @@ optimization_algorithm: Algorithm = [
     RandomSamplingAlgorithm(n_sample_points=n_eval, batch_size=pop_size, sampling=representation.sampling),
     GA(pop_size=pop_size, eliminate_duplicates=True),
     DE(pop_size=pop_size),
-    ES(n_offsprings=pop_size, pop_size=pop_size//2),     # gives it 5 more evaluations than other algorithms TODO@ask: ???
+    ES(n_offsprings=pop_size, pop_size=pop_size//2),
     PatternSearch(pop_size=pop_size, eliminate_duplicates=True),
 ][1]
 

@@ -587,8 +587,6 @@ def mark_all_connected(blocked_fields_map: List[List[str]], x: int, y: int, size
     mark_all_connected(blocked_fields_map, x, y + 1, size_x, size_y)
 
 
-# TODO: the naming 'maximize'/'minimize' is inconsistent with the -/+ factor!!!
-#       -> rename: don't assume min-/maximization
 
 raw_heuristics: List[Callable] = [
 

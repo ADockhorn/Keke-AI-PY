@@ -228,9 +228,6 @@ class GameState:
         return self.unique_str()
         #return double_map_to_string(self.obj_map, self.back_map)
 
-    # TODO@ask: I can never guarantee, this string is unique, without ALWAYS checking EVERYTHING in here. :(
-    # TODO@ask: For this to work, "TODO@ask: maybe just switch obj_map and ob" (ll. 927) needs to be fixed.
-    # TODO@ask: For this to work, "move_obj_merge" might be changed to either be the same as "move_obj", or delete the Game-Object entirely.
     def unique_str(self) -> str:
 
         def unique_obj_str(obj: Union[GameObj, str]) -> str:
@@ -925,10 +922,8 @@ def killed(players: List[GameObj], killers: List[GameObj]) -> List[GameObj]:
     for player in players:
         for killer in killers:
             if overlapped(player, killer):
-                dead += [player, killer]
-                # Todo, I assume we can break here
-                # TODO: is there a meaning to the comment above?
-                #       => break and only delete player
+                dead += [player]
+                break
     return dead
 
 
