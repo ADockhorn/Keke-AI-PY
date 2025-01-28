@@ -1,5 +1,6 @@
 import math
 from copy import deepcopy
+from typing import List
 
 import numpy
 import numpy as np
@@ -21,12 +22,14 @@ class TrackedRepresentation(HeuristicRepresentation):
     def __init__(self, inner_representation: HeuristicRepresentation):
         self._inner_repr = inner_representation
         self._offset = 1 + self._inner_repr.crossover.n_parents
-    _last_id: int = -1
-    def _new_id(self) -> int:
-        self._last_id += 1
-        return self._last_id
-    def register_instance(self, problem, instance: np.ndarray):
-        problem.log_text("TRACKED INSTANCE: ", self.serialize(instance))
+    _tracked_instances: List[np.ndarray] = []
+    def _current_id(self) -> int:
+        return len(self._tracked_instances)
+    def track_instance(self, problem, instance: np.ndarray):
+        assert instance[0] == len(self._tracked_instances), "instance must have id equal to _current_id()"
+        self._tracked_instances.append(instance.copy())
+        problem.log_text("TRACK INSTANCE: ", self.serialize(instance, False))
+
 
 
     def get_problem_data(self) -> Problem:
@@ -40,9 +43,13 @@ class TrackedRepresentation(HeuristicRepresentation):
 
     def into_heuristic(self, x: np.ndarray) -> Heuristic:
         return self._inner_repr.into_heuristic(x[self._offset:])
-    def serialize(self, x: np.ndarray) -> str:
+    def serialize(self, x: np.ndarray, just_id: bool = True) -> str:
+        if just_id:
+            return str(int(x[0]))
         return f"{';'.join(map(str, map(int, x[:self._offset])))};{self._inner_repr.serialize(x[self._offset:])}"
-    def deserialize(self, x: str) -> np.ndarray:
+    def deserialize(self, x: str, just_id: bool = True) -> np.ndarray:
+        if just_id:
+            return self._tracked_instances[int(x)]
         entries = x.split(';')
         track_data: [int] = map(int, entries[:self._offset])
         inner_serialization: str = ';'.join(entries[self._offset:])
@@ -86,8 +93,8 @@ class TrackedRepresentation(HeuristicRepresentation):
             inner = self._inner_sampling._do(self._tracked_repr._get_inner_problem(problem), n_samples, **kwargs)
             res = numpy.pad(inner, ((0, 0), (self._tracked_repr._offset, 0)), constant_values=-1)
             for i in range(n_samples):
-                res[i, 0] = self._tracked_repr._new_id()
-                self._tracked_repr.register_instance(problem, deepcopy(res[i, :]))
+                res[i, 0] = self._tracked_repr._current_id()
+                self._tracked_repr.track_instance(problem, deepcopy(res[i, :]))
             return res
 
     class TrackedMutation(Mutation):
@@ -112,8 +119,8 @@ class TrackedRepresentation(HeuristicRepresentation):
             for i in range(len(x)):
                 res[i, 1:self._tracked_repr._offset] = -1
                 res[i, 1] = x[i, 0]
-                res[i, 0] = self._tracked_repr._new_id()
-                self._tracked_repr.register_instance(problem, deepcopy(res[i, :]))
+                res[i, 0] = self._tracked_repr._current_id()
+                self._tracked_repr.track_instance(problem, deepcopy(res[i, :]))
             return res
 
     class TrackedCrossover(Crossover):
@@ -142,9 +149,9 @@ class TrackedRepresentation(HeuristicRepresentation):
             for i in range(n_matings):
                 parents = x[:, i, 0]
                 for j in range(n_offsprings):
-                    res[j, i, 0] = self._tracked_repr._new_id()
+                    res[j, i, 0] = self._tracked_repr._current_id()
                     res[j, i, 1:1+self._inner_crossover.n_parents] = parents
-                    self._tracked_repr.register_instance(problem, deepcopy(res[j, i, :]))
+                    self._tracked_repr.track_instance(problem, deepcopy(res[j, i, :]))
             return res
 
     class TrackedDuplicateElimination(DuplicateElimination):
