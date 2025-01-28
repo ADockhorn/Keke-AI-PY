@@ -16,21 +16,22 @@ from Keke_PY.simulation import load_level_set
 
 pop_size: int = 3
 n_generations: int = 3
+n_eval: int = pop_size * n_generations
 
 #representation = HeuristicTree
 representation = WeightedHeuristicSumRepresentation(0.5)
-representation = TrackedRepresentation(representation)
+#representation = TrackedRepresentation(representation)
 
 
 optimization_algorithm: Algorithm = [
-    RandomSamplingAlgorithm(n_sample_points=pop_size*n_generations, batch_size=pop_size, sampling=representation.sampling),
+    RandomSamplingAlgorithm(n_sample_points=n_eval, batch_size=pop_size, sampling=representation.sampling),
     GA(pop_size=pop_size, eliminate_duplicates=True),
     DE(pop_size=pop_size),
     ES(n_offsprings=pop_size, pop_size=pop_size//2),     # gives it 5 more evaluations than other algorithms TODO@ask: ???
     PatternSearch(pop_size=pop_size, eliminate_duplicates=True),
-][1]
+][3]
 
-representation.setup(optimization_algorithm)
+#representation.setup(optimization_algorithm)
 
 
 level_set = load_level_set("./json_levels/train_LEVELS.json")
@@ -58,7 +59,7 @@ if __name__ == '__main__':
     res = minimize(
         test_problem,
         optimization_algorithm,
-        termination=("n_gen", n_generations),
+        termination=("n_eval", n_eval),
         verbose=True
     )
 
