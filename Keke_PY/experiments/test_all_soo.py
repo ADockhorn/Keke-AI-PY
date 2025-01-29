@@ -1,3 +1,10 @@
+if True:
+    """Include Project root as Environment paths:"""
+    from os.path import dirname, abspath
+    import sys
+    sys.path.append(dirname(dirname(dirname(abspath(__file__)))))
+
+
 import multiprocessing
 import time
 from typing import Iterable
@@ -25,7 +32,7 @@ setups: [(bool, bool, int)] = (
     (True, True, 0),
     (True, True, 1),
 )
-trees, track, algorithm = setups[4]
+trees, track, algorithm = setups[1]
 
 pop_size: int = 3
 n_generations: int = 3
