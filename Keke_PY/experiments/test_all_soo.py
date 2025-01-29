@@ -72,3 +72,16 @@ if __name__ == '__main__':
 
 
         print(f"testing {optimization_algorithm} done")
+
+
+
+# One evaluation of one individual with multiprocessing.Pool() executor on my laptop takes: 564.6523087024689 s
+# Assuming maximal usage of 8 cores, it would take approx. 570s * 200 * 8cpus / 20cpus = 45600s = 760min <= 13h
+# The next estimate contradicts the assumption of optimal cpu usage.
+
+# One evaluation of one individual with multiprocessing.Pool(1) executor on my laptop takes: 1853.0943999290466 s
+# Assuming maximal usage of 1 core, it would take approx. 1854s * 200 * 1cpus / 20cpus = 18540s = 309min = 5.15h
+# (The individual performed pretty badly, which makes me more confident in this estimate for an upper bound.
+#   It only didn't ust the heuristic 'number_of_newly_created_rules' which should never create much overhead.)
+
+# TODO: check, if the suboptimal cpu usage in estimate 1 is due to my laptop or the program!

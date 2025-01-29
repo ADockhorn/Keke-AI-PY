@@ -157,4 +157,5 @@ def evaluate_ai_on_level(
         False
     )
     forward_model_calls: int = solution[1]
+    #print((ai_index, level), forward_model_calls)
     return (ai_index, level), forward_model_calls
