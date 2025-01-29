@@ -41,6 +41,7 @@ class KekeProblem(Problem):
         training_levels = set(chain(*training_batches))
         assert all(level not in training_levels for level in test_batch), "Training on test-levels is not allowed!"
         self.all_levels = list(training_levels) + test_batch
+        self._level_to_id_map: Dict[str, int] = dict(map(lambda t: (t[1], t[0]), enumerate(self.all_levels)))
         self.representation = representation
         self.executor = executor
 
@@ -87,43 +88,57 @@ class KekeProblem(Problem):
         out["G"] = np.zeros((len(x), 0))
 
 
-    def log_text(self, *args):
-        print(*args)
+    def log_line(self, line: str):
+        # TODO: the following line should be done by the caller
+        line = line.replace('\\','\\\\').replace('\n', '\\n')
+        assert len(line.split('\n')) == 1
+        print(line)
 
 
     def log_level_data(self):
         for level_id, level in enumerate(self.all_levels):
-            self.log_text("LEVEL: ", {
-                "level_id": level_id,
-                "ascii": level,
-            })
-        self._level_to_id_map: Dict[str, int] = dict(map(lambda t: (t[1], t[0]), enumerate(self.all_levels)))
-        for batch_name, batch in chain(enumerate(self.training_batches), [(-1, self.test_batch)]):
+            self.log_line(f"LEVEL:{level_id}:{level}")
+        for batch_id, batch in chain(enumerate(self.training_batches), [(-1, self.test_batch)]):
             for index, level in enumerate(batch):
                 level_id = self._level_to_id_map[level]
                 assert self.all_levels[level_id] == level
-                self.log_text("BATCH: ", {
-                    "batch": batch_name,
-                    "index": index,
-                    "level_id": level_id
-                })
+                self.log_line(f"BATCH:{batch_id}:{index}:{level_id}")
+    
+    @classmethod
+    def from_log_lines(
+            cls,
+            representation: HeuristicRepresentation,
+            lines: List[str],
+            max_forward_model_calls: int = 2000,
+            executor: Executor = ProcessPoolExecutor()
+    ):
+        all_levels: Dict[int, str] = {}
+        batches: List[Tuple[int, int, int]] = []
+        for line in lines:
+            if line.startswith("LEVEL:"):
+                _, level_id, level = line.split(':')
+                all_levels[int(level_id)] = level
+            elif line.startswith("BATCH:"):
+                _, batch_id, index, level_id = line.split(':')
+                batches.append((int(batch_id), int(index), int(level_id)))
+        training_batches: List[List[str]] = []
+        test_batch: List[str] = []
+        batches.sort()
+        for batch_id, index, level_id in batches:
+            while batch_id >= len(training_batches):
+                training_batches.append([])
+            batch: List[str] = test_batch if batch_id == -1 else training_batches[batch_id]
+            assert index == len(batch)
+            batch.append(all_levels[level_id])
+        return cls(training_batches, representation, max_forward_model_calls, executor, test_batch)
 
     def log_generation_data(self, x: list):
         for index, instance in enumerate(x):
-            self.log_text("INSTANCE: ", {
-                "gen": self.generation,
-                "index": index,
-                "heuristic": self.representation.serialize(instance),
-            })
+            self.log_line(f"INSTANCE:{self.generation}:{index}:{self.representation.serialize(instance)}")
 
     def log_simulation_data(self, simulation_results: Dict[Tuple[int, str], int]):
-        for (ai_id, level), forward_model_calls in simulation_results.items():
-            self.log_text("EVAL: ", {
-                "gen": self.generation,
-                "index": ai_id,
-                "level_id": self._level_to_id_map[level],
-                "forward_model_calls": forward_model_calls,
-            })
+        for (index, level), forward_model_calls in simulation_results.items():
+            self.log_line(f"EVAL:{self.generation}:{index}:{self._level_to_id_map[level]}:{forward_model_calls}")
 
 
 def evaluate_ai_on_level(
