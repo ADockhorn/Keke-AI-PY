@@ -58,7 +58,6 @@ class KekeProblem(Problem):
         self.log_level_data()
 
     def _evaluate(self, x, out, *args, **kwargs):
-        self.generation += 1
 
         self.log_generation_data(list(x))
 
@@ -86,6 +85,8 @@ class KekeProblem(Problem):
 
         # There are no constrains:
         out["G"] = np.zeros((len(x), 0))
+
+        self.generation += 1
 
 
     def log_line(self, line: str):

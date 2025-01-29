@@ -1,6 +1,6 @@
 import multiprocessing
 import time
-from typing import List, Iterable
+from typing import Iterable
 
 from pymoo.algorithms.soo.nonconvex.de import DE
 from pymoo.algorithms.soo.nonconvex.es import ES
@@ -16,28 +16,40 @@ from Keke_PY.heuristic_representations.TrackedRepresentation import TrackedRepre
 from Keke_PY.heuristic_representations.WeightedHeuristicSumRepresentation import WeightedHeuristicSumRepresentation
 from Keke_PY.simulation import load_level_set
 
+setups: [(bool, bool, int)] = (
+    (False, True, 0),
+    (False, True, 1),
+    (False, False, 2),
+    (False, False, 3),
+    (False, False, 4),
+    (True, True, 0),
+    (True, True, 1),
+)
+trees, track, algorithm = setups[4]
+
 pop_size: int = 3
 n_generations: int = 3
+
+
 n_evals: int = pop_size * n_generations
 
-#representation = HeuristicTreeRepresentation(3)
-representation = WeightedHeuristicSumRepresentation(0.5)
-representation = TrackedRepresentation(representation)
+representation = HeuristicTreeRepresentation(10) if trees else WeightedHeuristicSumRepresentation(0.5)
+if track:
+    representation = TrackedRepresentation(representation)
 
 
 optimization_algorithm: Algorithm = [
-    RandomSamplingAlgorithm(n_sample_points=n_evals, batch_size=pop_size, sampling=representation.sampling),
-    GA(pop_size=pop_size, eliminate_duplicates=True),
+    RandomSamplingAlgorithm(n_sample_points=n_evals, batch_size=pop_size, **representation.algorithm_arguments()),
+    GA(pop_size=pop_size, **representation.algorithm_arguments()),
     DE(pop_size=pop_size),
     ES(n_offsprings=pop_size, pop_size=pop_size//2),
-    PatternSearch(pop_size=pop_size, eliminate_duplicates=True),
-][1]
-
-representation.setup(optimization_algorithm)
+    PatternSearch(pop_size=pop_size, eliminate_duplicates=True), #TODO@ask: pop_size doesn't have any effect
+][algorithm]
 
 
-training_levels = [level["ascii"] for level in load_level_set("./json_levels/train_LEVELS.json")["levels"]][:3]
-test_levels = [level["ascii"] for level in load_level_set("./json_levels/test_LEVELS.json")["levels"]][:3]
+training_levels = [level["ascii"] for level in load_level_set("./json_levels/train_LEVELS.json")["levels"]][:1]
+test_levels = [level["ascii"] for level in load_level_set("./json_levels/test_LEVELS.json")["levels"]][:1]
+# TODO@ask: is the training set supposed to be smaller than the test set?
 
 test_problem = KekeProblem(
     training_batches = [training_levels],
@@ -51,7 +63,7 @@ def measure_time() -> Iterable[None]:
     start = time.time()
     yield None
     end = time.time()
-    print("The time of execution of above program is :", (end - start), "s")
+    print("The time of execution is:", (end - start), "s")
 
 
 if __name__ == '__main__':

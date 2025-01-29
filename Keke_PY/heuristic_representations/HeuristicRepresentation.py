@@ -42,17 +42,12 @@ class HeuristicRepresentation(ABC):
     def duplicate_elimination(self) -> DuplicateElimination:
         pass
 
-
-    def setup(self, alg: Algorithm):
-        sampling, crossover, mutation, duplicate_elimination = (
-            self.sampling, self.crossover, self.mutation, self.duplicate_elimination
+    def algorithm_arguments(self):
+        def get_kwargs(**kwargs):
+            return kwargs
+        return get_kwargs(
+            sampling=self.sampling,
+            crossover=self.crossover,
+            mutation=self.mutation,
+            eliminate_duplicates=self.duplicate_elimination
         )
-        alg.eliminate_duplicates = duplicate_elimination
-        if hasattr(alg, 'initialization'):
-            alg.initialization.sampling = sampling
-            alg.initialization.eliminate_duplicates = duplicate_elimination
-        if hasattr(alg, 'mating'):
-            alg.mating.eliminate_duplicates = duplicate_elimination
-            alg.mating.crossover = crossover
-            alg.mating.mutation = mutation
-
