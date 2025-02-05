@@ -34,10 +34,10 @@ setups: [(bool, bool, int)] = (
     (True, True, 0),
     (True, True, 1),
 )
-trees, track, algorithm = setups[1 if len(sys.argv) != 2 else int(sys.argv[1])]
+trees, track, algorithm = setups[6 if len(sys.argv) != 2 else int(sys.argv[1])]
 
-pop_size: int = 1#3
-n_generations: int = 1#3
+pop_size: int = 2
+n_generations: int = 2
 
 
 n_evals: int = pop_size * n_generations
@@ -58,7 +58,7 @@ optimization_algorithm: Algorithm = [
 levels: List[str] = [
     *[level["ascii"] for level in load_level_set("./json_levels/train_LEVELS.json")["levels"]],
     *[level["ascii"] for level in load_level_set("./json_levels/test_LEVELS.json")["levels"]],
-][:20]
+][:2] # TODO: !DON'T SLICE IN REAL TRAINING!
 training_ratio: float = 0.6
 training_levels: List[str] = levels[:floor(training_ratio * len(levels))]
 test_levels: List[str] = levels[floor(training_ratio * len(levels)):]
@@ -67,7 +67,7 @@ test_problem = KekeProblem(
     training_batches = [training_levels],
     representation = representation,
     max_forward_model_calls = 2000,
-    executor = multiprocessing.Pool(2),
+    executor = multiprocessing.Pool(),
     test_batch = test_levels
 )
 

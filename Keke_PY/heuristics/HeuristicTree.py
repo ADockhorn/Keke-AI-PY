@@ -3,6 +3,8 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import List, TypeVar, Generic, Union, Iterator, Tuple
 
+from numpy.random import randn
+from pygame.math import clamp
 
 from Keke_PY.baba import GameState
 from Keke_PY.heuristics.HeuristicCombinator import HeuristicCombinator, default_combinators
@@ -81,9 +83,9 @@ class DefaultOpRepr(HeuristicCombinator):
         return self.op.run(state, ctx, *args)
 
 
-default_operations: [DefaultOpRepr] = (DefaultOpRepr(i) for i, _ in enumerate(raw_default_operations))
-default_comb_operations: List[DefaultOpRepr] = [DefaultOpRepr(i) for i, _ in enumerate(default_combinators)]
-default_leaf_operations: List[DefaultOpRepr] = [DefaultOpRepr(len(default_combinators) + i) for i, _ in enumerate(heuristics)]
+default_operations: [DefaultOpRepr] = tuple(DefaultOpRepr(i) for i, _ in enumerate(raw_default_operations))
+default_comb_operations: [DefaultOpRepr] = tuple(DefaultOpRepr(i) for i, _ in enumerate(default_combinators))
+default_leaf_operations: [DefaultOpRepr] = tuple(DefaultOpRepr(len(default_combinators) + i) for i, _ in enumerate(heuristics))
 
 
 
@@ -135,13 +137,15 @@ https://github.com/AlbrErik/bachelor-thesis/blob/4680deba885c282a94643b0812f2206
 I have changed it for compatibility with my own Code, and naming-conventions.
 I have replaced the data-types, and changed the code to match.
 But the functionality should have stayed broadly the same.
+FUNCTIONAL CHANGE: tree nodes can have additional float properties between -10 and 10
+FUNCTIONAL CHANGE: mutation adds noise on the additional float properties
 """
 
 
 def create_random_tree(
         depth: int,
-        operations: List[DefaultOpRepr] = default_comb_operations,
-        leaf_operations: List[DefaultOpRepr] = default_leaf_operations
+        operations: [DefaultOpRepr] = default_comb_operations,
+        leaf_operations: [DefaultOpRepr] = default_leaf_operations
 ) -> HeuristicTree:
     if depth == 0:
          return HeuristicTree.with_random_params(
@@ -172,17 +176,20 @@ def crossover(tree1: HeuristicTree, tree2: HeuristicTree, max_depth: int) -> Heu
     second_subs = list(filter(lambda tup: tup[1].depth <= max_d, second_subs))
     second_sub = random.choice(second_subs)
     #replace subtree in parent 1 with subtree in parent 2
-    replace_subtree(first_sub[1], second_sub[1])
+    replace_subtree(first_sub[1], deepcopy(second_sub[1]))
     res.update_depth()
     return res
 
 def mutation(
         tree: HeuristicTree,
         max_depth,
-        ops: List[DefaultOpRepr] = default_comb_operations,
-        heu: List[DefaultOpRepr] = default_leaf_operations
+        float_noise_factor: float,
+        ops: [DefaultOpRepr] = default_comb_operations,
+        heu: [DefaultOpRepr] = default_leaf_operations
 ) -> HeuristicTree:
     t: HeuristicTree = deepcopy(tree)
+    if float_noise_factor > 0.0:
+        add_noise(t, float_noise_factor)
     del_tree = random.choice(get_all_subtrees(t))
     if del_tree[0] == max_depth:
         depth = 0
@@ -193,6 +200,15 @@ def mutation(
     replace_subtree(del_tree[1], new_tree)
     t.update_depth()
     return t
+
+def add_noise(
+        tree: HeuristicTree,
+        float_noise_factor: float
+):
+    for i, f_value in enumerate(tree.parameters):
+        tree.parameters[i] = clamp(f_value + randn() * float_noise_factor, -10.0, 10.0)
+    for child in tree.children:
+        add_noise(child, float_noise_factor)
 
 def replace_subtree(tree: HeuristicTree, subtree: HeuristicTree):
     tree.combinator = subtree.combinator

@@ -35,6 +35,7 @@ class KekeProblem(Problem):
             executor: Executor = ProcessPoolExecutor(),
             test_batch: List[str] = ()
     ):
+        assert all(len(batch) > 0 for batch in training_batches)
         self.training_batches = training_batches
         self.test_batch = test_batch
         self.max_forward_model_calls = max_forward_model_calls
@@ -158,5 +159,5 @@ def evaluate_ai_on_level(
         False
     )
     forward_model_calls: int = solution[1]
-    #print((ai_index, level), forward_model_calls)
+    print((ai_index, level), forward_model_calls)
     return (ai_index, level), forward_model_calls

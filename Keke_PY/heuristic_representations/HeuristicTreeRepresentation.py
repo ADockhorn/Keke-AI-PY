@@ -1,3 +1,5 @@
+from pymoo.core.variable import Real
+
 from Keke_PY.heuristic_representations.SingleObjRepresentation import SingleObjRepresentation
 from Keke_PY.heuristics.HeuristicTree import HeuristicTree, create_random_tree, mutation, crossover
 from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
@@ -6,8 +8,12 @@ from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
 class HeuristicTreeRepresentation(SingleObjRepresentation[HeuristicTree]):
 
     max_depth: int
+    float_noise_factor: Real
     def __init__(self, max_depth: int = 10):
         self.max_depth = max_depth
+        self.float_noise_factor = Real(0.1, bounds=(0.1, 1.0), strict=(0.0, 10.0))
+        #self.float_noise_factor = self.float_noise_factor.get()
+
 
 
     def _assert_type(self, x: object) -> HeuristicTree:
@@ -27,7 +33,8 @@ class HeuristicTreeRepresentation(SingleObjRepresentation[HeuristicTree]):
         return create_random_tree(self.max_depth)
 
     def _mutate(self, x: HeuristicTree) -> HeuristicTree:
-        return mutation(x, self.max_depth)
+        print(self.float_noise_factor.get())
+        return mutation(x, self.max_depth, float(self.float_noise_factor.get()))
 
     def _crossover(self, x: HeuristicTree, y: HeuristicTree) -> HeuristicTree:
         return crossover(x, y, self.max_depth)

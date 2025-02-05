@@ -3,16 +3,20 @@ from pymoo.algorithms.soo.nonconvex.optuna import Optuna
 from pymoo.core.parameters import set_params, hierarchical
 from pymoo.optimize import minimize
 
-from Keke_PY.experiments.test_all_soo import optimization_algorithm, test_problem
+from Keke_PY.experiments.test_all_soo import optimization_algorithm, test_problem, n_evals
 
 if __name__ == '__main__':
 
     print(f"testing {optimization_algorithm} ...")
     dump_file_name: str = "test_1_return.pickle"
 
-    performance = SingleObjectiveSingleRun(test_problem, termination=("n_evals", 10))
+    performance = SingleObjectiveSingleRun(test_problem, termination=("n_evals", n_evals))
 
-    res = minimize(HyperparameterProblem(optimization_algorithm, performance),
+    hyperparameter_problem = HyperparameterProblem(optimization_algorithm, performance)
+
+    print(hyperparameter_problem.vars)
+
+    res = minimize(hyperparameter_problem,
                    Optuna(),
                    termination=('n_evals', 5),
                    seed=1,
