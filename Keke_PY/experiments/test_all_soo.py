@@ -32,15 +32,15 @@ setups: [(bool, bool, int)] = (
     (True, True, 0),
     (True, True, 1),
 )
-trees, track, algorithm = setups[1]
+trees, track, algorithm = setups[1 if len(sys.argv) != 2 else int(sys.argv[1])]
 
-pop_size: int = 3
-n_generations: int = 3
+pop_size: int = 1#3
+n_generations: int = 1#3
 
 
 n_evals: int = pop_size * n_generations
 
-representation = HeuristicTreeRepresentation(10) if trees else WeightedHeuristicSumRepresentation(0.5)
+representation = HeuristicTreeRepresentation(10) if trees else WeightedHeuristicSumRepresentation(-1)#0.5)
 if track:
     representation = TrackedRepresentation(representation)
 
@@ -54,15 +54,15 @@ optimization_algorithm: Algorithm = [
 ][algorithm]
 
 
-training_levels = [level["ascii"] for level in load_level_set("./json_levels/train_LEVELS.json")["levels"]][:1]
-test_levels = [level["ascii"] for level in load_level_set("./json_levels/test_LEVELS.json")["levels"]][:1]
-# TODO@ask: is the training set supposed to be smaller than the test set?
+training_levels = [level["ascii"] for level in load_level_set("./json_levels/train_LEVELS.json")["levels"]]#[:3]
+test_levels = [level["ascii"] for level in load_level_set("./json_levels/test_LEVELS.json")["levels"]]#[:0]
+# TODO@ask: is the training set supposed to be smaller than the test set? => split 60%train 40%test
 
 test_problem = KekeProblem(
     training_batches = [training_levels],
     representation = representation,
     max_forward_model_calls = 2000,
-    executor = multiprocessing.Pool(),
+    executor = multiprocessing.Pool(2),
     test_batch = test_levels
 )
 
@@ -93,14 +93,23 @@ if __name__ == '__main__':
         print(f"testing {optimization_algorithm} done")
 
 
+# Time t of one evaluation of one individual with multiprocessing.Pool(x) executor on my laptop:
+# Time t' is the time on 20cpus when perfect parallelization is assumed
 
-# One evaluation of one individual with multiprocessing.Pool() executor on my laptop takes: 564.6523087024689 s
-# Assuming maximal usage of 8 cores, it would take approx. 570s * 200 * 8cpus / 20cpus = 45600s = 760min <= 13h
-# The next estimate contradicts the assumption of optimal cpu usage.
+# x = 1: t = 1853.0943999290466 s => t' = 1854s * 200 * 1cpus / 20cpus = 18540s = 309min = 5.15h
+# x = 2: t =
+# x = 4: t = 630.5655705928802 s => t' = 630s * 200 * 4cpus / 20cpus = 25200s = 420min = 7h
+# x = 8: t = 564.6523087024689 s => t' = 570s * 200 * 8cpus / 20cpus = 45600s = 760min <= 13h
+# x = 8: t = 431.1010444164276 s => t' = 431s * 200 * 8cpus / 20cpus = 34480s = 575min <= 10h (with a good individual)
 
-# One evaluation of one individual with multiprocessing.Pool(1) executor on my laptop takes: 1853.0943999290466 s
-# Assuming maximal usage of 1 core, it would take approx. 1854s * 200 * 1cpus / 20cpus = 18540s = 309min = 5.15h
-# (The individual performed pretty badly, which makes me more confident in this estimate for an upper bound.
-#   It only didn't ust the heuristic 'number_of_newly_created_rules' which should never create much overhead.)
 
-# TODO: check, if the suboptimal cpu usage in estimate 1 is due to my laptop or the program!
+
+# Time t of one evaluation of one individual with multiprocessing.ProcessPoolExecutor(x) executor on my laptop:
+# Time t' is the time on 20cpus when perfect parallelization is assumed
+# x = 8: t = 424.2974717617035 s => t' = 424s * 200 * 8cpus / 20cpus = 33920s = 565min <= 9.5h (with a good individual)
+
+
+# multiprocessing.ThreadPoolExecutor(x) never finished
+
+
+# TODO: check, if the suboptimal cpu usage is due to my laptop or the program!

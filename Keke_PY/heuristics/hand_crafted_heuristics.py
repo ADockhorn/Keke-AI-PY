@@ -370,7 +370,7 @@ def number_of_stopped_objects(state: GameState, _ctx: dict) -> float:
  * @return {number} The weight multiplied with the average distance to killing objects.
  */"""
 def player_killer_distance(state: GameState, _ctx: dict) -> float:
-    # TODO@ask: should this function also take a default value?
+    # TODO@ask: should this function also take a default value? => Yess
     return average_distance(state.players, state.killers) or 0.0
 
 
