@@ -52,7 +52,7 @@ optimization_algorithm: Algorithm = [
     GA(pop_size=pop_size, **representation.algorithm_arguments()),
     DE(pop_size=pop_size),
     ES(n_offsprings=pop_size, pop_size=pop_size//2),
-    PatternSearch(pop_size=pop_size, eliminate_duplicates=True), #TODO@ask: pop_size doesn't have any effect
+    PatternSearch(pop_size=pop_size, eliminate_duplicates=True),
 ][algorithm]
 
 levels: List[str] = [
