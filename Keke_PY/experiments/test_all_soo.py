@@ -1,3 +1,5 @@
+from math import floor
+
 if True:
     """Include Project root as Environment paths:"""
     from os.path import dirname, abspath
@@ -7,7 +9,7 @@ if True:
 
 import multiprocessing
 import time
-from typing import Iterable
+from typing import Iterable, List
 
 from pymoo.algorithms.soo.nonconvex.de import DE
 from pymoo.algorithms.soo.nonconvex.es import ES
@@ -53,10 +55,13 @@ optimization_algorithm: Algorithm = [
     PatternSearch(pop_size=pop_size, eliminate_duplicates=True), #TODO@ask: pop_size doesn't have any effect
 ][algorithm]
 
-
-training_levels = [level["ascii"] for level in load_level_set("./json_levels/train_LEVELS.json")["levels"]]#[:3]
-test_levels = [level["ascii"] for level in load_level_set("./json_levels/test_LEVELS.json")["levels"]]#[:0]
-# TODO@ask: is the training set supposed to be smaller than the test set? => split 60%train 40%test
+levels: List[str] = [
+    *[level["ascii"] for level in load_level_set("./json_levels/train_LEVELS.json")["levels"]],
+    *[level["ascii"] for level in load_level_set("./json_levels/test_LEVELS.json")["levels"]],
+][:20]
+training_ratio: float = 0.6
+training_levels: List[str] = levels[:floor(training_ratio * len(levels))]
+test_levels: List[str] = levels[floor(training_ratio * len(levels)):]
 
 test_problem = KekeProblem(
     training_batches = [training_levels],
