@@ -25,7 +25,7 @@
 # submit your job from.
 cd $SLURM_SUBMIT_DIR
 
-python3 Keke_PY/experiments/test_all_soo.py --argument ${$SLURM_ARRAY_TASK_ID}
+python3 Keke_PY/experiments/test_all_soo.py --argument $SLURM_ARRAY_TASK_ID
 
 
 
