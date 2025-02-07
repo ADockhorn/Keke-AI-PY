@@ -31,10 +31,11 @@ setups: [(bool, bool, int)] = (
     (False, False, 2),
     (False, False, 3),
     (False, False, 4),
+    # ! Trees have some unresolved TODO@ask's !
     (True, True, 0),
     (True, True, 1),
 )
-trees, track, algorithm = setups[6 if len(sys.argv) != 2 else int(sys.argv[1])]
+trees, track, algorithm = setups[1 if len(sys.argv) != 2 else int(sys.argv[1])]
 
 pop_size: int = 2
 n_generations: int = 2

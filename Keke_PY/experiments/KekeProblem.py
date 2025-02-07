@@ -136,11 +136,11 @@ class KekeProblem(Problem):
 
     def log_generation_data(self, x: list):
         for index, instance in enumerate(x):
-            self.log_line(f"INSTANCE:{self.generation}:{index}:{self.representation.serialize(instance)}")
+            self.log_line(f"EVAL_INSTANCE:{self.generation}:{index}:{self.representation.serialize(instance)}")
 
     def log_simulation_data(self, simulation_results: Dict[Tuple[int, str], int]):
         for (index, level), forward_model_calls in simulation_results.items():
-            self.log_line(f"EVAL:{self.generation}:{index}:{self._level_to_id_map[level]}:{forward_model_calls}")
+            self.log_line(f"RUN_RESULT:{self.generation}:{index}:{self._level_to_id_map[level]}:{forward_model_calls}")
 
 
 def evaluate_ai_on_level(

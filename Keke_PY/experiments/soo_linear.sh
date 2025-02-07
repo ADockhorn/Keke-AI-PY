@@ -1,21 +1,21 @@
 #!/bin/bash -l
 
-#SBATCH --job-name=KekeSingleObjectiveOptimizationTest1          # Name unter dem der Job in der Job-History gespeichert wird
+#SBATCH --job-name=KekeSingleObjectiveOptimizationTest          # Name unter dem der Job in der Job-History gespeichert wird
 #SBATCH --mail-user=rongero@tnt.uni-hannover.de
 #SBATCH --mail-type=ALL               # Eine Mail wird bei Job-Start/Ende versendet
-#SBATCH --ntasks=1
-#SBATCH --array=0-6                   # Es werden 7 Tasks mit den IDs von 0-6 gestartet
-#SBATCH --mem-per-cpu=2G
+#SBATCH --partition=cpu_short_stud
+#             later cpu_long_stud (?)
+
+#SBATCH --array=0-0                   # Es werden 5 Tasks mit den IDs von 0-4 gestartet
+#SBATCH --cpus-per-task=1
+#             later max 20
+#SBATCH --mem-per-cpu=1G
 #               later 4G
 #SBATCH --time=00:20:00
 #        later 06:00:00
 #SBATCH --output=soo_test_1_%A_%a-out.txt   # Logdatei für den merged STDOUT/STDERR output (%A wird durch slurm Job-ID ersetzt und %a durch den Array Index)
-#SBATCH --error soo_test_1_%A_%a-err.txt
 
 
-working_dir=~
-cd $working_dir
-python3 test_all_soo.py --argument ${$SLURM_ARRAY_TASK_ID}
 
 # Change to my work dir
 # SLURM_SUBMIT_DIR is an environment variable that automatically gets
@@ -25,11 +25,14 @@ python3 test_all_soo.py --argument ${$SLURM_ARRAY_TASK_ID}
 # submit your job from.
 cd $SLURM_SUBMIT_DIR
 
+python3 Keke_PY/experiments/test_all_soo.py --argument ${$SLURM_ARRAY_TASK_ID}
+
+
 
 # Load the modules you need, see corresponding page in the cluster documentation
-module load my_modules
+#module load my_modules
 
 # Start my serial app
 # srun is needed here only to create an entry in the accounting system,
 # but you could also start your app without it here, since it's only serial.
-srun ./my_serial_app
+#srun ./my_serial_app
