@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash
 
 #SBATCH --job-name=KekeSingleObjectiveOptimizationTest          # Name unter dem der Job in der Job-History gespeichert wird
 #SBATCH --mail-user=rongero@tnt.uni-hannover.de
@@ -16,6 +16,11 @@
 #SBATCH --output=soo_test_1_%A_%a-out.txt   # Logdatei für den merged STDOUT/STDERR output (%A wird durch slurm Job-ID ersetzt und %a durch den Array Index)
 
 
+# setup conda, and a conda-environment like environment.txt :
+#source setup_on_my_laptot.sh
+source setup_on_cluster.sh
+
+
 
 # Change to my work dir
 # SLURM_SUBMIT_DIR is an environment variable that automatically gets
@@ -25,7 +30,7 @@
 # submit your job from.
 cd $SLURM_SUBMIT_DIR
 
-python3 Keke_PY/experiments/test_all_soo.py --argument $SLURM_ARRAY_TASK_ID
+python Keke_PY/experiments/test_all_soo.py --argument $SLURM_ARRAY_TASK_ID
 
 
 
