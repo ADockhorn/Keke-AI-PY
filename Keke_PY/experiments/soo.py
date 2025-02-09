@@ -59,7 +59,7 @@ optimization_algorithm: Algorithm = [
 levels: List[str] = [
     *[level["ascii"] for level in load_level_set("./json_levels/train_LEVELS.json")["levels"]],
     *[level["ascii"] for level in load_level_set("./json_levels/test_LEVELS.json")["levels"]],
-][:2] # TODO: !DON'T SLICE IN REAL TRAINING!
+]
 training_ratio: float = 0.6
 training_levels: List[str] = levels[:floor(training_ratio * len(levels))]
 test_levels: List[str] = levels[floor(training_ratio * len(levels)):]
