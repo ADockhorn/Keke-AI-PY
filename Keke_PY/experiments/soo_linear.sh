@@ -17,7 +17,7 @@
 
 
 # setup conda, and a conda-environment like environment.txt :
-#source setup_on_my_laptot.sh
+#source setup_on_my_laptop.sh
 source setup_on_cluster.sh
 
 

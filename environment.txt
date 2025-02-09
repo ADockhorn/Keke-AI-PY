@@ -99,8 +99,9 @@ https://repo.anaconda.com/pkgs/main/linux-64/libtiff-4.5.1-hffd6297_1.conda
 https://conda.anaconda.org/conda-forge/linux-64/python-3.8.10-hb7a2778_2_cpython.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/about-time-4.2.1-pyhd8ed1ab_0.conda
 https://repo.anaconda.com/pkgs/main/linux-64/brotli-python-1.0.9-py38h6a678d5_8.conda
-https://repo.anaconda.com/pkgs/main/linux-64/certifi-2024.8.30-py38h06a4308_0.conda
+https://conda.anaconda.org/conda-forge/noarch/certifi-2024.2.2-pyhd8ed1ab_0.conda
 https://repo.anaconda.com/pkgs/main/noarch/charset-normalizer-3.3.2-pyhd3eb1b0_0.conda
+https://conda.anaconda.org/conda-forge/noarch/colorama-0.4.6-pyhd8ed1ab_0.tar.bz2
 https://repo.anaconda.com/pkgs/main/noarch/cycler-0.11.0-pyhd3eb1b0_0.conda
 https://repo.anaconda.com/pkgs/main/linux-64/dill-0.3.8-py38h06a4308_0.conda
 https://conda.anaconda.org/conda-forge/linux-64/fontconfig-2.14.2-h14ed4e7_0.conda
@@ -132,6 +133,7 @@ https://repo.anaconda.com/pkgs/main/linux-64/pillow-10.4.0-py38h5eee18b_0.conda
 https://repo.anaconda.com/pkgs/main/linux-64/pip-24.2-py38h06a4308_0.conda
 https://conda.anaconda.org/conda-forge/linux-64/pulseaudio-client-17.0-hb77b528_0.conda
 https://repo.anaconda.com/pkgs/main/linux-64/python-dateutil-2.9.0post0-py38h06a4308_2.conda
+https://conda.anaconda.org/conda-forge/noarch/tqdm-4.67.1-pyhd8ed1ab_0.conda
 https://repo.anaconda.com/pkgs/main/linux-64/urllib3-2.2.3-py38h06a4308_0.conda
 https://conda.anaconda.org/conda-forge/linux-64/harfbuzz-8.5.0-hfac3d4d_0.conda
 https://repo.anaconda.com/pkgs/main/linux-64/numpy-base-1.24.3-py38h31eccc5_0.conda
