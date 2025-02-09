@@ -37,13 +37,13 @@ setups: [(bool, bool, int)] = (
 )
 trees, track, algorithm = setups[1 if len(sys.argv) != 2 else int(sys.argv[1])]
 
-pop_size: int = 2
-n_generations: int = 2
+pop_size: int = 10
+n_generations: int = 20
 
 
 n_evals: int = pop_size * n_generations
 
-representation = HeuristicTreeRepresentation(10) if trees else WeightedHeuristicSumRepresentation(-1)#0.5)
+representation = HeuristicTreeRepresentation(10) if trees else WeightedHeuristicSumRepresentation(0.5)
 if track:
     representation = TrackedRepresentation(representation)
 
@@ -68,7 +68,7 @@ test_problem = KekeProblem(
     training_batches = [training_levels],
     representation = representation,
     max_forward_model_calls = 2000,
-    executor = multiprocessing.Pool(),
+    executor = multiprocessing.Pool(20),
     test_batch = test_levels
 )
 
@@ -96,25 +96,3 @@ if __name__ == '__main__':
 
 
         print(f"testing {optimization_algorithm} done")
-
-
-# Time t of one evaluation of one individual with multiprocessing.Pool(x) executor on my laptop:
-# Time t' is the time on 20cpus when perfect parallelization is assumed
-
-# x = 1: t = 1853.0943999290466 s => t' = 1854s * 200 * 1cpus / 20cpus = 18540s = 309min = 5.15h
-# x = 2: t =
-# x = 4: t = 630.5655705928802 s => t' = 630s * 200 * 4cpus / 20cpus = 25200s = 420min = 7h
-# x = 8: t = 564.6523087024689 s => t' = 570s * 200 * 8cpus / 20cpus = 45600s = 760min <= 13h
-# x = 8: t = 431.1010444164276 s => t' = 431s * 200 * 8cpus / 20cpus = 34480s = 575min <= 10h (with a good individual)
-
-
-
-# Time t of one evaluation of one individual with multiprocessing.ProcessPoolExecutor(x) executor on my laptop:
-# Time t' is the time on 20cpus when perfect parallelization is assumed
-# x = 8: t = 424.2974717617035 s => t' = 424s * 200 * 8cpus / 20cpus = 33920s = 565min <= 9.5h (with a good individual)
-
-
-# multiprocessing.ThreadPoolExecutor(x) never finished
-
-
-# TODO: check, if the suboptimal cpu usage is due to my laptop or the program!

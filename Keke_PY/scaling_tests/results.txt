@@ -127,3 +127,64 @@ CPU Efficiency         78.40% of 01:31:36 core-walltime
 Job Wall-clock time    00:11:27
 Memory Utilized        1.29 GB
 Memory Efficiency      16.09% of 8.00 GB
+
+
+processes=10 => 523.6757678985596 s
+
+---------------- ALLOCATIONS -----------------
+Partition        cpu_short_stud
+Timelimit        00:00:20
+NodeList         cc1l01
+
+Memory per CPU   4096 MB
+Memory total     40 GB
+Nodes            1
+CPUs per node    10
+
+---------------- UTILIZATION -----------------
+CPU Utilized:          01:06:37
+CPU Efficiency         75.99% of 01:27:40 core-walltime
+Job Wall-clock time    00:08:46
+Memory Utilized        1.58 GB
+Memory Efficiency      3.96% of 40.00 GB
+
+
+processes=16 => 314.8341453075409 s
+
+---------------- ALLOCATIONS -----------------
+Partition        cpu_short_stud
+Timelimit        00:00:20
+NodeList         cc1l01
+
+Memory per CPU   4096 MB
+Memory total     64 GB
+Nodes            1
+CPUs per node    16
+
+---------------- UTILIZATION -----------------
+CPU Utilized:          01:05:52
+CPU Efficiency         78.16% of 01:24:16 core-walltime
+Job Wall-clock time    00:05:16
+Memory Utilized        2.43 GB
+Memory Efficiency      3.79% of 64.00 GB
+
+
+processes=20 => 149.46216225624084 s
+
+---------------- ALLOCATIONS -----------------
+Partition        cpu_short_stud
+Timelimit        00:00:20
+NodeList         epyc3
+
+Memory per CPU   4096 MB
+Memory total     80 GB
+Nodes            1
+CPUs per node    20
+
+---------------- UTILIZATION -----------------
+CPU Utilized:          00:34:57
+CPU Efficiency         62.04% of 00:56:20 core-walltime
+Job Wall-clock time    00:02:49
+Memory Utilized        2.27 GB
+Memory Efficiency      2.83% of 80.00 GB
+

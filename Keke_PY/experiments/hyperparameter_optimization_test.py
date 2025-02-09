@@ -3,7 +3,7 @@ from pymoo.algorithms.soo.nonconvex.optuna import Optuna
 from pymoo.core.parameters import set_params, hierarchical
 from pymoo.optimize import minimize
 
-from Keke_PY.experiments.test_all_soo import optimization_algorithm, test_problem, n_evals
+from Keke_PY.experiments.soo import optimization_algorithm, test_problem, n_evals
 
 if __name__ == '__main__':
 
