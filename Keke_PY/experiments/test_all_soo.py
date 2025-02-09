@@ -84,7 +84,6 @@ if __name__ == '__main__':
     for _ in measure_time():
 
         print(f"testing {optimization_algorithm} ...")
-        dump_file_name: str = "test_1_return.pickle"
 
 
 
