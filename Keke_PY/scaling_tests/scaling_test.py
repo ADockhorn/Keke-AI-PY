@@ -75,8 +75,3 @@ if __name__ == '__main__':
 
 
         print(f"testing {optimization_algorithm} done")
-
-
-# Runtimes on my laptop:
-# processes=8 => 518.1460421085358 s
-# processes=4 => 587.7105324268341 s

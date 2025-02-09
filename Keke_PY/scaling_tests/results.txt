@@ -1,0 +1,129 @@
+
+Runtimes on my laptop:
+processes=2 => 947.5637838840485 s
+processes=4 => 587.7105324268341 s
+processes=8 => 518.1460421085358 s
+
+
+
+
+Runtimes on the cluster:
+
+
+processes=1 => 2169.5159995555878 s
+
+---------------- ALLOCATIONS -----------------
+Partition        cpu_short_stud
+Timelimit        00:01:00
+NodeList         cc1l01
+
+Memory per CPU   1024 MB
+Memory total     2048 MB
+Nodes            1
+CPUs per node    2
+
+---------------- UTILIZATION -----------------
+CPU Utilized:          00:36:10
+CPU Efficiency         49.91% of 01:12:28 core-walltime
+Job Wall-clock time    00:36:14
+Memory Utilized        675.68 MB
+Memory Efficiency      65.98% of 1.00 GB
+
+
+processes=2 => 2089.156813621521 s
+
+---------------- ALLOCATIONS -----------------
+Partition        cpu_short_stud
+Timelimit        00:01:00
+NodeList         cc1l01
+
+Memory per CPU   1024 MB
+Memory total     2048 MB
+Nodes            1
+CPUs per node    2
+
+---------------- UTILIZATION -----------------
+CPU Utilized:          01:03:21
+CPU Efficiency         90.93% of 01:09:40 core-walltime
+Job Wall-clock time    00:34:50
+Memory Utilized        914.02 MB
+Memory Efficiency      44.63% of 2.00 GB
+
+
+processes=3 => 1126.3923835754395 s
+
+---------------- ALLOCATIONS -----------------
+Partition        cpu_short_stud
+Timelimit        00:01:00
+NodeList         cc1l01
+
+Memory per CPU   1024 MB
+Memory total     4096 MB
+Nodes            1
+CPUs per node    4
+
+---------------- UTILIZATION -----------------
+CPU Utilized:          00:52:31
+CPU Efficiency         69.84% of 01:15:12 core-walltime
+Job Wall-clock time    00:18:48
+Memory Utilized        1.07 GB
+Memory Efficiency      35.81% of 3.00 GB
+
+
+processes=4 => 1168.063601732254 s
+
+---------------- ALLOCATIONS -----------------
+Partition        cpu_short_stud
+Timelimit        00:01:00
+NodeList         cc1l01
+
+Memory per CPU   1024 MB
+Memory total     4096 MB
+Nodes            1
+CPUs per node    4
+
+---------------- UTILIZATION -----------------
+CPU Utilized:          01:09:38
+CPU Efficiency         89.05% of 01:18:12 core-walltime
+Job Wall-clock time    00:19:33
+Memory Utilized        1.03 GB
+Memory Efficiency      25.70% of 4.00 GB
+
+
+processes=6 => 929.5037069320679 s
+---------------- ALLOCATIONS -----------------
+Partition        cpu_short_stud
+Timelimit        00:01:00
+NodeList         cc1l01
+
+Memory per CPU   1024 MB
+Memory total     6144 MB
+Nodes            1
+CPUs per node    6
+
+---------------- UTILIZATION -----------------
+CPU Utilized:          01:09:33
+CPU Efficiency         74.70% of 01:33:06 core-walltime
+Job Wall-clock time    00:15:31
+Memory Utilized        1.16 GB
+Memory Efficiency      19.30% of 6.00 GB
+
+
+processes=8 => 685.4092907905579 s
+
+---------------- ALLOCATIONS -----------------
+Partition        cpu_short_stud
+Timelimit        00:00:30
+NodeList         cc1l01
+
+Memory per CPU   1024 MB
+Memory total     8192 MB
+Nodes            1
+CPUs per node    8
+
+---------------- UTILIZATION -----------------
+CPU Utilized:          01:11:49
+CPU Efficiency         78.40% of 01:31:36 core-walltime
+Job Wall-clock time    00:11:27
+Memory Utilized        1.29 GB
+Memory Efficiency      16.09% of 8.00 GB
