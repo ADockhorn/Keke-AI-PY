@@ -25,6 +25,11 @@ from Keke_PY.heuristic_pymoo_representations.TrackedRepresentation import Tracke
 from Keke_PY.heuristic_pymoo_representations.WeightedHeuristicSumRepresentation import WeightedHeuristicSumRepresentation
 from Keke_PY.keke_game.simulation import load_level_set
 
+int_arguments: List[int] = []
+for argument in sys.argv:
+    if argument.isdigit():
+        int_arguments.append(int(argument))
+
 setups: [(bool, bool, int)] = (
     (False, True, 0),
     (False, True, 1),
@@ -35,7 +40,7 @@ setups: [(bool, bool, int)] = (
     (True, True, 0),
     (True, True, 1),
 )
-trees, track, algorithm = setups[1 if len(sys.argv) != 2 else int(sys.argv[1])]
+trees, track, algorithm = setups[int_arguments[0]]
 
 pop_size: int = 10
 n_generations: int = 20

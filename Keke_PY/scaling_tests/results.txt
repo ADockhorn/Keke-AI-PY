@@ -188,3 +188,24 @@ Job Wall-clock time    00:02:49
 Memory Utilized        2.27 GB
 Memory Efficiency      2.83% of 80.00 GB
 
+
+
+
+
+
+---------------- ALLOCATIONS -----------------
+Partition        cpu_short_stud
+Timelimit        00:12:00
+NodeList         paris1
+
+Memory per CPU   4096 MB
+Memory total     80 GB
+Nodes            1
+CPUs per node    20
+
+---------------- UTILIZATION -----------------
+CPU Utilized:          7-09:57:38
+CPU Efficiency         87.88% of 8-10:30:20 core-walltime
+Job Wall-clock time    10:07:31
+Memory Utilized        3.20 GB
+Memory Efficiency      4.01% of 80.00 GB
