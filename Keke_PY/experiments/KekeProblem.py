@@ -68,21 +68,41 @@ class KekeProblem(Problem):
             [self.max_forward_model_calls]
         ))
 
-        simulation_results: Dict[Tuple[int, str], int] = dict(list(self.executor.map(
+        simulation_results: Dict[Tuple[int, str], Tuple[Union[List[str], None], int]] = dict(list(self.executor.map(
             evaluate_ai_on_level, simulation_data_list
         )))
 
         self.log_simulation_data(simulation_results)
 
+        total_node_expansions_of_instance_on_batch: Dict[Tuple[int, int], int] = dict(itertools.product(
+            itertools.product(range(len(x)), range(len(self.training_batches))),
+            [0]
+        ))
+        nr_of_solved_levels_of_instance_on_batch: Dict[Tuple[int, int], int] = dict(itertools.product(
+            itertools.product(range(len(x)), range(len(self.training_batches))),
+            [0]
+        ))
+
+        for batch_nr, batch in enumerate(self.training_batches):
+            for level_nr, level in enumerate(batch):
+                for agent_nr, _agentFeatureVector in enumerate(x):
+                    solution, node_expansions = simulation_results[(agent_nr, level)]
+                    total_node_expansions_of_instance_on_batch[(agent_nr, batch_nr)] += node_expansions
+                    if solution is not None:
+                        nr_of_solved_levels_of_instance_on_batch[(agent_nr, batch_nr)] += 1
+
         # this output is supposed to be minimized:
         out["F"] = np.zeros((len(x), len(self.training_batches)))
 
         for batch_nr, batch in enumerate(self.training_batches):
-            forward_model_calls_normalization_factor: float = 1.0 / (self.max_forward_model_calls * len(batch))
-            for level_nr, level in enumerate(batch):
-                for agent_nr, _agentFeatureVector in enumerate(x):
-                    penalty: float = simulation_results[(agent_nr, level)] * forward_model_calls_normalization_factor
-                    out["F"][agent_nr, batch_nr] += penalty
+            nr_of_levels: int = len(batch)
+            max_nr_of_expansions: int = nr_of_levels * self.max_forward_model_calls
+            for agent_nr, _agentFeatureVector in enumerate(x):
+                total_node_expansions: int = total_node_expansions_of_instance_on_batch[(agent_nr, batch_nr)]
+                nr_of_solved_levels: int = nr_of_solved_levels_of_instance_on_batch[(agent_nr, batch_nr)]
+                performance: float = (nr_of_solved_levels / nr_of_levels) * max_nr_of_expansions + (max_nr_of_expansions - total_node_expansions)
+                avg_penalty_per_level: float = -performance / nr_of_levels # TODO: did this normalization happen in js?
+                out["F"][agent_nr, batch_nr] = avg_penalty_per_level
 
         # There are no constrains:
         out["G"] = np.zeros((len(x), 0))
@@ -138,14 +158,17 @@ class KekeProblem(Problem):
         for index, instance in enumerate(x):
             self.log_line(f"EVAL_INSTANCE:{self.generation}:{index}:{self.representation.serialize(instance)}")
 
-    def log_simulation_data(self, simulation_results: Dict[Tuple[int, str], int]):
-        for (index, level), forward_model_calls in simulation_results.items():
-            self.log_line(f"RUN_RESULT:{self.generation}:{index}:{self._level_to_id_map[level]}:{forward_model_calls}")
+    def log_simulation_data(self, simulation_results: Dict[Tuple[int, str], Tuple[Union[List[str], None], int]]):
+        for (index, level), (solution, forward_model_calls) in simulation_results.items():
+            res = '----'
+            if solution is not None:
+                res = forward_model_calls
+            self.log_line(f"RUN_RESULT:{self.generation}:{index}:{self._level_to_id_map[level]}:{res}")
 
 
 def evaluate_ai_on_level(
     simulation_data: Tuple[Tuple[int, Heuristic], str, int]
-) -> Tuple[Tuple[int, str], int]:
+) -> Tuple[Tuple[int, str], Tuple[Union[List[str], None], int]]:
     ai_index: int = simulation_data[0][0]
     heuristic: Heuristic = simulation_data[0][1]
     level: str = simulation_data[1]
@@ -158,6 +181,5 @@ def evaluate_ai_on_level(
         None,
         False
     )
-    forward_model_calls: int = solution[1]
-    #print((ai_index, level), solution[0], forward_model_calls)
-    return (ai_index, level), forward_model_calls
+    #print((ai_index, level), solution[0], solution[0], solution[1])
+    return (ai_index, level), solution
