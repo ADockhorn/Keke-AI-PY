@@ -1,6 +1,6 @@
 from typing import List, Callable, Union, Optional
 
-from Keke_PY.baba import GameState, parse_map, only_top_objects_string, GameObj, Direction, GameObjectType
+from Keke_PY.keke_game.baba import GameState, parse_map, only_top_objects_string, GameObj, Direction, GameObjectType
 from Keke_PY.heuristics.ParametrisedHeuristic import ParametrisedHeuristic
 
 important_SuffixWords = ["win", "push", "you"]

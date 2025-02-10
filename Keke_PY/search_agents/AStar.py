@@ -1,7 +1,7 @@
 import heapq
 
 from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
-from Keke_PY.baba import GameState, Direction, check_win, advance_game_state
+from Keke_PY.keke_game.baba import GameState, Direction, check_win, advance_game_state
 from Keke_PY.search_agents.ai_interface import AIInterface, range_or_infinite_loop
 from typing import List, Tuple, Union
 
@@ -101,7 +101,7 @@ class SimpleHeuristic(Heuristic):
 
 
 if __name__ == '__main__':
-    from Keke_PY.simulation import load_level_set, parse_map, map_to_string, make_level
+    from Keke_PY.keke_game.simulation import load_level_set, parse_map, map_to_string, make_level
     level_set = load_level_set("json_levels/full_biy_LEVELS.json")
     astar_agent = AStar(heuristic=SimpleHeuristic())
 

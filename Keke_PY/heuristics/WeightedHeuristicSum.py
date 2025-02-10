@@ -1,7 +1,7 @@
 from copy import deepcopy
 from typing import List
 
-from Keke_PY.baba import GameState
+from Keke_PY.keke_game.baba import GameState
 from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
 from Keke_PY.heuristics.hand_crafted_heuristics import heuristics, heuristics_feature_vector_length
 

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from inspect import signature
 from typing import Callable, List
 
-from Keke_PY.baba import GameState
+from Keke_PY.keke_game.baba import GameState
 from Keke_PY.heuristics.ParametrisedHeuristic import ParametrisedHeuristic, ParametrisedHeuristicFromCallable
 
 

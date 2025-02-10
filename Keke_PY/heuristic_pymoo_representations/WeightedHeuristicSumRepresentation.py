@@ -7,7 +7,7 @@ from pymoo.core.sampling import Sampling
 from pymoo.operators.crossover.sbx import SBX
 from pymoo.operators.mutation.pm import PM
 
-from Keke_PY.heuristic_representations.HeuristicRepresentation import HeuristicRepresentation
+from Keke_PY.heuristic_pymoo_representations.HeuristicRepresentation import HeuristicRepresentation
 from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
 from Keke_PY.heuristics.WeightedHeuristicSum import WeightedHeuristicSum
 from Keke_PY.heuristics.hand_crafted_heuristics import heuristics_feature_vector_length

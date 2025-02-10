@@ -3,7 +3,7 @@
 # Original Code by Milk
 # Translated to Python by Descar
 
-from Keke_PY.baba import *
+from Keke_PY.keke_game.baba import *
 import json
 
 
@@ -25,7 +25,7 @@ if __name__ == "__main__":
     import random
     import time
 
-    level_set = load_level_set("../json_levels/demo_LEVELS.json")
+    level_set = load_level_set("../../json_levels/demo_LEVELS.json")
 
     demo_level_1 = level_set["levels"][0]
     game_map = parse_map(demo_level_1["ascii"])

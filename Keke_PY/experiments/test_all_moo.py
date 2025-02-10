@@ -2,14 +2,11 @@ import multiprocessing
 from typing import List
 
 from pymoo.algorithms.moo.nsga2 import NSGA2
-from pymoo.algorithms.moo.nsga3 import NSGA3
-from pymoo.core.algorithm import Algorithm
 from pymoo.optimize import minimize
-from pymoo.util.reference_direction import das_dennis
 
-from Keke_PY.heuristic_representations.WeightedHeuristicSumRepresentation import WeightedHeuristicSumRepresentation
+from Keke_PY.heuristic_pymoo_representations.WeightedHeuristicSumRepresentation import WeightedHeuristicSumRepresentation
 from Keke_PY.experiments.KekeProblem import KekeProblem
-from Keke_PY.simulation import load_level_set
+from Keke_PY.keke_game.simulation import load_level_set
 
 pop_size = 3# 10
 n_generations = 3# 20
@@ -56,7 +53,6 @@ test_problem = KekeProblem([test_batch], WeightedHeuristicSumRepresentation(), 2
 if __name__ == '__main__':
 
     print(f"testing {optimization_algorithm} ...")
-    dump_file_name: str = "test_1_return.pickle"
 
 
     res = minimize(

@@ -7,7 +7,7 @@ if True:
 import os
 from math import floor
 
-from Keke_PY.heuristic_representations.DummyRepresentation import DummyRepresentation
+from Keke_PY.heuristic_pymoo_representations.DummyRepresentation import DummyRepresentation
 from Keke_PY.heuristics.WeightedHeuristicSum import WeightedHeuristicSum
 from Keke_PY.heuristics.hand_crafted_heuristics import heuristics_feature_vector_length
 
@@ -20,7 +20,7 @@ from pymoo.optimize import minimize
 
 from Keke_PY.experiments.RandomSamplingAlgorithm import RandomSamplingAlgorithm
 from Keke_PY.experiments.KekeProblem import KekeProblem
-from Keke_PY.simulation import load_level_set
+from Keke_PY.keke_game.simulation import load_level_set
 
 
 

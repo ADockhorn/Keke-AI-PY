@@ -4,7 +4,7 @@ from collections.abc import Callable
 from inspect import signature
 from typing import final
 
-from Keke_PY.baba import GameState
+from Keke_PY.keke_game.baba import GameState
 
 class ParametrisedHeuristic(ABC):
 

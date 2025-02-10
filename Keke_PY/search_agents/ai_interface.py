@@ -4,7 +4,7 @@ from typing import List, Tuple, Union, Iterable
 
 from tqdm import trange
 
-from Keke_PY.baba import GameState
+from Keke_PY.keke_game.baba import GameState
 
 
 class AIInterface(ABC):

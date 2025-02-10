@@ -20,10 +20,10 @@ from pymoo.optimize import minimize
 
 from Keke_PY.experiments.RandomSamplingAlgorithm import RandomSamplingAlgorithm
 from Keke_PY.experiments.KekeProblem import KekeProblem
-from Keke_PY.heuristic_representations.HeuristicTreeRepresentation import HeuristicTreeRepresentation
-from Keke_PY.heuristic_representations.TrackedRepresentation import TrackedRepresentation
-from Keke_PY.heuristic_representations.WeightedHeuristicSumRepresentation import WeightedHeuristicSumRepresentation
-from Keke_PY.simulation import load_level_set
+from Keke_PY.heuristic_pymoo_representations.HeuristicTreeRepresentation import HeuristicTreeRepresentation
+from Keke_PY.heuristic_pymoo_representations.TrackedRepresentation import TrackedRepresentation
+from Keke_PY.heuristic_pymoo_representations.WeightedHeuristicSumRepresentation import WeightedHeuristicSumRepresentation
+from Keke_PY.keke_game.simulation import load_level_set
 
 setups: [(bool, bool, int)] = (
     (False, True, 0),

@@ -9,7 +9,7 @@ from pymoo.core.mutation import Mutation
 from pymoo.core.problem import Problem
 from pymoo.core.sampling import Sampling
 
-from Keke_PY.heuristic_representations.HeuristicRepresentation import HeuristicRepresentation
+from Keke_PY.heuristic_pymoo_representations.HeuristicRepresentation import HeuristicRepresentation
 from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
 
 

@@ -1,6 +1,6 @@
 from pymoo.core.variable import Real
 
-from Keke_PY.heuristic_representations.SingleObjRepresentation import SingleObjRepresentation
+from Keke_PY.heuristic_pymoo_representations.SingleObjRepresentation import SingleObjRepresentation
 from Keke_PY.heuristics.HeuristicTree import HeuristicTree, create_random_tree, mutation, crossover
 from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
 

@@ -1,11 +1,8 @@
 from typing import Tuple, Union, List, Callable
 
-from Keke_PY.search_agents.AStar import AStar, simple_heuristic, test_heuristics
+from Keke_PY.search_agents.AStar import AStar, test_heuristics
 from Keke_PY.search_agents.ai_interface import AIInterface
-from Keke_PY.simulation import load_level_set, parse_map, make_level
-from BFS import BFS
-from DFS import DFS
-
+from Keke_PY.keke_game.simulation import load_level_set, parse_map, make_level
 
 test_levels: Tuple[str, Union[range, int, None]] = "./json_levels/full_biy_LEVELS.json", range(7, 20)
 
