@@ -1,0 +1,3 @@
+pygame 2.2.0 (SDL 2.30.7, Python 3.8.10)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+slurmstepd: error: *** JOB 497254 ON cc1l01 CANCELLED AT 2025-02-11T04:39:10 DUE TO TIME LIMIT ***
