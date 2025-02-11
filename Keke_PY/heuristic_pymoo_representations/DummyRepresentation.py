@@ -7,9 +7,10 @@ from pymoo.core.problem import Problem
 from pymoo.core.sampling import Sampling
 
 from Keke_PY.heuristic_pymoo_representations.HeuristicRepresentation import HeuristicRepresentation
-from Keke_PY.heuristic_pymoo_representations.TrackedRepresentation import TrackedRepresentation
-from Keke_PY.heuristic_pymoo_representations.WeightedHeuristicSumRepresentation import WeightedHeuristicSumRepresentation
+from Keke_PY.heuristic_pymoo_representations.SingleObjRepresentation import SingleObjRepresentation
 from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
+from Keke_PY.heuristics.SimpleHeuristic import SimpleHeuristic
+from Keke_PY.heuristics.ZeroHeuristic import ZeroHeuristic
 
 
 class DummyRepresentation(HeuristicRepresentation):
@@ -17,9 +18,11 @@ class DummyRepresentation(HeuristicRepresentation):
     _inner_repr: HeuristicRepresentation
     def __init__(
             self,
-            dummy: Heuristic,
-            inner_representation: HeuristicRepresentation = TrackedRepresentation(WeightedHeuristicSumRepresentation(-1))
+            dummy: Heuristic = SimpleHeuristic(),
+            inner_representation: HeuristicRepresentation = None
     ):
+        if inner_representation is None:
+            inner_representation = ZeroHeuristicRepresentation()
         self.dummy = dummy
         self._inner_repr = inner_representation
 
@@ -44,3 +47,29 @@ class DummyRepresentation(HeuristicRepresentation):
     @property
     def duplicate_elimination(self) -> DuplicateElimination:
         return self._inner_repr.duplicate_elimination
+
+class ZeroHeuristicRepresentation(SingleObjRepresentation[int]):
+    def _assert_type(self, x: object) -> int:
+        assert isinstance(x, int)
+        return x
+
+    def _into_heuristic(self, x: int) -> Heuristic:
+        return ZeroHeuristic()
+
+    def _serialize(self, x: int) -> str:
+        return '_'
+
+    def _deserialize(self, x: str) -> int:
+        return 0
+
+    def _sample(self) -> int:
+        return 0
+
+    def _mutate(self, x: int) -> int:
+        return 0
+
+    def _crossover(self, x: int, y: int) -> int:
+        return 0
+
+    def _are_equal(self, x: int, y: int) -> bool:
+        return False

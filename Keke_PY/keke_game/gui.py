@@ -3,7 +3,8 @@ from itertools import chain
 from typing import Tuple, Union, Iterable, List, Optional
 
 
-from Keke_PY.search_agents.AStar import AStar, SimpleHeuristic
+from Keke_PY.search_agents.AStar import AStar
+from Keke_PY.heuristics.SimpleHeuristic import SimpleHeuristic
 from Keke_PY.keke_game.baba import GameState, Direction, imgHash, advance_game_state, parse_map, make_level
 
 
@@ -79,7 +80,9 @@ def play_game(initial_game_state: GameState, action_source: Iterable[Direction])
         return False
 
 
-def inputs_from_keyboard(mem_buffer: List[Direction]) -> Iterable[Direction]:
+def inputs_from_keyboard(mem_buffer: List[Direction] = None) -> Iterable[Direction]:
+    if mem_buffer is None:
+        mem_buffer = []
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -189,12 +192,9 @@ if __name__ == '__main__':
     from simulation import load_level_set
 
 
-    if False:
-        play_level(load_level_set(
-            "./json_levels/full_biy_LEVELS.json"
-        )["levels"][5]["ascii"], yield_solution_delayed(
-            "UUUULLLLLUULUUUUUUUURU", 0.5
-        ))
+    if True:
+        #['Up', 'Right']
+        play_level('____________\n_.........._\n_.r....f..._\n_.....bssss_\n_.R.......F_\n_B1..f..b.1_\n_AO........_\n_.rssssssss_\n_.........F_\n_ss...R...1_\n_....B12W.3_\n_oS14...1.._\n____________', inputs_from_keyboard())
 
 
     working: List[Tuple[str, int]] = []
@@ -212,7 +212,7 @@ if __name__ == '__main__':
             print(demo_level_1["solution"])
 
             if False:
-                play_level(demo_level_1["ascii"], inputs_from_keyboard([]))
+                play_level(demo_level_1["ascii"], inputs_from_keyboard())
             else:
 
                 if play_level(demo_level_1["ascii"], yield_solution_delayed(demo_level_1["solution"])):

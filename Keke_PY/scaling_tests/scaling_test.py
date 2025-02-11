@@ -46,7 +46,7 @@ print("Requesting", processes, "processes")
 test_problem = KekeProblem(
     training_batches = [training_levels],
     representation = representation,
-    max_forward_model_calls = 2000,
+    max_node_expansions= 2000,
     executor = multiprocessing.Pool(processes=processes),
     test_batch = test_levels
 )

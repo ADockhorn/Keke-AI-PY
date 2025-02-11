@@ -1,6 +1,7 @@
 import itertools
 from concurrent.futures import Executor, ProcessPoolExecutor
 from itertools import chain
+from math import floor
 from typing import List, Tuple, Dict, Union
 
 import numpy as np
@@ -9,7 +10,8 @@ from pymoo.core.problem import Problem
 from Keke_PY.keke_game.baba import GameState, make_level, parse_map
 from Keke_PY.heuristic_pymoo_representations.HeuristicRepresentation import HeuristicRepresentation
 from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
-from Keke_PY.search_agents.AStar import AStar
+from Keke_PY.keke_game.simulation import load_level_set
+from Keke_PY.search_agents.HeuristicGuidedSearch import HeuristicGuidedSearch
 
 
 class KekeProblem(Problem):
@@ -18,7 +20,7 @@ class KekeProblem(Problem):
     test_batch: List[str]
     all_levels: List[str]
 
-    max_forward_model_calls: int
+    max_node_expansions: int
 
     executor: Executor
 
@@ -31,14 +33,14 @@ class KekeProblem(Problem):
             self,
             training_batches: List[List[str]],
             representation: HeuristicRepresentation,
-            max_forward_model_calls: int = 2000,
+            max_node_expansions: int = 2000,
             executor: Executor = ProcessPoolExecutor(),
             test_batch: List[str] = ()
     ):
         assert all(len(batch) > 0 for batch in training_batches)
         self.training_batches = training_batches
         self.test_batch = test_batch
-        self.max_forward_model_calls = max_forward_model_calls
+        self.max_node_expansions = max_node_expansions
         training_levels = set(chain(*training_batches))
         assert all(level not in training_levels for level in test_batch), "Training on test-levels is not allowed!"
         self.all_levels = list(training_levels) + test_batch
@@ -58,6 +60,33 @@ class KekeProblem(Problem):
 
         self.log_level_data()
 
+    @classmethod
+    def default_problem(
+            cls,
+            representation: HeuristicRepresentation,
+            executor: Executor = ProcessPoolExecutor(),
+            limit_levels: int = None
+    ):
+        levels: List[str] = [
+            *[level["ascii"] for level in
+              load_level_set("./json_levels/train_LEVELS.json")["levels"]],
+            *[level["ascii"] for level in
+              load_level_set("./json_levels/test_LEVELS.json")["levels"]],
+        ]
+        if limit_levels is not None:
+            levels = levels[:limit_levels]
+        training_ratio: float = 0.6
+        training_levels: List[str] = levels[:floor(training_ratio * len(levels))]
+        test_levels: List[str] = levels[floor(training_ratio * len(levels)):]
+
+        return cls(
+            training_batches=[training_levels],
+            representation=representation,
+            max_node_expansions=2000,
+            executor=executor,
+            test_batch=test_levels
+        )
+
     def _evaluate(self, x, out, *args, **kwargs):
 
         self.log_generation_data(list(x))
@@ -65,7 +94,7 @@ class KekeProblem(Problem):
         simulation_data_list: List[Tuple[Tuple[int, Heuristic], str, int]] = list(itertools.product(
             enumerate(map(lambda arr: self.representation.into_heuristic(arr), x)),
             self.all_levels,
-            [self.max_forward_model_calls]
+            [self.max_node_expansions]
         ))
 
         simulation_results: Dict[Tuple[int, str], Tuple[Union[List[str], None], int]] = dict(list(self.executor.map(
@@ -74,40 +103,45 @@ class KekeProblem(Problem):
 
         self.log_simulation_data(simulation_results)
 
-        total_node_expansions_of_instance_on_batch: Dict[Tuple[int, int], int] = dict(itertools.product(
-            itertools.product(range(len(x)), range(len(self.training_batches))),
-            [0]
-        ))
-        nr_of_solved_levels_of_instance_on_batch: Dict[Tuple[int, int], int] = dict(itertools.product(
-            itertools.product(range(len(x)), range(len(self.training_batches))),
-            [0]
-        ))
+        performance_of_instance_on_batch: Dict[Tuple[int, int], float] = self.calc_performance_of_instance_on_batch(simulation_results)
 
-        for batch_nr, batch in enumerate(self.training_batches):
-            for level_nr, level in enumerate(batch):
-                for agent_nr, _agentFeatureVector in enumerate(x):
-                    solution, node_expansions = simulation_results[(agent_nr, level)]
-                    total_node_expansions_of_instance_on_batch[(agent_nr, batch_nr)] += node_expansions
-                    if solution is not None:
-                        nr_of_solved_levels_of_instance_on_batch[(agent_nr, batch_nr)] += 1
+        self.log_performances(performance_of_instance_on_batch)
 
         # this output is supposed to be minimized:
         out["F"] = np.zeros((len(x), len(self.training_batches)))
 
-        for batch_nr, batch in enumerate(self.training_batches):
-            nr_of_levels: int = len(batch)
-            max_nr_of_expansions: int = nr_of_levels * self.max_forward_model_calls
-            for agent_nr, _agentFeatureVector in enumerate(x):
-                total_node_expansions: int = total_node_expansions_of_instance_on_batch[(agent_nr, batch_nr)]
-                nr_of_solved_levels: int = nr_of_solved_levels_of_instance_on_batch[(agent_nr, batch_nr)]
-                performance: float = (nr_of_solved_levels / nr_of_levels) * max_nr_of_expansions + (max_nr_of_expansions - total_node_expansions)
-                avg_penalty_per_level: float = -performance / nr_of_levels # TODO: did this normalization happen in js?
-                out["F"][agent_nr, batch_nr] = avg_penalty_per_level
+        for batch_nr in range(len(self.training_batches)):
+            for agent_nr in range(len(x)):
+                out["F"][agent_nr, batch_nr] = -performance_of_instance_on_batch[(agent_nr, batch_nr)]
 
         # There are no constrains:
         out["G"] = np.zeros((len(x), 0))
 
         self.generation += 1
+
+    def calc_performance_of_instance_on_batch(
+            self,
+            simulation_results: Dict[Tuple[int, str], Tuple[Union[List[str], None], int]],
+            nr_of_instances: int = -1
+    ) -> Dict[Tuple[int, int], float]:
+        if nr_of_instances == -1:
+            nr_of_instances = max(key[0] for key in simulation_results.keys()) + 1
+
+        performance_of_instance_on_batch: Dict[Tuple[int, int], float] = {}
+
+        for batch_nr, batch in itertools.chain([(-1, self.test_batch)], enumerate(self.training_batches)):
+            nr_of_levels: int = len(batch)
+            for agent_nr in range(nr_of_instances):
+                total_expansions: int = sum(simulation_results[(agent_nr, level)][1] for level in batch)
+                average_expansions: float = total_expansions / nr_of_levels
+                average_leftover_expansions: float = self.max_node_expansions - average_expansions
+                nr_of_solved_levels: int = sum(simulation_results[(agent_nr, level)][0] is not None for level in batch)
+                ration_of_solved_levels: float = nr_of_solved_levels / nr_of_levels
+                solved_level_bonus: float = ration_of_solved_levels * self.max_node_expansions
+                performance_of_instance_on_batch[(agent_nr, batch_nr)] = average_leftover_expansions + solved_level_bonus
+
+        return performance_of_instance_on_batch
+
 
 
     def log_line(self, line: str):
@@ -131,7 +165,7 @@ class KekeProblem(Problem):
             cls,
             representation: HeuristicRepresentation,
             lines: List[str],
-            max_forward_model_calls: int = 2000,
+            max_node_expansions: int = 2000,
             executor: Executor = ProcessPoolExecutor()
     ):
         all_levels: Dict[int, str] = {}
@@ -152,7 +186,7 @@ class KekeProblem(Problem):
             batch: List[str] = test_batch if batch_id == -1 else training_batches[batch_id]
             assert index == len(batch)
             batch.append(all_levels[level_id])
-        return cls(training_batches, representation, max_forward_model_calls, executor, test_batch)
+        return cls(training_batches, representation, max_node_expansions, executor, test_batch)
 
     def log_generation_data(self, x: list):
         for index, instance in enumerate(x):
@@ -165,6 +199,16 @@ class KekeProblem(Problem):
                 res = forward_model_calls
             self.log_line(f"RUN_RESULT:{self.generation}:{index}:{self._level_to_id_map[level]}:{res}")
 
+    def log_performances(self, performance_of_instance_on_batch: Dict[Tuple[int, int], float]):
+        nr_of_instances: int = max(key[0] for key in performance_of_instance_on_batch.keys()) + 1
+        for batch_nr, batch in itertools.chain([(-1, self.test_batch)], enumerate(self.training_batches)):
+            performances_on_batch: str = "\t|\t".join(
+                str(performance_of_instance_on_batch[(instance, batch_nr)]) for instance in range(nr_of_instances)
+            )
+            self.log_line(f"PERFORMANCE:{self.generation}:{batch_nr}:\t{performances_on_batch}")
+
+
+# TODO: maybe create independant levelset class?
 
 def evaluate_ai_on_level(
     simulation_data: Tuple[Tuple[int, Heuristic], str, int]
@@ -174,7 +218,7 @@ def evaluate_ai_on_level(
     level: str = simulation_data[1]
     max_forward_model_calls: int = simulation_data[2]
     start_state: GameState = make_level(parse_map(level))
-    agent: AStar = AStar(heuristic)
+    agent: HeuristicGuidedSearch = HeuristicGuidedSearch(heuristic)
     solution: Tuple[Union[List[str], None], int] = agent.search(
         start_state,
         max_forward_model_calls,

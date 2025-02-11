@@ -1,5 +1,3 @@
-from math import floor
-
 if True:
     """Include Project root as Environment paths:"""
     from os.path import dirname, abspath
@@ -23,7 +21,6 @@ from Keke_PY.experiments.KekeProblem import KekeProblem
 from Keke_PY.heuristic_pymoo_representations.HeuristicTreeRepresentation import HeuristicTreeRepresentation
 from Keke_PY.heuristic_pymoo_representations.TrackedRepresentation import TrackedRepresentation
 from Keke_PY.heuristic_pymoo_representations.WeightedHeuristicSumRepresentation import WeightedHeuristicSumRepresentation
-from Keke_PY.keke_game.simulation import load_level_set
 
 int_arguments: List[int] = []
 for argument in sys.argv:
@@ -31,19 +28,19 @@ for argument in sys.argv:
         int_arguments.append(int(argument))
 
 setups: [(bool, bool, int)] = (
-    (False, True, 0),
+    (False, False, 0),
     (False, True, 1),
     (False, False, 2),
     (False, False, 3),
     (False, False, 4),
     # ! Trees have some unresolved TODO@ask's !
-    (True, True, 0),
+    (True, False, 0),
     (True, True, 1),
 )
 trees, track, algorithm = setups[int_arguments[0]]
 
-pop_size: int = 10
-n_generations: int = 20
+pop_size: int = 5#10
+n_generations: int = 2#20
 
 
 n_evals: int = pop_size * n_generations
@@ -61,21 +58,7 @@ optimization_algorithm: Algorithm = [
     PatternSearch(pop_size=pop_size, eliminate_duplicates=True),
 ][algorithm]
 
-levels: List[str] = [
-    *[level["ascii"] for level in load_level_set("./json_levels/train_LEVELS.json")["levels"]],
-    *[level["ascii"] for level in load_level_set("./json_levels/test_LEVELS.json")["levels"]],
-]
-training_ratio: float = 0.6
-training_levels: List[str] = levels[:floor(training_ratio * len(levels))]
-test_levels: List[str] = levels[floor(training_ratio * len(levels)):]
-
-test_problem = KekeProblem(
-    training_batches = [training_levels],
-    representation = representation,
-    max_forward_model_calls = 2000,
-    executor = multiprocessing.Pool(20),
-    test_batch = test_levels
-)
+test_problem = KekeProblem.default_problem(representation, multiprocessing.Pool(20), None)
 
 def measure_time() -> Iterable[None]:
     start = time.time()
