@@ -11,6 +11,8 @@ from Keke_PY.keke_game.baba import GameState, Direction, imgHash, advance_game_s
 from pygame.locals import *
 import pygame
 
+from Keke_PY.search_agents.BFS import BFS
+
 TILE_SIZE = 48
 
 
@@ -142,38 +144,17 @@ working_levels: List[Tuple[str, Union[range, int, None, Iterable[int]]]] = [
         "./json_levels/search_biy_LEVELS.json",
         [i for i in range(62) if i not in []]
     ), (
-        "./json_levels/test_LEVELS.json",
-        [i for i in range(0, 134) if i not in []]
-    ), (
         "./json_levels/train_LEVELS.json",
         [i for i in range(50) if i not in []]
+    ), (
+        "./json_levels/test_LEVELS.json",
+        [i for i in range(0, 134) if i not in []]
     ), (
         "./json_levels/user_milk_biy_LEVELS.json",
         [i for i in range(17) if i not in []]
     )
-]
+][3:5]
 
-broken_levels: List[Tuple[str, Union[range, int, None, Iterable[int]]]] = [
-    (
-        "./json_levels/demo_LEVELS.json",
-        []
-    ), (
-        "./json_levels/full_biy_LEVELS.json",
-        []
-    ), (
-        "./json_levels/search_biy_LEVELS.json",
-        []
-    ), (
-        "./json_levels/test_LEVELS.json",
-        []
-    ), (
-        "./json_levels/train_LEVELS.json",
-        []
-    ), (
-        "./json_levels/user_milk_biy_LEVELS.json",
-        []
-    )
-]
 
 test = working_levels
 
@@ -192,7 +173,7 @@ if __name__ == '__main__':
     from simulation import load_level_set
 
 
-    if True:
+    if False:
         #['Up', 'Right']
         play_level('____________\n_.........._\n_.r....f..._\n_.....bssss_\n_.R.......F_\n_B1..f..b.1_\n_AO........_\n_.rssssssss_\n_.........F_\n_ss...R...1_\n_....B12W.3_\n_oS14...1.._\n____________', inputs_from_keyboard())
 
@@ -220,7 +201,7 @@ if __name__ == '__main__':
                     continue
                 ai_solution = try_ai(
                     demo_level_1["ascii"],
-                    0,#5 ** (len(demo_level_1["solution"]) + 2),
+                    20000,#5 ** (len(demo_level_1["solution"]) + 2),
                     len(demo_level_1["solution"]) + 2
                 )
                 if ai_solution is not None:
@@ -231,7 +212,7 @@ if __name__ == '__main__':
                         print(f"{name}\t{index}\t: {solution}\n")
                     input("Waiting...:")
                     continue
-                for _ in range(0):# while int(input("Try?")):
+                while int("0" + input("Try?")):
                     key_buffer: List[Direction] = []
                     play_level(demo_level_1["ascii"], chain(
                         yield_solution_delayed(demo_level_1["solution"], 0.5),

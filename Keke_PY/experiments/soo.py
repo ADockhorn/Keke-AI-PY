@@ -1,3 +1,5 @@
+from Keke_PY.experiments.BayesianOptimizationAlgorithm import BayesianOptimizationAlgorithm
+
 if True:
     """Include Project root as Environment paths:"""
     from os.path import dirname, abspath
@@ -33,6 +35,8 @@ setups: [(bool, bool, int)] = (
     (False, False, 2),
     (False, False, 3),
     (False, False, 4),
+    # ! Working on bayesian !
+    (False, False, 5),
     # ! Trees have some unresolved TODO@ask's !
     (True, False, 0),
     (True, True, 1),
@@ -56,6 +60,7 @@ optimization_algorithm: Algorithm = [
     DE(pop_size=pop_size),
     ES(n_offsprings=pop_size, pop_size=pop_size//2),
     PatternSearch(pop_size=pop_size, eliminate_duplicates=True),
+    BayesianOptimizationAlgorithm()
 ][algorithm]
 
 test_problem = KekeProblem.default_problem(representation, multiprocessing.Pool(20), None)
