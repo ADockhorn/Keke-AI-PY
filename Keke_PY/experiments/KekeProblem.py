@@ -87,25 +87,30 @@ class KekeProblem(Problem):
             test_batch=test_levels
         )
 
-    def _evaluate(self, x, out, *args, **kwargs):
-
-        self.log_generation_data(list(x))
-
+    def evaluate_performance_of_instance_on_batch(self, instances: [Heuristic]) -> Dict[Tuple[int, int], float]:
         simulation_data_list: List[Tuple[Tuple[int, Heuristic], str, int]] = list(itertools.product(
-            enumerate(map(lambda arr: self.representation.into_heuristic(arr), x)),
+            enumerate(instances),
             self.all_levels,
             [self.max_node_expansions]
         ))
-
         simulation_results: Dict[Tuple[int, str], Tuple[Union[List[str], None], int]] = dict(list(self.executor.map(
             evaluate_ai_on_level, simulation_data_list
         )))
-
         self.log_simulation_data(simulation_results)
 
         performance_of_instance_on_batch: Dict[Tuple[int, int], float] = self.calc_performance_of_instance_on_batch(simulation_results)
 
         self.log_performances(performance_of_instance_on_batch)
+
+        return performance_of_instance_on_batch
+
+    def _evaluate(self, x, out, *args, **kwargs):
+
+        self.log_generation_data(list(x))
+
+        performance_of_instance_on_batch: Dict[Tuple[int, int], float] = self.evaluate_performance_of_instance_on_batch(
+            map(lambda arr: self.representation.into_heuristic(arr), x)
+        )
 
         # this output is supposed to be minimized:
         out["F"] = np.zeros((len(x), len(self.training_batches)))
@@ -207,8 +212,6 @@ class KekeProblem(Problem):
             )
             self.log_line(f"PERFORMANCE:{self.generation}:{batch_nr}:\t{performances_on_batch}")
 
-
-# TODO: maybe create independant levelset class?
 
 def evaluate_ai_on_level(
     simulation_data: Tuple[Tuple[int, Heuristic], str, int]
