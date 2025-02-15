@@ -1,5 +1,3 @@
-from Keke_PY.experiments.BayesianOptimizationAlgorithm import BayesianOptimizationAlgorithm
-
 if True:
     """Include Project root as Environment paths:"""
     from os.path import dirname, abspath
@@ -19,6 +17,7 @@ from pymoo.core.algorithm import Algorithm
 from pymoo.optimize import minimize
 
 from Keke_PY.experiments.RandomSamplingAlgorithm import RandomSamplingAlgorithm
+from Keke_PY.experiments.BayesianOptimizationAlgorithm import BayesianOptimizationAlgorithm
 from Keke_PY.experiments.KekeProblem import KekeProblem
 from Keke_PY.heuristic_pymoo_representations.HeuristicTreeRepresentation import HeuristicTreeRepresentation
 from Keke_PY.heuristic_pymoo_representations.TrackedRepresentation import TrackedRepresentation
