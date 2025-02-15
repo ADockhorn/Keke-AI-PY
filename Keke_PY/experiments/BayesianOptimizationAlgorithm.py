@@ -11,8 +11,10 @@ class BayesianOptimizationAlgorithm(LoopwiseAlgorithm):
 
     utility_function: UtilityFunction = UtilityFunction()
     optimizer: Optional[BayesianOptimization] = None
-    def __init__(self, **kwargs):
+    remaining_evals: int
+    def __init__(self, initial_remaining_evals: int, **kwargs):
         super().__init__(**kwargs)
+        self.remaining_evals = initial_remaining_evals
 
     def get_optimizer(self, problem: Problem = None) -> BayesianOptimization:
         if problem is None:
@@ -45,6 +47,9 @@ class BayesianOptimizationAlgorithm(LoopwiseAlgorithm):
         return self
 
     def send(self, _infill):
+        if self.remaining_evals <= 0:
+            raise StopIteration()
+        self.remaining_evals -= 1
         if _infill is not None:
             for individual in _infill:
                 self.register_evaluation(individual.X, float(individual.F))

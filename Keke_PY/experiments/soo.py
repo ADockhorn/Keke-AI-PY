@@ -43,8 +43,8 @@ setups: [(bool, bool, int)] = (
 )
 trees, track, algorithm = setups[int_arguments[0]]
 
-pop_size: int = 5#10
-n_generations: int = 2#20
+pop_size: int = 10
+n_generations: int = 20
 
 
 n_evals: int = pop_size * n_generations
@@ -60,7 +60,7 @@ optimization_algorithm: Algorithm = [
     DE(pop_size=pop_size),
     ES(n_offsprings=pop_size, pop_size=pop_size//2),
     PatternSearch(pop_size=pop_size, eliminate_duplicates=True),
-    BayesianOptimizationAlgorithm()
+    BayesianOptimizationAlgorithm(n_evals)
 ][algorithm]
 
 test_problem = KekeProblem.default_problem(representation, multiprocessing.Pool(20), None)
