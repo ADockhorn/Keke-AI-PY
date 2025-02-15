@@ -43,7 +43,7 @@ class BFS(AIInterface):
             visited.add(state_str)
 
             # Get all possible actions and apply them
-            if len(actions) < max_depth:
+            if max_depth is None or len(actions) < max_depth:
                 for action in [Direction.Up, Direction.Down, Direction.Left, Direction.Right, Direction.Wait]:
                     next_state = advance_game_state(action, current_state.copy())
                     if next_state.unique_str() not in visited:

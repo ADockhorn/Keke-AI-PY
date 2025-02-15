@@ -237,7 +237,10 @@ class GameState:
                 return name_to_character[obj.name + (
                     "_word" if is_word(obj) or is_key_word(obj)
                     else "_obj"
-                )] + str(obj.dir.value)
+                )] + (str(obj.dir.value) if obj not in self.players else '*') #TODO: check, if this search-space-reduction is valid and helps
+                # base performnace with every direction: {-1: 1408.3783783783783, 0: 1497.7727272727273}
+                # base performance with direction of non-player-objects: {-1: 1612.8918918918919, 0: 1683.6363636363635}
+                # base performance without directions: {-1: 1649.4324324324325, 0: 1717.1454545454544}
 
         def unique_position_str(i: int, j: int) -> str:
             return ''.join(map(unique_obj_str, self.object_map[i][j])) + '.'
