@@ -955,15 +955,15 @@ def destroy_objs(dead, game_state: GameState):
     :param dead: List of objects to be removed.
     :param game_state: The current game state.
     """
-    sort_phys = game_state.sort_phys
     deleted_ids: set = set()
     for obj in dead:
         if obj.id in deleted_ids:
             continue
         deleted_ids.add(obj.id)
         # Remove all reference to the object
-        game_state.phys.remove(obj)# = [ x for x in game_state.phys if x != obj ]
-        sort_phys[obj.name].remove(obj)# = [ x for x in sort_phys[obj.name] if x != obj ]
+        if obj in game_state.phys:
+            game_state.phys.remove(obj)# = [ x for x in game_state.phys if x != obj ]
+            game_state.sort_phys[obj.name].remove(obj)# = [ x for x in sort_phys[obj.name] if x != obj ]
         game_state.object_map[obj.y][obj.x].remove(obj)# = [ x for x in game_state.object_map[obj.y][obj.x] if x != obj ]
 
 
