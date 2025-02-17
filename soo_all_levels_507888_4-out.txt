@@ -1,3 +1,0 @@
-pygame 2.2.0 (SDL 2.30.7, Python 3.8.10)
-Hello from the pygame community. https://www.pygame.org/contribute.html
-slurmstepd: error: *** JOB 507893 ON paris3 CANCELLED AT 2025-02-16T21:50:30 ***
