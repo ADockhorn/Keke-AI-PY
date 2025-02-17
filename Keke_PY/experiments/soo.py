@@ -23,6 +23,11 @@ from Keke_PY.heuristic_pymoo_representations.HeuristicTreeRepresentation import 
 from Keke_PY.heuristic_pymoo_representations.TrackedRepresentation import TrackedRepresentation
 from Keke_PY.heuristic_pymoo_representations.WeightedHeuristicSumRepresentation import WeightedHeuristicSumRepresentation
 
+print("testing multiprocessing.Pool(20)")
+print(multiprocessing.Pool(20))
+print("test successfull")
+print("after imports before any code")
+
 int_arguments: List[int] = []
 for argument in sys.argv:
     if argument.isdigit():
@@ -48,10 +53,14 @@ n_generations: int = 20
 
 n_evals: int = pop_size * n_generations
 
+print("before representation")
+
 representation = HeuristicTreeRepresentation(10) if trees else WeightedHeuristicSumRepresentation(0.5)
 if track:
     representation = TrackedRepresentation(representation)
 
+print("after representation")
+print("before algorithm")
 
 optimization_algorithm: Algorithm = [
     RandomSamplingAlgorithm(n_sample_points=n_evals, batch_size=pop_size, **representation.algorithm_arguments()),
@@ -62,7 +71,12 @@ optimization_algorithm: Algorithm = [
     BayesianOptimizationAlgorithm(n_evals)
 ][algorithm]
 
-test_problem = KekeProblem.default_problem(representation, multiprocessing.Pool(20), None)
+print("after algorithm")
+print("before problem")
+
+test_problem = KekeProblem.default_problem(representation, multiprocessing.Pool(19), None)
+
+print("after problem")
 
 def measure_time() -> Iterable[None]:
     start = time.time()
@@ -70,7 +84,7 @@ def measure_time() -> Iterable[None]:
     end = time.time()
     print("The time of execution is:", (end - start), "s")
 
-
+print("after code before main execution")
 if __name__ == '__main__':
 
     for _ in measure_time():

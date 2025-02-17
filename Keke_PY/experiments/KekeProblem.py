@@ -57,7 +57,7 @@ class KekeProblem(Problem):
             xu=problem_data.xu,
             vtype=problem_data.vtype,
         )
-
+        print("KekeProblem initialized")
         self.log_level_data()
 
     @classmethod
@@ -67,18 +67,21 @@ class KekeProblem(Problem):
             executor: Executor = ProcessPoolExecutor(),
             limit_levels: int = None
     ):
+        print("in KekeProblem.default_problem()")
+        print("reading in levels")
         levels: List[str] = [
             *[level["ascii"] for level in
               load_level_set("./json_levels/train_LEVELS.json")["levels"]],
             *[level["ascii"] for level in
               load_level_set("./json_levels/test_LEVELS.json")["levels"]],
         ]
+        print("reading in levels done")
         if limit_levels is not None:
             levels = levels[:limit_levels]
         training_ratio: float = 0.6
         training_levels: List[str] = levels[:floor(training_ratio * len(levels))]
         test_levels: List[str] = levels[floor(training_ratio * len(levels)):]
-
+        print("levels loaded")
         return cls(
             training_batches=[training_levels],
             representation=representation,
