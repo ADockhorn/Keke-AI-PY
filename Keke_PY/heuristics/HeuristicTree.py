@@ -7,7 +7,8 @@ from numpy.random import randn
 from pygame.math import clamp
 
 from Keke_PY.keke_game.keke import GameState
-from Keke_PY.heuristics.HeuristicCombinator import HeuristicCombinator, default_combinators
+from Keke_PY.heuristics.HeuristicCombinator import HeuristicCombinator, default_combinators, \
+    HeuristicCombinatorFromPureCombinator
 from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
 from Keke_PY.heuristics.hand_crafted_heuristics import heuristics
 
@@ -57,9 +58,15 @@ class GenericHeuristicTreeNode(Heuristic, Generic[OpRepr, Child]):
 
 
 
-raw_default_operations: [HeuristicCombinator] = (
-    *default_combinators,
-    *map(HeuristicCombinator.from_parametrised_heuristic, heuristics)
+_raw_default_comb_ops: [HeuristicCombinator] = default_combinators
+_raw_default_leaf_ops: [HeuristicCombinator] = (
+    HeuristicCombinatorFromPureCombinator(lambda x: x, 1, 1), # constant
+    *map(HeuristicCombinator.from_parametrised_heuristic, heuristics), # handcrafted heuristics
+)
+
+_raw_default_operations: [HeuristicCombinator] = (
+    *_raw_default_comb_ops,
+    *_raw_default_leaf_ops
 )
 
 @dataclass
@@ -69,7 +76,7 @@ class DefaultOpRepr(HeuristicCombinator):
 
     @property
     def op(self) -> HeuristicCombinator:
-        return raw_default_operations[self.op_index]
+        return _raw_default_operations[self.op_index]
 
     @property
     def nr_of_parameters(self) -> int:
@@ -83,9 +90,8 @@ class DefaultOpRepr(HeuristicCombinator):
         return self.op.run(state, ctx, *args)
 
 
-default_operations: [DefaultOpRepr] = tuple(DefaultOpRepr(i) for i, _ in enumerate(raw_default_operations))
-default_comb_operations: [DefaultOpRepr] = tuple(DefaultOpRepr(i) for i, _ in enumerate(default_combinators))
-default_leaf_operations: [DefaultOpRepr] = tuple(DefaultOpRepr(len(default_combinators) + i) for i, _ in enumerate(heuristics))
+default_comb_operations: [DefaultOpRepr] = (DefaultOpRepr(i) for i, op in enumerate(_raw_default_operations) if op in _raw_default_comb_ops)
+default_leaf_operations: [DefaultOpRepr] = (DefaultOpRepr(i) for i, op in enumerate(_raw_default_operations) if op in _raw_default_leaf_ops)
 
 
 

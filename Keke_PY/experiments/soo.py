@@ -38,9 +38,7 @@ setups: [(bool, bool, int, bool)] = (
     (False, False, 2, False),
     (False, False, 3, False),
     (False, False, 4, False),
-    # ! Working on bayesian !
     (False, False, 5, False),
-    # ! Trees have some unresolved TODO@ask's !
     (True, False, 0, False),
     (True, True, 1, False),
 )

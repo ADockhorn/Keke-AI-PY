@@ -63,8 +63,7 @@ def play_game(initial_game_state: GameState, action_source: Iterable[Direction])
         game_state = advance_game_state(action, game_state)
         update_display(screen, game_state)
 
-        # TODO: remove these lines:
-        if True:
+        if False: # For debugging keke.py etc.:
             for row in game_state.object_map:
                 print(row)
 

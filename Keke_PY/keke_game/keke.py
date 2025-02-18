@@ -238,7 +238,7 @@ class GameState:
                     "_word" if is_word(obj) or is_key_word(obj)
                     else "_obj"
                 )] + (str(obj.dir.value) if obj not in self.players else '*') #TODO: check, if this search-space-reduction is valid and helps
-                # base performnace with every direction: {-1: 1408.3783783783783, 0: 1497.7727272727273}
+                # base performance with every direction: {-1: 1408.3783783783783, 0: 1497.7727272727273}
                 # base performance with direction of non-player-objects: {-1: 1612.8918918918919, 0: 1683.6363636363635}
                 # base performance without directions: {-1: 1649.4324324324325, 0: 1717.1454545454544}
 

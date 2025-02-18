@@ -95,9 +95,7 @@ default_combinators: List[HeuristicCombinator] = [
     HeuristicCombinator.from_pure_combinator(float.__mul__),
     HeuristicCombinator.from_pure_combinator(float.__sub__),
     HeuristicCombinator.from_pure_combinator(math.sin),
-    HeuristicCombinator.from_pure_combinator(math.tan), # TODO@ask: should we include this despite the singularities? => No
-    HeuristicCombinatorFromPureCombinator(lambda x: x, 1, 1), # TODO@ask: can this be here, even though, it is a leaf operation? => to leaf nodes
-    HeuristicCombinator.from_pure_combinator(lambda x: max(x, 0)), # TODO@ask: I would like to include this (ReLU) => Yes
-    HeuristicCombinator.from_pure_combinator(math.tanh), # TODO@ask: I would like to include this => Yess
-    # TODO: negation
+    HeuristicCombinator.from_pure_combinator(lambda x: max(x, 0)),
+    HeuristicCombinator.from_pure_combinator(math.tanh),
+    HeuristicCombinator.from_pure_combinator(lambda x: -x)
 ]
