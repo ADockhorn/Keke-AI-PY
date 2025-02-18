@@ -37,14 +37,28 @@ setups: [(bool, bool, int, bool)] = (
     (False, False, 2, False),
     (False, False, 3, False),
     (False, False, 4, False),
+
     (False, False, 5, False),
+
     (True, False, 0, False),
     (True, True, 1, False),
+
+
+    (False, False, 0, True),
+    (False, True, 1, True),
+    (False, False, 2, True),
+    (False, False, 3, True),
+    (False, False, 4, True),
+
+    (False, False, 5, True),
+
+    (True, False, 0, True),
+    (True, True, 1, True),
 )
 trees, track, algorithm, use_astar = setups[int_arguments[0]]
 
-pop_size: int = 10
-n_generations: int = 20
+pop_size: int = 3#10
+n_generations: int = 3#20
 
 
 n_evals: int = pop_size * n_generations
@@ -66,7 +80,7 @@ optimization_algorithm: Algorithm = [
 ][algorithm]
 
 
-test_problem = KekeProblem.default_problem(representation, multiprocessing.Pool(19), None, agent_factory)
+test_problem = KekeProblem.default_problem(representation, multiprocessing.Pool(20), None, agent_factory)
 
 
 def measure_time() -> Iterable[None]:
