@@ -961,9 +961,17 @@ def destroy_objs(dead, game_state: GameState):
             continue
         deleted_ids.add(obj.id)
         # Remove all reference to the object
-        if obj in game_state.phys:
-            game_state.phys.remove(obj)# = [ x for x in game_state.phys if x != obj ]
-            game_state.sort_phys[obj.name].remove(obj)# = [ x for x in sort_phys[obj.name] if x != obj ]
+        if obj not in game_state.object_map[obj.y][obj.x]:
+            # TODO: this shouldn't happen, since non-existing objects can't die.
+            #           find out, how to reproduce this ghost deletion, and why it is happening
+            print("GHOST DELETION OF:", obj)
+            print("GHOST DELETION: CURRENTLY DELETING:", *dead)
+            print("GHOST DELETION: UNIQUE STR: " + game_state.unique_str().replace('\n', '\nGHOST DELETION: UNIQUE STR: '))
+            for row in game_state.object_map:
+                print("GHOST DELETION: OBJECT MAP ROW:", row)
+            continue
+        game_state.phys.remove(obj)# = [ x for x in game_state.phys if x != obj ]
+        game_state.sort_phys[obj.name].remove(obj)# = [ x for x in sort_phys[obj.name] if x != obj ]
         game_state.object_map[obj.y][obj.x].remove(obj)# = [ x for x in game_state.object_map[obj.y][obj.x] if x != obj ]
 
 
