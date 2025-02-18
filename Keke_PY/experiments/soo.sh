@@ -8,8 +8,8 @@
 #SBATCH --array=0-15                   # Es werden 6 Tasks mit den IDs von 0-5 gestartet
 #SBATCH --cpus-per-task=20
 #SBATCH --mem-per-cpu=4G
-#SBATCH --time=20:00:00
-#SBATCH --output=soo_all_levels_%A_%a-out.txt   # Logdatei für den merged STDOUT/STDERR output (%A wird durch slurm Job-ID ersetzt und %a durch den Array Index)
+#SBATCH --time=24:00:00
+#SBATCH --output=soo_test_full_run_all_algs_%A_%a-out.txt   # Logdatei für den merged STDOUT/STDERR output (%A wird durch slurm Job-ID ersetzt und %a durch den Array Index)
 
 
 # setup conda, and a conda-environment like environment.txt :
