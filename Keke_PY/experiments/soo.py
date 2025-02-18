@@ -1,6 +1,3 @@
-from Keke_PY.search_agents.AStar import AStar
-from Keke_PY.search_agents.HeuristicGuidedSearch import HeuristicGuidedSearch
-
 if True:
     """Include Project root as Environment paths:"""
     from os.path import dirname, abspath
@@ -19,6 +16,8 @@ from pymoo.algorithms.soo.nonconvex.pattern import PatternSearch
 from pymoo.core.algorithm import Algorithm
 from pymoo.optimize import minimize
 
+from Keke_PY.search_agents.AStar import AStar
+from Keke_PY.search_agents.HeuristicGuidedSearch import HeuristicGuidedSearch
 from Keke_PY.experiments.RandomSamplingAlgorithm import RandomSamplingAlgorithm
 from Keke_PY.experiments.BayesianOptimizationAlgorithm import BayesianOptimizationAlgorithm
 from Keke_PY.experiments.KekeProblem import KekeProblem
