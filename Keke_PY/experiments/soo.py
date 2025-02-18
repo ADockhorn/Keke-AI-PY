@@ -36,7 +36,7 @@ setups: [(bool, bool, int, bool)] = (
     (False, True, 1, False),
     #(False, False, 2, False),
     #(False, False, 3, False),
-    (False, False, 4, False),
+    #(False, False, 4, False),
 
     (False, False, 5, False),
 
@@ -48,7 +48,7 @@ setups: [(bool, bool, int, bool)] = (
     (False, True, 1, True),
     #(False, False, 2, True),
     #(False, False, 3, True),
-    (False, False, 4, True),
+    #(False, False, 4, True),
 
     (False, False, 5, True),
 
