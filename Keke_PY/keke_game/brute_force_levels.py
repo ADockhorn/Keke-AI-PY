@@ -3,7 +3,7 @@ import time
 from concurrent.futures import Executor
 from typing import Tuple, Union, List, Dict, Iterable
 
-from Keke_PY.keke_game.baba import make_level, parse_map, GameState
+from Keke_PY.keke_game.keke import make_level, parse_map, GameState
 from Keke_PY.keke_game.gui import play_level, inputs_from_keyboard, yield_solution_delayed
 from Keke_PY.keke_game.simulation import load_level_set
 from Keke_PY.search_agents.BFS import BFS

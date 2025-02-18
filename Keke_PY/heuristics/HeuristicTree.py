@@ -6,7 +6,7 @@ from typing import List, TypeVar, Generic, Union, Iterator, Tuple
 from numpy.random import randn
 from pygame.math import clamp
 
-from Keke_PY.keke_game.baba import GameState
+from Keke_PY.keke_game.keke import GameState
 from Keke_PY.heuristics.HeuristicCombinator import HeuristicCombinator, default_combinators
 from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
 from Keke_PY.heuristics.hand_crafted_heuristics import heuristics

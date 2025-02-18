@@ -1,7 +1,7 @@
 import heapq
 
 from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
-from Keke_PY.keke_game.baba import GameState, Direction, check_win, advance_game_state
+from Keke_PY.keke_game.keke import GameState, Direction, check_win, advance_game_state
 from Keke_PY.search_agents.ai_interface import AIInterface, range_or_infinite_loop, AgentFromPolicy
 from typing import List, Tuple, Union
 

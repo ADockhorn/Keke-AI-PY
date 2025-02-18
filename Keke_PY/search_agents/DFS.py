@@ -1,6 +1,6 @@
 
 from Keke_PY.search_agents.ai_interface import AIInterface, range_or_infinite_loop
-from Keke_PY.keke_game.baba import GameState, check_win, Direction
+from Keke_PY.keke_game.keke import GameState, check_win, Direction
 from Keke_PY.keke_game.simulation import advance_game_state
 from typing import List, Tuple, Union
 

@@ -7,9 +7,8 @@ from typing import List, Tuple, Dict, Union
 import numpy as np
 from pymoo.core.problem import Problem
 
-from Keke_PY.keke_game.baba import GameState, make_level, parse_map
+from Keke_PY.keke_game.keke import GameState, make_level, parse_map
 from Keke_PY.heuristic_pymoo_representations.HeuristicRepresentation import HeuristicRepresentation
-from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
 from Keke_PY.keke_game.simulation import load_level_set
 from Keke_PY.search_agents.HeuristicGuidedSearch import HeuristicGuidedSearch
 from Keke_PY.search_agents.ai_interface import AgentFromPolicy, AIInterface

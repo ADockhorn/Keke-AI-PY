@@ -5,7 +5,7 @@ from typing import Tuple, Union, Iterable, List, Optional
 
 from Keke_PY.search_agents.AStar import AStar
 from Keke_PY.heuristics.SimpleHeuristic import SimpleHeuristic
-from Keke_PY.keke_game.baba import GameState, Direction, imgHash, advance_game_state, parse_map, make_level
+from Keke_PY.keke_game.keke import GameState, Direction, imgHash, advance_game_state, parse_map, make_level
 
 
 from pygame.locals import *

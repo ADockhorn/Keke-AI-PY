@@ -3,7 +3,7 @@
 # Original Code by Milk
 # Translated to Python by Descar
 
-from Keke_PY.keke_game.baba import *
+from Keke_PY.keke_game.keke import *
 import json
 
 

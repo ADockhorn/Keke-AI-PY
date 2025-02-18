@@ -1,5 +1,5 @@
 from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
-from Keke_PY.keke_game.baba import GameState
+from Keke_PY.keke_game.keke import GameState
 
 
 class SimpleHeuristic(Heuristic):
