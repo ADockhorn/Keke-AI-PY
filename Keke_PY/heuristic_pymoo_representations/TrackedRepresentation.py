@@ -182,3 +182,7 @@ class TrackedRepresentation(HeuristicRepresentation):
             inner_other = None if other is None else inner_population(other)
             self._inner_duplicate_elimination._do(inner_pop, inner_other, is_duplicate)
             return is_duplicate
+
+
+    def __str__(self):
+        return f"({HeuristicRepresentation.__str__(self)} of {str(self._inner_repr)})"
