@@ -5,7 +5,7 @@
 #SBATCH --mail-type=ALL               # Eine Mail wird bei Job-Start/Ende versendet
 #SBATCH --partition=cpu_normal_stud
 
-#SBATCH --array=0-15                   # Es werden 6 Tasks mit den IDs von 0-5 gestartet
+#SBATCH --array=0-11                   # Es werden 6 Tasks mit den IDs von 0-5 gestartet
 #SBATCH --cpus-per-task=20
 #SBATCH --mem-per-cpu=4G
 #SBATCH --time=24:00:00

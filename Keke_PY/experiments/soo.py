@@ -34,8 +34,8 @@ for argument in sys.argv:
 setups: [(bool, bool, int, bool)] = (
     (False, False, 0, False),
     (False, True, 1, False),
-    (False, False, 2, False),
-    (False, False, 3, False),
+    #(False, False, 2, False),
+    #(False, False, 3, False),
     (False, False, 4, False),
 
     (False, False, 5, False),
@@ -46,8 +46,8 @@ setups: [(bool, bool, int, bool)] = (
 
     (False, False, 0, True),
     (False, True, 1, True),
-    (False, False, 2, True),
-    (False, False, 3, True),
+    #(False, False, 2, True),
+    #(False, False, 3, True),
     (False, False, 4, True),
 
     (False, False, 5, True),
@@ -57,8 +57,8 @@ setups: [(bool, bool, int, bool)] = (
 )
 trees, track, algorithm, use_astar = setups[int_arguments[0]]
 
-pop_size: int = 3#10
-n_generations: int = 3#20
+pop_size: int = 10
+n_generations: int = 20
 
 
 n_evals: int = pop_size * n_generations
