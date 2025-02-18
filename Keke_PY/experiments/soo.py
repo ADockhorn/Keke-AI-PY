@@ -1,3 +1,6 @@
+from Keke_PY.search_agents.AStar import AStar
+from Keke_PY.search_agents.HeuristicGuidedSearch import HeuristicGuidedSearch
+
 if True:
     """Include Project root as Environment paths:"""
     from os.path import dirname, abspath
@@ -29,19 +32,19 @@ for argument in sys.argv:
     if argument.isdigit():
         int_arguments.append(int(argument))
 
-setups: [(bool, bool, int)] = (
-    (False, False, 0),
-    (False, True, 1),
-    (False, False, 2),
-    (False, False, 3),
-    (False, False, 4),
+setups: [(bool, bool, int, bool)] = (
+    (False, False, 0, False),
+    (False, True, 1, False),
+    (False, False, 2, False),
+    (False, False, 3, False),
+    (False, False, 4, False),
     # ! Working on bayesian !
-    (False, False, 5),
+    (False, False, 5, False),
     # ! Trees have some unresolved TODO@ask's !
-    (True, False, 0),
-    (True, True, 1),
+    (True, False, 0, False),
+    (True, True, 1, False),
 )
-trees, track, algorithm = setups[int_arguments[0]]
+trees, track, algorithm, use_astar = setups[int_arguments[0]]
 
 pop_size: int = 10
 n_generations: int = 20
@@ -54,6 +57,7 @@ representation = HeuristicTreeRepresentation(10) if trees else WeightedHeuristic
 if track:
     representation = TrackedRepresentation(representation)
 
+agent_factory = AStar.AStarFactory() if use_astar else HeuristicGuidedSearch.GuidedSearchFactory()
 
 optimization_algorithm: Algorithm = [
     RandomSamplingAlgorithm(n_sample_points=n_evals, batch_size=pop_size, **representation.algorithm_arguments()),
@@ -65,7 +69,7 @@ optimization_algorithm: Algorithm = [
 ][algorithm]
 
 
-test_problem = KekeProblem.default_problem(representation, multiprocessing.Pool(19), None)
+test_problem = KekeProblem.default_problem(representation, multiprocessing.Pool(19), None, agent_factory)
 
 
 def measure_time() -> Iterable[None]:
@@ -77,8 +81,9 @@ def measure_time() -> Iterable[None]:
 if __name__ == '__main__':
 
     for _ in measure_time():
+        info: List = [optimization_algorithm, representation, agent_factory]
 
-        print(f"testing {optimization_algorithm} ...")
+        print("testing:", *info)
 
 
 
@@ -90,4 +95,4 @@ if __name__ == '__main__':
         )
 
 
-        print(f"testing {optimization_algorithm} done")
+        print("testing done:", *info)

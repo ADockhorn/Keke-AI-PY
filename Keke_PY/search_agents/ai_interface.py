@@ -4,6 +4,7 @@ from typing import List, Tuple, Union, Iterable
 
 from tqdm import trange
 
+from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
 from Keke_PY.keke_game.baba import GameState
 
 
@@ -30,6 +31,10 @@ class AIInterface(ABC):
         """
         pass
 
+class AgentFromPolicy(ABC):
+    @abstractmethod
+    def make_agent_from_policy(self, policy: Heuristic) -> AIInterface:
+        pass
 
 def range_or_infinite_loop(end: Union[int, None], print_progress_bar: bool) -> Iterable:
 

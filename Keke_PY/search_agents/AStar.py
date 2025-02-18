@@ -3,7 +3,7 @@ import heapq
 from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
 from Keke_PY.heuristics.SimpleHeuristic import SimpleHeuristic
 from Keke_PY.keke_game.baba import GameState, Direction, check_win, advance_game_state
-from Keke_PY.search_agents.ai_interface import AIInterface, range_or_infinite_loop
+from Keke_PY.search_agents.ai_interface import AIInterface, range_or_infinite_loop, AgentFromPolicy
 from typing import List, Tuple, Union
 
 
@@ -78,6 +78,10 @@ class AStar(AIInterface):
                     heapq.heappush(pq, (new_f, new_g, index, next_state, actions + [action.name]))
 
         return None, max_forward_model_calls  # Return empty if no solution is found
+
+    class AStarFactory(AgentFromPolicy):
+        def make_agent_from_policy(self, policy: Heuristic) -> AIInterface:
+            return AStar(policy)
 
 
 if __name__ == '__main__':

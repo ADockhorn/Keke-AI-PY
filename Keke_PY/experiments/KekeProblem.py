@@ -12,6 +12,7 @@ from Keke_PY.heuristic_pymoo_representations.HeuristicRepresentation import Heur
 from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
 from Keke_PY.keke_game.simulation import load_level_set
 from Keke_PY.search_agents.HeuristicGuidedSearch import HeuristicGuidedSearch
+from Keke_PY.search_agents.ai_interface import AgentFromPolicy, AIInterface
 
 
 class KekeProblem(Problem):
@@ -25,6 +26,7 @@ class KekeProblem(Problem):
     executor: Executor
 
     representation: HeuristicRepresentation
+    agent_factory: AgentFromPolicy
 
     generation: int = 0
 
@@ -35,7 +37,8 @@ class KekeProblem(Problem):
             representation: HeuristicRepresentation,
             max_node_expansions: int = 2000,
             executor: Executor = ProcessPoolExecutor(),
-            test_batch: List[str] = ()
+            test_batch: List[str] = (),
+            agent_factory: AgentFromPolicy = HeuristicGuidedSearch.GuidedSearchFactory(),
     ):
         assert all(len(batch) > 0 for batch in training_batches)
         self.training_batches = training_batches
@@ -47,6 +50,7 @@ class KekeProblem(Problem):
         self._level_to_id_map: Dict[str, int] = dict(map(lambda t: (t[1], t[0]), enumerate(self.all_levels)))
         self.representation = representation
         self.executor = executor
+        self.agent_factory = agent_factory
 
         problem_data: Problem = representation.get_problem_data()
         super().__init__(
@@ -64,7 +68,8 @@ class KekeProblem(Problem):
             cls,
             representation: HeuristicRepresentation,
             executor: Executor = ProcessPoolExecutor(),
-            limit_levels: int = None
+            limit_levels: int = None,
+            agent_factory: AgentFromPolicy = HeuristicGuidedSearch.GuidedSearchFactory(),
     ):
         levels: List[str] = [
             *[level["ascii"] for level in
@@ -82,11 +87,12 @@ class KekeProblem(Problem):
             representation=representation,
             max_node_expansions=2000,
             executor=executor,
-            test_batch=test_levels
+            test_batch=test_levels,
+            agent_factory=agent_factory
         )
 
-    def evaluate_performance_of_instance_on_batch(self, instances: [Heuristic]) -> Dict[Tuple[int, int], float]:
-        simulation_data_list: List[Tuple[Tuple[int, Heuristic], str, int]] = list(itertools.product(
+    def evaluate_performance_of_instance_on_batch(self, instances: [AIInterface]) -> Dict[Tuple[int, int], float]:
+        simulation_data_list: List[Tuple[Tuple[int, AIInterface], str, int]] = list(itertools.product(
             enumerate(instances),
             self.all_levels,
             [self.max_node_expansions]
@@ -107,7 +113,7 @@ class KekeProblem(Problem):
         self.log_generation_data(list(x))
 
         performance_of_instance_on_batch: Dict[Tuple[int, int], float] = self.evaluate_performance_of_instance_on_batch(
-            map(lambda arr: self.representation.into_heuristic(arr), x)
+            map(lambda arr: self.agent_factory.make_agent_from_policy(self.representation.into_heuristic(arr)), x)
         )
 
         # this output is supposed to be minimized:
@@ -212,14 +218,13 @@ class KekeProblem(Problem):
 
 
 def evaluate_ai_on_level(
-    simulation_data: Tuple[Tuple[int, Heuristic], str, int]
+    simulation_data: Tuple[Tuple[int, AIInterface], str, int]
 ) -> Tuple[Tuple[int, str], Tuple[Union[List[str], None], int]]:
     ai_index: int = simulation_data[0][0]
-    heuristic: Heuristic = simulation_data[0][1]
+    agent: AIInterface = simulation_data[0][1]
     level: str = simulation_data[1]
     max_forward_model_calls: int = simulation_data[2]
     start_state: GameState = make_level(parse_map(level))
-    agent: HeuristicGuidedSearch = HeuristicGuidedSearch(heuristic)
     solution: Tuple[Union[List[str], None], int] = agent.search(
         start_state,
         max_forward_model_calls,
