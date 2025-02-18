@@ -90,8 +90,8 @@ class DefaultOpRepr(HeuristicCombinator):
         return self.op.run(state, ctx, *args)
 
 
-default_comb_operations: [DefaultOpRepr] = (DefaultOpRepr(i) for i, op in enumerate(_raw_default_operations) if op in _raw_default_comb_ops)
-default_leaf_operations: [DefaultOpRepr] = (DefaultOpRepr(i) for i, op in enumerate(_raw_default_operations) if op in _raw_default_leaf_ops)
+default_comb_operations: [DefaultOpRepr] = tuple(DefaultOpRepr(i) for i, op in enumerate(_raw_default_operations) if op in _raw_default_comb_ops)
+default_leaf_operations: [DefaultOpRepr] = tuple(DefaultOpRepr(i) for i, op in enumerate(_raw_default_operations) if op in _raw_default_leaf_ops)
 
 
 
