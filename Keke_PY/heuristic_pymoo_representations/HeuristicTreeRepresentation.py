@@ -12,7 +12,6 @@ class HeuristicTreeRepresentation(SingleObjRepresentation[HeuristicTree]):
     def __init__(self, max_depth: int = 10):
         self.max_depth = max_depth
         self.float_noise_factor = Real(0.1, bounds=(0.1, 1.0), strict=(0.0, 10.0))
-        #self.float_noise_factor = self.float_noise_factor.get()
 
 
 
@@ -33,7 +32,6 @@ class HeuristicTreeRepresentation(SingleObjRepresentation[HeuristicTree]):
         return create_random_tree(self.max_depth)
 
     def _mutate(self, x: HeuristicTree) -> HeuristicTree:
-        print(self.float_noise_factor.get())
         return mutation(x, self.max_depth, float(self.float_noise_factor.get()))
 
     def _crossover(self, x: HeuristicTree, y: HeuristicTree) -> HeuristicTree:
