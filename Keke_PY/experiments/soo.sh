@@ -1,15 +1,15 @@
 #!/bin/bash
 
-#SBATCH --job-name=KekeSingleObjectiveOptimizationTest          # Name unter dem der Job in der Job-History gespeichert wird
+#SBATCH --job-name=KekeSingleObjectiveOptimizationTreesTest
 #SBATCH --mail-user=rongero@tnt.uni-hannover.de
-#SBATCH --mail-type=ALL               # Eine Mail wird bei Job-Start/Ende versendet
+#SBATCH --mail-type=ALL
 #SBATCH --partition=cpu_normal_stud
 
-#SBATCH --array=0-1                   # Es werden 6 Tasks mit den IDs von 0-5 gestartet
+#SBATCH --array=0-15
 #SBATCH --cpus-per-task=20
 #SBATCH --mem-per-cpu=4G
-#SBATCH --time=17:00:00
-#SBATCH --output=soo_test_full_run_all_algs_%A_%a-out.txt   # Logdatei für den merged STDOUT/STDERR output (%A wird durch slurm Job-ID ersetzt und %a durch den Array Index)
+#SBATCH --time=24:00:00
+#SBATCH --output=soo_test_short_run_all_algs_and_trees_%A_%a-out.txt   # Logdatei für den merged STDOUT/STDERR output (%A wird durch slurm Job-ID ersetzt und %a durch den Array Index)
 
 
 # setup conda, and a conda-environment like environment.txt :
