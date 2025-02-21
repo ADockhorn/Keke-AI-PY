@@ -57,8 +57,8 @@ setups: [(bool, bool, int, bool)] = (
 )
 trees, track, algorithm, use_astar = setups[int_arguments[0]]
 
-pop_size: int = 3#10
-n_generations: int = 3#30
+pop_size: int = 10
+n_generations: int = 30
 
 
 n_evals: int = pop_size * n_generations
