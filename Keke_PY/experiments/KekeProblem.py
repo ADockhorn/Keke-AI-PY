@@ -1,8 +1,9 @@
 import itertools
 from concurrent.futures import Executor, ProcessPoolExecutor
+from copy import deepcopy
 from itertools import chain
 from math import floor
-from typing import List, Tuple, Dict, Union
+from typing import List, Tuple, Dict, Union, Optional
 
 import numpy as np
 from pymoo.core.problem import Problem
@@ -28,6 +29,9 @@ class KekeProblem(Problem):
     agent_factory: AgentFromPolicy
 
     generation: int = 0
+
+    past_instances_by_gen_and_index: Dict[Tuple[int, int], np.ndarray] = {}
+    past_evaluations_by_gen_index_and_level_id: Dict[Tuple[int, int, int], Tuple[Union[List[str], None], int]] = {}
 
 
     def __init__(
@@ -99,6 +103,7 @@ class KekeProblem(Problem):
         simulation_results: Dict[Tuple[int, str], Tuple[Union[List[str], None], int]] = dict(list(self.executor.map(
             evaluate_ai_on_level, simulation_data_list
         )))
+        self.past_evaluations_by_gen_index_and_level_id.update(((self.generation, key[0], self._level_to_id_map[key[1]]), result) for key, result in simulation_results.items())
         self.log_simulation_data(simulation_results)
 
         performance_of_instance_on_batch: Dict[Tuple[int, int], float] = self.calc_performance_of_instance_on_batch(simulation_results)
@@ -110,6 +115,7 @@ class KekeProblem(Problem):
     def _evaluate(self, x, out, *args, **kwargs):
 
         self.log_generation_data(list(x))
+        self.past_instances_by_gen_and_index.update(((self.generation, index), deepcopy(instance)) for index, instance in enumerate(x))
 
         performance_of_instance_on_batch: Dict[Tuple[int, int], float] = self.evaluate_performance_of_instance_on_batch(
             map(lambda arr: self.agent_factory.make_agent_from_policy(self.representation.into_heuristic(arr)), x)
@@ -194,7 +200,43 @@ class KekeProblem(Problem):
             batch: List[str] = test_batch if batch_id == -1 else training_batches[batch_id]
             assert index == len(batch)
             batch.append(all_levels[level_id])
-        return cls(training_batches, representation, max_node_expansions, executor, test_batch)
+        res: KekeProblem = cls(training_batches, representation, max_node_expansions, executor, test_batch)
+        for line in lines:
+            if line.startswith("EVAL_INSTANCE:"):
+                _, generation, index, serialized_instance = line.split(':')
+                cls.update = res.past_instances_by_gen_and_index.update(
+                    [((int(generation), int(index)), representation.deserialize(serialized_instance))])
+                res.generation = max(res.generation, int(generation) + 1)
+            if line.startswith("RUN_RESULT:"):
+                _, generation, index, old_level_id, *result = line.split(':')
+                new_level_id: int = res._level_to_id_map[all_levels[int(old_level_id)]]
+                solution: Union[List[str], None]
+                node_expansions: int
+                assert result is not None, f"Unexpected value in : {line}"
+                if len(result) == 1:
+                    # old style logging
+                    result: str = result[0].strip()
+                    solution = ["solution was not logged"]
+                    if result == "----":
+                        node_expansions = max_node_expansions
+                    else:
+                        assert result.isdigit(), f"Unexpected value in '{result}'"
+                        node_expansions = int(result)
+                else:
+                    assert len(result) == 2, f"Unexpected value in : {line}"
+                    str_node_expansions, str_solution = result
+                    assert str_node_expansions.isdigit(), f"Unexpected value in : {line}"
+                    node_expansions = int(str_node_expansions)
+                    if str_solution == "":
+                        solution = None
+                    else:
+                        solution = list(iter(str_solution))
+                result: Tuple[Union[List[str], None], int] = (solution, node_expansions)
+                res.past_evaluations_by_gen_index_and_level_id.update([(
+                    (int(generation), int(index), new_level_id),
+                    result
+                )])
+        return res
 
     def log_generation_data(self, x: list):
         for index, instance in enumerate(x):
