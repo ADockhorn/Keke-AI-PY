@@ -94,7 +94,7 @@ class KekeProblem(Problem):
             agent_factory=agent_factory
         )
 
-    def evaluate_performance_of_instance_on_batch(self, instances: [AIInterface]) -> Dict[Tuple[int, int], float]:
+    def run_as_next_generation(self, instances: [AIInterface]):
         simulation_data_list: List[Tuple[Tuple[int, AIInterface], str, int]] = list(itertools.product(
             enumerate(instances),
             self.all_levels,
@@ -106,20 +106,18 @@ class KekeProblem(Problem):
         self.past_evaluations_by_gen_index_and_level_id.update(((self.generation, key[0], self._level_to_id_map[key[1]]), result) for key, result in simulation_results.items())
         self.log_simulation_data(simulation_results)
 
-        performance_of_instance_on_batch: Dict[Tuple[int, int], float] = self.calc_performance_of_instance_on_batch(simulation_results)
-
-        self.log_performances(performance_of_instance_on_batch)
-
-        return performance_of_instance_on_batch
+        self.generation += 1
 
     def _evaluate(self, x, out, *args, **kwargs):
 
         self.log_generation_data(list(x))
         self.past_instances_by_gen_and_index.update(((self.generation, index), deepcopy(instance)) for index, instance in enumerate(x))
 
-        performance_of_instance_on_batch: Dict[Tuple[int, int], float] = self.evaluate_performance_of_instance_on_batch(
+        self.run_as_next_generation(
             map(lambda arr: self.agent_factory.make_agent_from_policy(self.representation.into_heuristic(arr)), x)
         )
+
+        performance_of_instance_on_batch: Dict[Tuple[int, int], float] = self.get_performance_of_instance_on_batch()
 
         # this output is supposed to be minimized:
         out["F"] = np.zeros((len(x), len(self.training_batches)))
@@ -131,25 +129,39 @@ class KekeProblem(Problem):
         # There are no constrains:
         out["G"] = np.zeros((len(x), 0))
 
-        self.generation += 1
 
-    def calc_performance_of_instance_on_batch(
+    def get_performance_of_instance_on_batch(
             self,
-            simulation_results: Dict[Tuple[int, str], Tuple[Union[List[str], None], int]],
-            nr_of_instances: int = -1
+            generation: int = -1
     ) -> Dict[Tuple[int, int], float]:
-        if nr_of_instances == -1:
-            nr_of_instances = max(key[0] for key in simulation_results.keys()) + 1
+        if generation == -1:
+            generation = self.generation - 1
+
+        nr_of_instances: int = max(
+            key[1]
+            for key in self.past_evaluations_by_gen_index_and_level_id.keys()
+            if key[0] == generation
+        ) + 1
 
         performance_of_instance_on_batch: Dict[Tuple[int, int], float] = {}
 
         for batch_nr, batch in itertools.chain([(-1, self.test_batch)], enumerate(self.training_batches)):
             nr_of_levels: int = len(batch)
             for agent_nr in range(nr_of_instances):
-                total_expansions: int = sum(simulation_results[(agent_nr, level)][1] for level in batch)
+                total_expansions: int = sum(
+                    self.past_evaluations_by_gen_index_and_level_id[
+                        (generation, agent_nr, self._level_to_id_map[level])
+                    ][1]
+                    for level in batch
+                )
                 average_expansions: float = total_expansions / nr_of_levels
                 average_leftover_expansions: float = self.max_node_expansions - average_expansions
-                nr_of_solved_levels: int = sum(simulation_results[(agent_nr, level)][0] is not None for level in batch)
+                nr_of_solved_levels: int = sum(
+                    self.past_evaluations_by_gen_index_and_level_id[
+                        (generation, agent_nr, self._level_to_id_map[level])
+                    ][0] is not None
+                    for level in batch
+                )
                 ration_of_solved_levels: float = nr_of_solved_levels / nr_of_levels
                 solved_level_bonus: float = ration_of_solved_levels * self.max_node_expansions
                 performance_of_instance_on_batch[(agent_nr, batch_nr)] = average_leftover_expansions + solved_level_bonus
@@ -216,15 +228,18 @@ class KekeProblem(Problem):
                 if len(result) == 1:
                     # old style logging
                     result: str = result[0].strip()
-                    solution = ["solution was not logged"]
                     if result == "----":
                         node_expansions = max_node_expansions
+                        solution = None
                     else:
                         assert result.isdigit(), f"Unexpected value in '{result}'"
                         node_expansions = int(result)
+                        solution = ["solution was not logged"]
                 else:
+                    # new style logging
                     assert len(result) == 2, f"Unexpected value in : {line}"
                     str_node_expansions, str_solution = result
+                    str_solution = str_solution.strip()
                     assert str_node_expansions.isdigit(), f"Unexpected value in : {line}"
                     node_expansions = int(str_node_expansions)
                     if str_solution == "":

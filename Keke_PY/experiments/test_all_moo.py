@@ -12,19 +12,19 @@ pop_size = 3# 10
 n_generations = 3# 20
 #levels_per_objective = 25
 optimization_algorithm = NSGA2(pop_size=pop_size)
-#problem = MultiObjectiveKeke(level_set=level_set, levels_per_objective=levels_per_objective)
+#problem = MultiObjectiveKeke(results_dict=results_dict, levels_per_objective=levels_per_objective)
 
 #pop_size = 10
 #n_generations = 20
 #levels_per_objective = 10
 #optimization_algorithm = NSGA2(pop_size=pop_size)
-#problem = MultiObjectiveKeke(level_set=level_set, levels_per_objective=levels_per_objective)
+#problem = MultiObjectiveKeke(results_dict=results_dict, levels_per_objective=levels_per_objective)
 
 #pop_size = 10
 #n_generations = 20
 #levels_per_objective = 5
 #optimization_algorithm = NSGA2(pop_size=pop_size)
-#problem = MultiObjectiveKeke(level_set=level_set, levels_per_objective=levels_per_objective)
+#problem = MultiObjectiveKeke(results_dict=results_dict, levels_per_objective=levels_per_objective)
 
 
 # NSGA 3 (each setup is overwriting population size and generations to ensure the same number of evaluations)
