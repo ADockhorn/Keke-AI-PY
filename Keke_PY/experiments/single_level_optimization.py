@@ -109,5 +109,5 @@ if __name__ == '__main__':
         test_batch=levels,
         agent_factory=agent_factory
     )
-
-    test_problem.register_and_run_next_generation([training_problem.past_instances_by_gen_and_index[best_individual_index]])
+    for _ in measure_time():
+        test_problem.register_and_run_next_generation([training_problem.past_instances_by_gen_and_index[best_individual_index]])

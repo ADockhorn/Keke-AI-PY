@@ -5,7 +5,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --partition=cpu_short_stud
 
-#SBATCH --array=0-1   #184
+#SBATCH --array=0-183
 #SBATCH --cpus-per-task=10
 #SBATCH --mem-per-cpu=4G
 #SBATCH --time=01:00:00
