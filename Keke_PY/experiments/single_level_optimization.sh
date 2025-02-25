@@ -5,10 +5,10 @@
 #SBATCH --mail-type=ALL
 #SBATCH --partition=cpu_short_stud
 
-#SBATCH --array=0-183
+#SBATCH --array=183-183
 #SBATCH --cpus-per-task=10
 #SBATCH --mem-per-cpu=4G
-#SBATCH --time=01:00:00
+#SBATCH --time=03:00:00
 #SBATCH --output=keke_single_level_training_%A_%a-out.txt   # Logdatei für den merged STDOUT/STDERR output (%A wird durch slurm Job-ID ersetzt und %a durch den Array Index)
 
 
