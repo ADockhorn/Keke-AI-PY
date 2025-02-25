@@ -57,8 +57,8 @@ setups: [(bool, bool, int, bool)] = (
 )
 trees, track, algorithm, use_astar = setups[int_arguments[0]]
 
-pop_size: int = 3
-n_generations: int = 3
+pop_size: int = 10
+n_generations: int = 30
 
 
 n_evals: int = pop_size * n_generations
@@ -80,7 +80,7 @@ optimization_algorithm: Algorithm = [
 ][algorithm]
 
 
-test_problem = KekeProblem.default_problem(representation, multiprocessing.Pool(20), 2, agent_factory)
+test_problem = KekeProblem.default_problem(representation, multiprocessing.Pool(20), None, agent_factory)
 
 
 def measure_time() -> Iterable[None]:
@@ -107,5 +107,3 @@ if __name__ == '__main__':
 
 
         print("testing done:", *info)
-
-    print(test_problem.past_evaluations_by_gen_index_and_level_id)

@@ -1,9 +1,10 @@
 import itertools
+import math
 from concurrent.futures import Executor, ProcessPoolExecutor
 from copy import deepcopy
 from itertools import chain
 from math import floor
-from typing import List, Tuple, Dict, Union, Optional
+from typing import List, Tuple, Dict, Union
 
 import numpy as np
 from pymoo.core.problem import Problem
@@ -108,14 +109,18 @@ class KekeProblem(Problem):
 
         self.generation += 1
 
-    def _evaluate(self, x, out, *args, **kwargs):
+    def register_and_run_next_generation(self, instances: [np.ndarray]):
 
-        self.log_generation_data(list(x))
-        self.past_instances_by_gen_and_index.update(((self.generation, index), deepcopy(instance)) for index, instance in enumerate(x))
+        self.log_generation_data(list(instances))
+        self.past_instances_by_gen_and_index.update(((self.generation, index), deepcopy(instance)) for index, instance in enumerate(instances))
 
         self.run_as_next_generation(
-            map(lambda arr: self.agent_factory.make_agent_from_policy(self.representation.into_heuristic(arr)), x)
+            map(lambda arr: self.agent_factory.make_agent_from_policy(self.representation.into_heuristic(arr)), instances)
         )
+
+    def _evaluate(self, x, out, *args, **kwargs):
+
+        self.register_and_run_next_generation(x)
 
         performance_of_instance_on_batch: Dict[Tuple[int, int], float] = self.get_performance_of_instance_on_batch()
 
@@ -148,6 +153,9 @@ class KekeProblem(Problem):
         for batch_nr, batch in itertools.chain([(-1, self.test_batch)], enumerate(self.training_batches)):
             nr_of_levels: int = len(batch)
             for agent_nr in range(nr_of_instances):
+                if nr_of_levels == 0:
+                    performance_of_instance_on_batch[(agent_nr, batch_nr)] = math.nan
+                    continue
                 total_expansions: int = sum(
                     self.past_evaluations_by_gen_index_and_level_id[
                         (generation, agent_nr, self._level_to_id_map[level])
@@ -168,6 +176,27 @@ class KekeProblem(Problem):
 
         return performance_of_instance_on_batch
 
+    def get_performances_of_all_generations_instances_and_batches(self) -> Dict[Tuple[int, int, int], float]:
+        res: Dict[Tuple[int, int, int], float] = {}
+        for generation in range(self.generation):
+            res.update(
+                ((generation, index, batch), performance)
+                for (index, batch), performance in self.get_performance_of_instance_on_batch(generation).items()
+            )
+        return res
+
+    def get_best_past_individuals(self, batch: int = 0) -> List[Tuple[int, int]]:
+        performances: Dict[Tuple[int, int, int], float] = self.get_performances_of_all_generations_instances_and_batches()
+        best_instances: List[Tuple[int, int]] = []
+        best_performance: float = -math.inf
+        for (generation, index, batch_nr), performance in performances.items():
+            if batch_nr == batch:
+                if performance > best_performance:
+                    best_instances = [(generation, index)]
+                    best_performance = performance
+                elif performance == best_performance:
+                    best_instances.append((generation, index))
+        return best_instances
 
 
     def log_line(self, line: str):
@@ -199,7 +228,7 @@ class KekeProblem(Problem):
         for line in lines:
             if line.startswith("LEVEL:"):
                 _, level_id, level = line.split(':')
-                all_levels[int(level_id)] = level
+                all_levels[int(level_id)] = level.strip().replace('\\n', '\n')
             elif line.startswith("BATCH:"):
                 _, batch_id, index, level_id = line.split(':')
                 batches.append((int(batch_id), int(index), int(level_id)))
@@ -242,7 +271,7 @@ class KekeProblem(Problem):
                     str_solution = str_solution.strip()
                     assert str_node_expansions.isdigit(), f"Unexpected value in : {line}"
                     node_expansions = int(str_node_expansions)
-                    if str_solution == "":
+                    if str_solution == "----":
                         solution = None
                     else:
                         solution = list(iter(str_solution))
@@ -259,10 +288,8 @@ class KekeProblem(Problem):
 
     def log_simulation_data(self, simulation_results: Dict[Tuple[int, str], Tuple[Union[List[str], None], int]]):
         for (index, level), (solution, forward_model_calls) in simulation_results.items():
-            res = '----'
-            if solution is not None:
-                res = forward_model_calls
-            self.log_line(f"RUN_RESULT:{self.generation}:{index}:{self._level_to_id_map[level]}:{res}")
+            solution_str: str = '----' if solution is None else ''.join(sol[0] for sol in solution)
+            self.log_line(f"RUN_RESULT:{self.generation}:{index}:{self._level_to_id_map[level]}:{forward_model_calls}:{solution_str}")
 
     def log_performances(self, performance_of_instance_on_batch: Dict[Tuple[int, int], float]):
         nr_of_instances: int = max(key[0] for key in performance_of_instance_on_batch.keys()) + 1
