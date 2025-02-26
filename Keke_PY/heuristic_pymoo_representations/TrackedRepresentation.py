@@ -18,10 +18,11 @@ from Keke_PY.heuristics.ParametrisedHeuristic import Heuristic
 class TrackedRepresentation(HeuristicRepresentation):
     _inner_repr: HeuristicRepresentation
     _offset: int
+    _tracked_instances: List[np.ndarray]
     def __init__(self, inner_representation: HeuristicRepresentation):
         self._inner_repr = inner_representation
         self._offset = 1 + self._inner_repr.crossover.n_parents
-    _tracked_instances: List[np.ndarray] = []
+        self._tracked_instances = []
     def _current_id(self) -> int:
         return len(self._tracked_instances)
     def track_instance(self, instance: np.ndarray, problem = None):
