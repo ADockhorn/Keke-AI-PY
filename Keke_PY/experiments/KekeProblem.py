@@ -29,10 +29,9 @@ class KekeProblem(Problem):
     representation: HeuristicRepresentation
     agent_factory: AgentFromPolicy
 
-    generation: int = 0
-
-    past_instances_by_gen_and_index: Dict[Tuple[int, int], np.ndarray] = {}
-    past_evaluations_by_gen_index_and_level_id: Dict[Tuple[int, int, int], Tuple[Union[List[str], None], int]] = {}
+    generation: int
+    past_instances_by_gen_and_index: Dict[Tuple[int, int], np.ndarray]
+    past_evaluations_by_gen_index_and_level_id: Dict[Tuple[int, int, int], Tuple[Union[List[str], None], int]]
 
 
     def __init__(
@@ -43,15 +42,19 @@ class KekeProblem(Problem):
             executor: Executor = ProcessPoolExecutor(),
             test_batch: List[str] = (),
             agent_factory: AgentFromPolicy = HeuristicGuidedSearch.GuidedSearchFactory(),
+            silent: bool = False
     ):
+        self.generation = 0
+        self.past_instances_by_gen_and_index = {}
+        self.past_evaluations_by_gen_index_and_level_id = {}
         assert all(len(batch) > 0 for batch in training_batches)
         self.training_batches = training_batches
         self.test_batch = test_batch
         self.max_node_expansions = max_node_expansions
         training_levels = set(chain(*training_batches))
         assert all(level not in training_levels for level in test_batch), "Training on test-levels is not allowed!"
-        self.all_levels = list(training_levels) + test_batch
-        self._level_to_id_map: Dict[str, int] = dict(map(lambda t: (t[1], t[0]), enumerate(self.all_levels)))
+        self.all_levels = sorted(list(training_levels)) + test_batch
+        self.level_to_id_map: Dict[str, int] = dict(map(lambda t: (t[1], t[0]), enumerate(self.all_levels)))
         self.representation = representation
         self.executor = executor
         self.agent_factory = agent_factory
@@ -65,7 +68,8 @@ class KekeProblem(Problem):
             xu=problem_data.xu,
             vtype=problem_data.vtype,
         )
-        self.log_level_data()
+        if not silent:
+            self.log_level_data()
 
     @classmethod
     def default_problem(
@@ -104,7 +108,7 @@ class KekeProblem(Problem):
         simulation_results: Dict[Tuple[int, str], Tuple[Union[List[str], None], int]] = dict(list(self.executor.map(
             evaluate_ai_on_level, simulation_data_list
         )))
-        self.past_evaluations_by_gen_index_and_level_id.update(((self.generation, key[0], self._level_to_id_map[key[1]]), result) for key, result in simulation_results.items())
+        self.past_evaluations_by_gen_index_and_level_id.update(((self.generation, key[0], self.level_to_id_map[key[1]]), result) for key, result in simulation_results.items())
         self.log_simulation_data(simulation_results)
 
         self.generation += 1
@@ -158,7 +162,7 @@ class KekeProblem(Problem):
                     continue
                 total_expansions: int = sum(
                     self.past_evaluations_by_gen_index_and_level_id[
-                        (generation, agent_nr, self._level_to_id_map[level])
+                        (generation, agent_nr, self.level_to_id_map[level])
                     ][1]
                     for level in batch
                 )
@@ -166,7 +170,7 @@ class KekeProblem(Problem):
                 average_leftover_expansions: float = self.max_node_expansions - average_expansions
                 nr_of_solved_levels: int = sum(
                     self.past_evaluations_by_gen_index_and_level_id[
-                        (generation, agent_nr, self._level_to_id_map[level])
+                        (generation, agent_nr, self.level_to_id_map[level])
                     ][0] is not None
                     for level in batch
                 )
@@ -211,7 +215,7 @@ class KekeProblem(Problem):
             self.log_line(f"LEVEL:{level_id}:{level}")
         for batch_id, batch in chain(enumerate(self.training_batches), [(-1, self.test_batch)]):
             for index, level in enumerate(batch):
-                level_id = self._level_to_id_map[level]
+                level_id = self.level_to_id_map[level]
                 assert self.all_levels[level_id] == level
                 self.log_line(f"BATCH:{batch_id}:{index}:{level_id}")
     
@@ -221,7 +225,8 @@ class KekeProblem(Problem):
             representation: HeuristicRepresentation,
             lines: List[str],
             max_node_expansions: int = 2000,
-            executor: Executor = ProcessPoolExecutor()
+            executor: Executor = None,
+            agent_factory: AgentFromPolicy = HeuristicGuidedSearch.GuidedSearchFactory(),
     ):
         all_levels: Dict[int, str] = {}
         batches: List[Tuple[int, int, int]] = []
@@ -241,16 +246,16 @@ class KekeProblem(Problem):
             batch: List[str] = test_batch if batch_id == -1 else training_batches[batch_id]
             assert index == len(batch)
             batch.append(all_levels[level_id])
-        res: KekeProblem = cls(training_batches, representation, max_node_expansions, executor, test_batch)
+        res: KekeProblem = cls(training_batches, representation, max_node_expansions, executor, test_batch, agent_factory, True)
         for line in lines:
             if line.startswith("EVAL_INSTANCE:"):
                 _, generation, index, serialized_instance = line.split(':')
-                cls.update = res.past_instances_by_gen_and_index.update(
+                res.past_instances_by_gen_and_index.update(
                     [((int(generation), int(index)), representation.deserialize(serialized_instance))])
                 res.generation = max(res.generation, int(generation) + 1)
             if line.startswith("RUN_RESULT:"):
                 _, generation, index, old_level_id, *result = line.split(':')
-                new_level_id: int = res._level_to_id_map[all_levels[int(old_level_id)]]
+                new_level_id: int = res.level_to_id_map[all_levels[int(old_level_id)]]
                 solution: Union[List[str], None]
                 node_expansions: int
                 assert result is not None, f"Unexpected value in : {line}"
@@ -289,7 +294,7 @@ class KekeProblem(Problem):
     def log_simulation_data(self, simulation_results: Dict[Tuple[int, str], Tuple[Union[List[str], None], int]]):
         for (index, level), (solution, forward_model_calls) in simulation_results.items():
             solution_str: str = '----' if solution is None else ''.join(sol[0] for sol in solution)
-            self.log_line(f"RUN_RESULT:{self.generation}:{index}:{self._level_to_id_map[level]}:{forward_model_calls}:{solution_str}")
+            self.log_line(f"RUN_RESULT:{self.generation}:{index}:{self.level_to_id_map[level]}:{forward_model_calls}:{solution_str}")
 
     def log_performances(self, performance_of_instance_on_batch: Dict[Tuple[int, int], float]):
         nr_of_instances: int = max(key[0] for key in performance_of_instance_on_batch.keys()) + 1
