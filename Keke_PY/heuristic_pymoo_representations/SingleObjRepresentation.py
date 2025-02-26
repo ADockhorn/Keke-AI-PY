@@ -55,7 +55,7 @@ class SingleObjRepresentation(Generic[T], HeuristicRepresentation):
     def serialize(self, x: np.ndarray) -> str:
         return self._serialize(self._assert_type(x[0]))
     def deserialize(self, x: str) -> np.ndarray:
-        return np.array(self._deserialize(x))
+        return np.array([self._deserialize(x)])
 
     @property
     def sampling(self) -> Sampling:
