@@ -1,5 +1,5 @@
 import multiprocessing
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from Keke_PY.experiments.KekeProblem import KekeProblem
 from Keke_PY.heuristic_pymoo_representations.HeuristicTreeRepresentation import HeuristicTreeRepresentation
@@ -24,8 +24,8 @@ def get_level_results(level_nr: int) -> KekeProblem:
     representation.load_from_lines(lines)
     split_index: int = lines.index("-----!!!NEW PROBLEM!!!-----\n")
     training_lines, testing_lines = lines[:split_index], lines[split_index:]
-    #training_data: KekeProblem = KekeProblem.from_log_lines(representation, training_lines)
-    #assert training_data.training_batches[0][0] == levels[level_nr]
+    training_data: KekeProblem = KekeProblem.from_log_lines(representation, training_lines)
+    assert training_data.training_batches[0][0] == levels[level_nr]
     testing_data: KekeProblem = KekeProblem.from_log_lines(representation, testing_lines)
     print(f"reading in level {level_nr + 1} of {len(levels)} done.")
     return testing_data
@@ -42,6 +42,13 @@ if __name__ == '__main__':
 
     print("\n---EVALUATION---\n")
     for result in level_data_list:
-        print(*["#" if (
-            result.past_evaluations_by_gen_index_and_level_id[(0, 0, result.level_to_id_map[lvl])][0] is not None
-        ) else " " for lvl in levels])
+        evaluations: List[str] = []
+        for lvl in levels:
+            evaluation: Tuple[Optional[List[str]], int] = result.past_evaluations_by_gen_index_and_level_id[
+                (0, 0, result.level_to_id_map[lvl])
+            ]
+            if evaluation[0] is None:
+                evaluations.append("----")
+            else:
+                evaluations.append(str(evaluation[1]))
+        print("LEVEL AGENT EVALUATION:" + '\t:'.join(evaluations))
