@@ -19825,7 +19825,9 @@ GHOST DELETION: OBJECT MAP ROW: [['_'], [], [], [], [GameObj(object_type=<GameOb
 GHOST DELETION: OBJECT MAP ROW: [['_'], [], [GameObj(object_type=<GameObjectType.Word: 2>, name='goop', x=2, y=4, img='G', obj=None, is_movable=True, is_stopped=False, feature='', dir=<Direction.Up: 3>, id=UUID('e7bc9066-4007-44d0-aa80-f16f164913dd'))], [], [], [], [], [], [], [], [], [], [], [], ['_']]
 GHOST DELETION: OBJECT MAP ROW: [['_'], [], [], [], [], [], [], [], [], [], [], [], [], [], ['_']]
 GHOST DELETION: OBJECT MAP ROW: [['_'], [], [], [], [], [], [], [], [], [], [], [], [], [], ['_']]
-GHOST DELETION: OBJECT MAP ROW: LEVEL:0:__________\n_B12..F13_\n_........_\n_........_\n_........_\n_.b....f._\n_........_\n_........_\n_........_\n__________
+GHOST DELETION: OBJECT MAP ROW:
+
+LEVEL:0:__________\n_B12..F13_\n_........_\n_........_\n_........_\n_.b....f._\n_........_\n_........_\n_........_\n__________
 LEVEL:1:____________________\n_W........wwwwwwwww_\n_1wwwwwwwww......Kw_\n_6wK17ooowwR1.O.81w_\n_Kwkooo3oww..3.1.9w_\n_1wkoooooww.......w_\n_4wo1kbkowwaaaaw.ww_\n_Awooooooww.....ww._\n_1woooooowwb..w..w._\n_9wwwwwwwwww.sw.ww._\n_Awwwwwwwwwwwlwwww._\n_1wb.....ww......w._\n_4wwwww.www.b.R..w._\n_Sw......ww.r.1..w._\n_1ww.wwwwww...5L.w._\n_4wrrrrrrww....1.w._\n_Bwrrfrrrww....8.w._\n_1wwwwwwwwwwwwwwww._\n_9R19F13L18R14B12.._\n____________________
 LEVEL:2:____________\n_.........._\n_.b..S....._\n_.....712.._\n_.....O...._\n_.B........_\n_...b.....F_\n_.........1_\n_GokK12...3_\n_V......B1._\n_r........R_\n____________
 LEVEL:3:__________\n_........_\n_....V12._\n_........_\n_........_\n_F.v.v..._\n_1..v...._\n_3......._\n_....f..._\n__________

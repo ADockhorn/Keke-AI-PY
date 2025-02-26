@@ -969,6 +969,7 @@ def destroy_objs(dead, game_state: GameState):
             print("GHOST DELETION: UNIQUE STR: " + game_state.unique_str().replace('\n', '\nGHOST DELETION: UNIQUE STR: '))
             for row in game_state.object_map:
                 print("GHOST DELETION: OBJECT MAP ROW:", row)
+            print("\n")
             continue
         game_state.phys.remove(obj)# = [ x for x in game_state.phys if x != obj ]
         game_state.sort_phys[obj.name].remove(obj)# = [ x for x in sort_phys[obj.name] if x != obj ]
