@@ -1,10 +1,13 @@
 import multiprocessing
+import pathlib
 from typing import List, Tuple, Optional
 
 from Keke_PY.experiments.KekeProblem import KekeProblem
 from Keke_PY.heuristic_pymoo_representations.HeuristicTreeRepresentation import HeuristicTreeRepresentation
 from Keke_PY.heuristic_pymoo_representations.TrackedRepresentation import TrackedRepresentation
 from Keke_PY.keke_game.simulation import load_level_set
+
+log_location: str = "Keke_PY/experiment_logs/single_level_tree_optimization/single_training_logs"
 
 levels: List[str] = [
     *[level["ascii"] for level in
@@ -16,7 +19,7 @@ levels: List[str] = [
 def get_level_results(level_nr: int) -> KekeProblem:
     slurm_job_id: int = 523700 if level_nr != 183 else 524904
     file_name: str = f"keke_single_level_training_{slurm_job_id}_{level_nr}-out.txt"
-    with open(file_name) as file:
+    with open(pathlib.Path(log_location, file_name)) as file:
         lines: [str] = file.readlines()
     representation: TrackedRepresentation = TrackedRepresentation(
         HeuristicTreeRepresentation()
